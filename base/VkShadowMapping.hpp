@@ -136,7 +136,7 @@ public:
 	{
 		zoom = -20.0f;
 		rotation = { -15.0f, -390.0f, 0.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Projected shadow mapping";
 		timerSpeed *= 0.5f;
 	}
@@ -176,7 +176,7 @@ public:
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.offscreen);
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.scene);
 
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offscreenPass.commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &offscreenPass.commandBuffer);
 		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenPass.semaphore, nullptr);
 	}
 

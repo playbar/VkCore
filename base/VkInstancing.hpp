@@ -85,7 +85,7 @@ public:
 	{
 		zoom = -12.0f;
 		rotationSpeed = 0.25f;
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Instanced mesh rendering";
 		srand(time(NULL));
 	}

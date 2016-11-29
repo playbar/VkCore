@@ -91,7 +91,7 @@ public:
 		zoom = -2.7f;
 		rotation = glm::vec3(56.0f, 0.0f, 0.0f);
 		rotationSpeed = 0.25f;
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		timerSpeed *= 0.25f;
 		paused = true;
 		title = "Vulkan Example - Parallax Mapping";

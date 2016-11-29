@@ -84,7 +84,7 @@ public:
 	VkRaytracing() : VulkanBase(ENABLE_VALIDATION)
 	{
 		title = "Vulkan Example - Compute shader ray tracing";
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		compute.ubo.aspectRatio = (float)width / (float)height;
 		timerSpeed *= 0.25f;
 

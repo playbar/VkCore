@@ -65,7 +65,7 @@ public:
 	{
 		zoom = -8.0f;
 		rotation = glm::vec3(0.0f, -25.0f, 0.0f);
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Geometry shader";
 	}
 

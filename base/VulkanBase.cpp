@@ -48,10 +48,10 @@ VkResult VulkanBase::createInstance(bool enableValidation)
 
 std::string VulkanBase::getWindowTitle()
 {
-	std::string device(mDeviceProperties.deviceName);
+	std::string device(mVulkanDevice->mProperties.deviceName);
 	std::string windowTitle;
 	windowTitle = title + " - " + device;
-	if (!enableTextOverlay)
+	if (!mEnableTextOverlay)
 	{
 		windowTitle += " - " + std::to_string(frameCounter) + " fps";
 	}
@@ -86,7 +86,7 @@ void VulkanBase::createCommandBuffers()
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
 		vkTools::initializers::commandBufferAllocateInfo(
-			cmdPool,
+			mCmdPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mDrawCmdBuffers.size()));
 
@@ -95,20 +95,20 @@ void VulkanBase::createCommandBuffers()
 
 void VulkanBase::destroyCommandBuffers()
 {
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
+	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
 }
 
 void VulkanBase::createSetupCommandBuffer()
 {
 	if (setupCmdBuffer != VK_NULL_HANDLE)
 	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &setupCmdBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
 		setupCmdBuffer = VK_NULL_HANDLE; // todo : check if still necessary
 	}
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
 		vkTools::initializers::commandBufferAllocateInfo(
-			cmdPool,
+			mCmdPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			1);
 
@@ -135,7 +135,7 @@ void VulkanBase::flushSetupCommandBuffer()
 	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, VK_NULL_HANDLE));
 	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
 
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &setupCmdBuffer);
+	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
 	setupCmdBuffer = VK_NULL_HANDLE; 
 }
 
@@ -145,7 +145,7 @@ VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
 		vkTools::initializers::commandBufferAllocateInfo(
-			cmdPool,
+			mCmdPool,
 			level,
 			1);
 
@@ -180,7 +180,7 @@ void VulkanBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue
 
 	if (free)
 	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
 	}
 }
 
@@ -209,11 +209,11 @@ void VulkanBase::prepare()
 	// Recreate setup command buffer for derived class
 	createSetupCommandBuffer();
 	// Create a simple texture loader class
-	textureLoader = new vkTools::VulkanTextureLoader(mVulkanDevice, mQueue, cmdPool);
+	textureLoader = new vkTools::VulkanTextureLoader(mVulkanDevice, mQueue, mCmdPool);
 #if defined(__ANDROID__)
 	textureLoader->assetManager = androidApp->activity->assetManager;
 #endif
-	if (enableTextOverlay)
+	if (mEnableTextOverlay)
 	{
 		// Load the text rendering shaders
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
@@ -340,7 +340,7 @@ void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshB
 		copyCmd,
 		mQueue);
 
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &copyCmd);
+	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &copyCmd);
 
 	meshBuffer->dim = mesh->dim.size;
 
@@ -395,7 +395,7 @@ void VulkanBase::renderLoop()
 		fpsTimer += (float)tDiff;
 		if (fpsTimer > 1000.0f)
 		{
-			if (!enableTextOverlay)
+			if (!mEnableTextOverlay)
 			{
 				std::string windowTitle = getWindowTitle();
 				SetWindowText(window, windowTitle.c_str());
@@ -580,7 +580,7 @@ void VulkanBase::renderLoop()
 		fpsTimer += (float)tDiff;
 		if (fpsTimer > 1000.0f)
 		{
-			if (!enableTextOverlay)
+			if (!mEnableTextOverlay)
 			{
 				std::string windowTitle = getWindowTitle();
 				xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
@@ -600,7 +600,7 @@ void VulkanBase::renderLoop()
 
 void VulkanBase::updateTextOverlay()
 {
-	if (!enableTextOverlay)
+	if (!mEnableTextOverlay)
 		return;
 
 	mTextOverlay->beginTextUpdate();
@@ -611,7 +611,7 @@ void VulkanBase::updateTextOverlay()
 	ss << std::fixed << std::setprecision(3) << (frameTimer * 1000.0f) << "ms (" << lastFPS << " fps)";
 	mTextOverlay->addText(ss.str(), 5.0f, 25.0f, VulkanTextOverlay::alignLeft);
 
-	mTextOverlay->addText(mDeviceProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
+	mTextOverlay->addText(mVulkanDevice->mProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
 
 	getOverlayText(mTextOverlay);
 
@@ -631,7 +631,7 @@ void VulkanBase::prepareFrame()
 
 void VulkanBase::submitFrame()
 {
-	bool submitTextOverlay = enableTextOverlay && mTextOverlay->visible;
+	bool submitTextOverlay = mEnableTextOverlay && mTextOverlay->visible;
 
 	if (submitTextOverlay)
 	{
@@ -722,7 +722,7 @@ VulkanBase::~VulkanBase()
 	}
 	if (setupCmdBuffer != VK_NULL_HANDLE)
 	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &setupCmdBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
 
 	}
 	destroyCommandBuffers();
@@ -747,13 +747,13 @@ VulkanBase::~VulkanBase()
 		delete textureLoader;
 	}
 
-	vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, cmdPool, nullptr);
+	vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
 
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
 
-	if (enableTextOverlay)
+	if (mEnableTextOverlay)
 	{
 		delete mTextOverlay;
 	}
@@ -828,15 +828,6 @@ void VulkanBase::initVulkan(bool enableValidation)
 	// and encapsulates functions related to a device
 	mVulkanDevice = new VkCoreDevice(physicalDevices[0]);
 	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(enabledFeatures));
-	//mVulkanDevice->mLogicalDevice = mVulkanDevice->mLogicalDevice;
-
-	// todo: remove
-	// Store properties (including limits) and features of the phyiscal device
-	// So examples can check against them and see if a feature is actually supported
-	vkGetPhysicalDeviceProperties(mVulkanDevice->mPhysicalDevice, &mDeviceProperties);
-	vkGetPhysicalDeviceFeatures(mVulkanDevice->mPhysicalDevice, &mDeviceFeatures);
-	// Gather physical device memory properties
-	vkGetPhysicalDeviceMemoryProperties(mVulkanDevice->mPhysicalDevice, &mDeviceMemoryProperties);
 
 	// Get a graphics queue from the device
 	vkGetDeviceQueue(mVulkanDevice->mLogicalDevice, mVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
@@ -1025,7 +1016,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			paused = !paused;
 			break;
 		case KEY_F1:
-			if (enableTextOverlay)
+			if (mEnableTextOverlay)
 			{
 				mTextOverlay->visible = !mTextOverlay->visible;
 			}
@@ -1399,7 +1390,7 @@ void VulkanBase::handleEvent(const xcb_generic_event_t *event)
 				paused = !paused;
 				break;
 			case KEY_F1:
-				if (enableTextOverlay)
+				if (mEnableTextOverlay)
 				{
 					mTextOverlay->visible = !mTextOverlay->visible;
 				}
@@ -1475,7 +1466,7 @@ void VulkanBase::createCommandPool()
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &cmdPool));
+	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
 }
 
 void VulkanBase::setupDepthStencil()
@@ -1661,7 +1652,7 @@ void VulkanBase::windowResize()
 	vkQueueWaitIdle(mQueue);
 	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 
-	if (enableTextOverlay)
+	if (mEnableTextOverlay)
 	{
 		mTextOverlay->reallocateCommandBuffers();
 		updateTextOverlay();

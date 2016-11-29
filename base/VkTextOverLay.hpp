@@ -88,7 +88,7 @@ public:
 		rotation = { -25.0f, 0.0f, 0.0f };
 		title = "Vulkan Example - Text overlay";
 		// Disable text overlay of the example base class
-		enableTextOverlay = false;
+		mEnableTextOverlay = false;
 	}
 
 	~VkTextOverLay()
@@ -170,7 +170,7 @@ public:
 		ss << std::fixed << std::setprecision(2) << (frameTimer * 1000.0f) << "ms (" << lastFPS << " fps)";
 		mTextOverlay->addText(ss.str(), 5.0f, 25.0f, VulkanTextOverlay::alignLeft);
 
-		mTextOverlay->addText(mDeviceProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
+		mTextOverlay->addText(mVulkanDevice->mProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
 
 		mTextOverlay->addText("Press \"space\" to toggle text overlay", 5.0f, 65.0f, VulkanTextOverlay::alignLeft);
 

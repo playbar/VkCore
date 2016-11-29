@@ -112,7 +112,7 @@ public:
 
 	VkComputecullandlod() : VulkanBase(ENABLE_VALIDATION)
 	{
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Compute cull and lod";
 		camera.type = VkCamera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);

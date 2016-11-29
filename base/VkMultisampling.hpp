@@ -116,7 +116,7 @@ public:
 	void setupMultisampleTarget()
 	{
 		// Check if device supports requested sample count for color and depth frame buffer
-		assert((mDeviceProperties.limits.framebufferColorSampleCounts >= SAMPLE_COUNT) && (mDeviceProperties.limits.framebufferDepthSampleCounts >= SAMPLE_COUNT));
+		assert((mVulkanDevice->mProperties.limits.framebufferColorSampleCounts >= SAMPLE_COUNT) && (mVulkanDevice->mProperties.limits.framebufferDepthSampleCounts >= SAMPLE_COUNT));
 
 		// Color target
 		VkImageCreateInfo info = vkTools::initializers::imageCreateInfo();

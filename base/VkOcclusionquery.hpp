@@ -90,7 +90,7 @@ public:
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
 		rotation = { 0.0, -123.75, 0.0 };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Occlusion queries";
 	}
 

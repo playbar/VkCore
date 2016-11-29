@@ -72,8 +72,8 @@ public:
 		zoom = -4.0f;
 		rotationSpeed = 0.25f;
 		rotation = { -7.25f, -120.0f, 0.0f };
-		enableTextOverlay = true;
-		title = "Vulkan Example - Cube map";
+		mEnableTextOverlay = true;
+		title = "VkCore";
 	}
 
 	~VkTexturecubemap()

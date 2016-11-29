@@ -172,7 +172,7 @@ public:
 
 	VkDeferredShadows() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
 	{
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading with shadows (2016 by Sascha Willems)";
 		camera.type = VkCamera::CameraType::firstperson;
 #if defined(__ANDROID__)
@@ -221,7 +221,7 @@ public:
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.fsLights);
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.uboShadowGS);
 
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &commandBuffers.deferred);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffers.deferred);
 
 		// Textures
 		textureLoader->destroyTexture(textures.model.colorMap);

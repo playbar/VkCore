@@ -536,7 +536,7 @@ public:
 	VkSceneRendering() : VulkanBase(ENABLE_VALIDATION)
 	{
 		rotationSpeed = 0.5f;
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		camera.type = VkCamera::CameraType::firstperson;
 		camera.movementSpeed = 7.5f;
 		camera.position = { 15.0f, -13.5f, 0.0f };
@@ -778,7 +778,7 @@ public:
 #endif
 		scene->assetPath = getAssetPath() + "models/sibenik/";
 		scene->load(getAssetPath() + "models/sibenik/sibenik.dae", copyCmd);
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &copyCmd);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &copyCmd);
 		updateUniformBuffers();
 	}
 

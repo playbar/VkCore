@@ -94,7 +94,7 @@ public:
 
 	VkSubPasses() : VulkanBase(ENABLE_VALIDATION)
 	{
-		enableTextOverlay = false;
+		mEnableTextOverlay = false;
 		title = "Vulkan Example - Subpasses";
 		camera.type = VkCamera::CameraType::firstperson;
 		camera.movementSpeed = 5.0f;

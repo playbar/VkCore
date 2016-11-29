@@ -118,7 +118,7 @@ public:
 	{
 		zoom = -75.0f;
 		rotation = { -15.0f, 45.0f, 0.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Particle system";
 		zoomSpeed *= 1.5f;
 		timerSpeed *= 8.0f;

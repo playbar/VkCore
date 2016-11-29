@@ -79,7 +79,7 @@ public:
 		zoom = -3.75f;
 		rotationSpeed = 0.5f;
 		rotation = glm::vec3(15.0f, 0.f, 0.0f);
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Demo Scene - (c) 2016 by Sascha Willems";
 	}
 

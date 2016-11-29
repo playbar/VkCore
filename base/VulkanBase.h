@@ -70,12 +70,6 @@ protected:
 	VkInstance mInstance;
 	VkCoreDevice *mVulkanDevice;
 
-	//VkPhysicalDevice mPhysicalDevice;
-	//VkDevice mVulkanDevice->mLogicalDevice;
-	VkPhysicalDeviceProperties mDeviceProperties;
-	VkPhysicalDeviceFeatures mDeviceFeatures;
-	VkPhysicalDeviceMemoryProperties mDeviceMemoryProperties;
-	
 	// Handle to the device graphics queue that command buffers are submitted to
 	VkQueue mQueue;
 	// Color buffer format
@@ -84,7 +78,7 @@ protected:
 	// Depth format is selected during Vulkan initialization
 	VkFormat depthFormat;
 	// Command buffer pool
-	VkCommandPool cmdPool;
+	VkCommandPool mCmdPool;
 	// Command buffer used for setup
 	VkCommandBuffer setupCmdBuffer = VK_NULL_HANDLE;
 	/** @brief Pipeline stages used to wait at for graphics queue submissions */
@@ -140,7 +134,7 @@ public:
 	
 	bool paused = false;
 
-	bool enableTextOverlay = true;
+	bool mEnableTextOverlay = true;
 	VulkanTextOverlay *mTextOverlay;
 
 	// Use to adjust mouse rotation speed
@@ -192,10 +186,8 @@ public:
 	xcb_intern_atom_reply_t *atom_wm_delete_window;
 #endif
 
-	// Default ctor
 	VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn = nullptr);
 
-	// dtor
 	~VulkanBase();
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)

@@ -129,7 +129,7 @@ public:
 	{
 		zoom = -8.0f;
 		rotation = { 0.0f, 0.0f, 0.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading (2016 by Sascha Willems)";
 		camera.type = VkCamera::CameraType::firstperson;
 		camera.movementSpeed = 5.0f;
@@ -192,7 +192,7 @@ public:
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsFullScreen);
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.fsLights);
 
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offScreenCmdBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &offScreenCmdBuffer);
 
 		vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, offScreenFrameBuf.renderPass, nullptr);
 

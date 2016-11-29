@@ -148,7 +148,7 @@ public:
 	{
 		zoom = -8.0f;
 		rotation = { 0.0f, 0.0f, 0.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Screen space ambient occlusion";
 		camera.type = VkCamera::CameraType::firstperson;
 		camera.movementSpeed = 5.0f;
@@ -201,7 +201,7 @@ public:
 		uniformBuffers.ssaoParams.destroy();
 
 		// Misc
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offScreenCmdBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &offScreenCmdBuffer);
 		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenSemaphore, nullptr);
 		textureLoader->destroyTexture(textures.ssaoNoise);
 	}

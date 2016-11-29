@@ -233,7 +233,7 @@ public:
 		zoom = -1.3f;
 		rotation = { 76.25f, 0.0f, 0.0f };
 		title = "Vulkan Example - Sparse texture residency";
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		std::cout.imbue(std::locale(""));
 		// Check if the GPU supports sparse residency for 2D images
 		if (!mVulkanDevice->mFeatures.sparseResidencyImage2D)

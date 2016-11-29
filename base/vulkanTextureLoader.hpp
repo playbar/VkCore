@@ -1,11 +1,3 @@
-/*
-* Texture loader for Vulkan
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
-
 #pragma once
 
 #include <vulkan/vulkan.h>
@@ -19,9 +11,6 @@
 
 namespace vkTools 
 {
-	/**
-	* @brief Encapsulates a Vulkan texture object (including view, sampler, descriptor, etc.)
-	*/
 	struct VulkanTexture
 	{
 		VkSampler sampler;
@@ -29,7 +18,8 @@ namespace vkTools
 		VkImageLayout imageLayout;
 		VkDeviceMemory deviceMemory;
 		VkImageView view;
-		uint32_t width, height;
+		uint32_t width;
+		uint32_t height;
 		uint32_t mipLevels;
 		uint32_t layerCount;
 		VkDescriptorImageInfo descriptor;

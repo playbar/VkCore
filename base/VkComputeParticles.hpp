@@ -78,7 +78,7 @@ public:
 
 	VkComputeParticles() : VulkanBase(ENABLE_VALIDATION)
 	{
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Compute shader particle system";
 	}
 

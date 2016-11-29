@@ -38,7 +38,7 @@ public:
 		zoom = -16.0f;
 		rotation = glm::vec3(-23.75, 41.25, 21.0);
 		timerSpeed *= 0.25f;
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Gears";
 	}
 

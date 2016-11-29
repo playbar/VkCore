@@ -394,7 +394,7 @@ public:
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
 		rotation = { -182.5f, -38.5f, 180.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Skeletal animation";
 		cameraPos = { 0.0f, 0.0f, 12.0f };
 	}

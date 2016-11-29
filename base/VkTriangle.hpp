@@ -134,11 +134,11 @@ public:
 	uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
 	{
 		// Iterate over all memory types available for the device used in this example
-		for (uint32_t i = 0; i < mDeviceMemoryProperties.memoryTypeCount; i++)
+		for (uint32_t i = 0; i < mVulkanDevice->mMemoryProperties.memoryTypeCount; i++)
 		{
 			if ((typeBits & 1) == 1)
 			{
-				if ((mDeviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+				if ((mVulkanDevice->mMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
 				{
 					return i;
 				}
@@ -183,7 +183,7 @@ public:
 
 		VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
 		cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		cmdBufAllocateInfo.commandPool = cmdPool;
+		cmdBufAllocateInfo.commandPool = mCmdPool;
 		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		cmdBufAllocateInfo.commandBufferCount = 1;
 
@@ -225,7 +225,7 @@ public:
 		VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
 		vkDestroyFence(mVulkanDevice->mLogicalDevice, fence, nullptr);
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
 	}
 
 	// Build separate command buffers for every framebuffer image
@@ -454,11 +454,8 @@ public:
 			cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			cmdBufferBeginInfo.pNext = nullptr;
 
-			// Buffer copies have to be submitted to a queue, so we need a command buffer for them
-			// Note: Some devices offer a dedicated transfer queue (with only the transfer bit set) that may be faster when doing lots of copies
 			VkCommandBuffer copyCmd = getCommandBuffer(true);
 
-			// Put buffer region copies into command buffer
 			VkBufferCopy copyRegion = {};
 
 			// Vertex buffer

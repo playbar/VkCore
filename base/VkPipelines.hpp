@@ -69,7 +69,7 @@ public:
 	{
 		zoom = -10.5f;
 		rotation = glm::vec3(-25.0f, 15.0f, 0.0f);
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Pipeline state objects";
 	}
 
@@ -78,7 +78,7 @@ public:
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
 		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.phong, nullptr);
-		if (mDeviceFeatures.fillModeNonSolid)
+		if (mVulkanDevice->mFeatures.fillModeNonSolid)
 		{
 			vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.wireframe, nullptr);
 		}
@@ -148,7 +148,7 @@ public:
 			vkCmdSetLineWidth(mDrawCmdBuffers[i], 2.0f);
 			vkCmdDrawIndexed(mDrawCmdBuffers[i], meshes.cube.indexCount, 1, 0, 0, 0);
 
-			if (mDeviceFeatures.fillModeNonSolid)
+			if (mVulkanDevice->mFeatures.fillModeNonSolid)
 			{
 				// Right : Wireframe 
 				viewport.x = (float)width / 3.0 + (float)width / 3.0;
@@ -379,7 +379,7 @@ public:
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.toon));
 
 		// Non solid rendering is not a mandatory Vulkan feature
-		if (mDeviceFeatures.fillModeNonSolid)
+		if (mVulkanDevice->mFeatures.fillModeNonSolid)
 		{
 			// Pipeline for wire frame rendering
 			rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;

@@ -118,7 +118,7 @@ public:
 		rotation = { -2.5f, 0.0f, 0.0f };
 		cameraPos = { 0.0f, 1.0f, 0.0f };
 		timerSpeed *= 0.25f;
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Offscreen rendering";
 	}
 
@@ -168,7 +168,7 @@ public:
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsOffScreen);
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsDebugQuad);
 
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offscreenPass.commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &offscreenPass.commandBuffer);
 		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenPass.semaphore, nullptr);
 	}
 

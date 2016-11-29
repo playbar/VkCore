@@ -123,7 +123,7 @@ public:
 		zoomSpeed = 10.0f;
 		timerSpeed *= 0.25f;
 		rotation = { -20.5f, -673.0f, 0.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Point light shadows";
 	}
 
@@ -172,7 +172,7 @@ public:
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.offscreen);
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.scene);
 
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offscreenPass.commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &offscreenPass.commandBuffer);
 		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenPass.semaphore, nullptr);
 	}
 

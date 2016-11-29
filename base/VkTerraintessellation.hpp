@@ -106,7 +106,7 @@ public:
 
 	VkTerraintessellation() : VulkanBase(ENABLE_VALIDATION)
 	{
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Dynamic terrain tessellation";
 		camera.type = VkCamera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
@@ -239,7 +239,7 @@ public:
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = (float)textures.terrainArray.mipLevels;
 		samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		if (mDeviceFeatures.samplerAnisotropy)
+		if (mVulkanDevice->mFeatures.samplerAnisotropy)
 		{
 			samplerInfo.maxAnisotropy = 4.0f;
 			samplerInfo.anisotropyEnable = VK_TRUE;

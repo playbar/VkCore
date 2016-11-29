@@ -228,7 +228,7 @@ public:
 		rotationSpeed = 0.5f;
 		rotation = { -4.35f, 16.25f, 0.0f };
 		cameraPos = { 0.1f, 1.1f, 0.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - VK_EXT_debug_marker";
 	}
 
@@ -271,7 +271,7 @@ public:
 		vkDestroySampler(mVulkanDevice->mLogicalDevice, offscreenPass.sampler, nullptr);
 		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, offscreenPass.frameBuffer, nullptr);
 
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offscreenPass.commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &offscreenPass.commandBuffer);
 		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenPass.semaphore, nullptr);
 	}
 
@@ -1007,7 +1007,7 @@ public:
 
 		// Name shader moduels for debugging
 		// Shader module count starts at 2 when text overlay in base class is enabled
-		uint32_t moduleIndex = enableTextOverlay ? 2 : 0;
+		uint32_t moduleIndex = mEnableTextOverlay ? 2 : 0;
 		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 0], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Toon shading vertex shader");
 		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 1], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Toon shading fragment shader");
 		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 2], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Color-only vertex shader");

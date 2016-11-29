@@ -110,7 +110,7 @@ public:
 		zoom = -10.0f;
 		rotation = { -16.25f, -28.75f, 0.0f };
 		timerSpeed *= 0.5f;
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Radial blur";
 	}
 
@@ -153,7 +153,7 @@ public:
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.scene);
 		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.blurParams);
 
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offscreenPass.commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &offscreenPass.commandBuffer);
 		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenPass.semaphore, nullptr);
 
 		textureLoader->destroyTexture(textures.gradient);

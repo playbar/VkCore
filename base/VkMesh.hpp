@@ -80,7 +80,7 @@ public:
 		rotationSpeed = 0.5f;
 		rotation = { -0.5f, -112.75f, 0.0f };
 		cameraPos = { 0.1f, 1.1f, 0.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Mesh rendering";
 	}
 

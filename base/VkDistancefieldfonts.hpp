@@ -104,7 +104,7 @@ public:
 	VkDistancefieldfonts() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -2.0f;
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Distance field fonts";
 	}
 

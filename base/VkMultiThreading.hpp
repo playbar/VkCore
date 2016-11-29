@@ -115,7 +115,7 @@ public:
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
 		rotation = { 0.0f, 37.5f, 0.0f };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Multi threaded rendering";
 		// Get number of max. concurrrent threads
 		numThreads = std::thread::hardware_concurrency();
@@ -141,8 +141,8 @@ public:
 
 		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
 
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &primaryCommandBuffer);
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &secondaryCommandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &primaryCommandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &secondaryCommandBuffer);
 
 		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.ufo);
 		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.skysphere);
@@ -169,7 +169,7 @@ public:
 		// base class, and create a single primary command buffer instead
 		VkCommandBufferAllocateInfo cmdBufAllocateInfo =
 			vkTools::initializers::commandBufferAllocateInfo(
-				cmdPool,
+				mCmdPool,
 				VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 				1);
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &primaryCommandBuffer));

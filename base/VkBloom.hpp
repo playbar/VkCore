@@ -122,7 +122,7 @@ public:
 		zoom = -10.25f;
 		rotation = { 7.5f, -343.0f, 0.0f };
 		timerSpeed *= 0.5f;
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Bloom";
 	}
 
@@ -147,7 +147,7 @@ public:
 			vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, framebuffer.framebuffer, nullptr);
 		}
 		vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, offscreenPass.renderPass, nullptr);
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offscreenPass.commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &offscreenPass.commandBuffer);
 		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenPass.semaphore, nullptr);
 
 		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.blurHorz, nullptr);

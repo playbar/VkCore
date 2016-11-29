@@ -73,7 +73,7 @@ public:
 	VkTexturemipmapgen() : VulkanBase(ENABLE_VALIDATION)
 	{
 		title = "Vulkan Example - Runtime mip map generation";
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		camera.type = VkCamera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 1024.0f);
 		camera.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));

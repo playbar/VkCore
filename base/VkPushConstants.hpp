@@ -68,7 +68,7 @@ public:
 		rotationSpeed = 0.5f;
 		timerSpeed *= 0.5f;
 		rotation = { -32.5, 45.0, 0.0 };
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Push constants";
 
 		// todo : this crashes on certain Android devices, so commented out for now

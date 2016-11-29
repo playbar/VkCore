@@ -72,10 +72,10 @@ public:
 	{
 		zoom = -1.25f;
 		rotation = glm::vec3(-20.0f, 45.0f, 0.0f);
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Tessellation shader displacement mapping";
 		// Support for tessellation shaders is optional, so check first
-		if (!mDeviceFeatures.tessellationShader)
+		if (!mVulkanDevice->mFeatures.tessellationShader)
 		{
 			vkTools::exitFatal("Selected GPU does not support tessellation shaders!", "Feature not supported");
 		}

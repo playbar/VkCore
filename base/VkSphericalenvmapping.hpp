@@ -69,7 +69,7 @@ public:
 		rotationSpeed = 0.75f;
 		zoomSpeed = 0.25f;
 		rotation = glm::vec3(-25.0f, 23.75f, 0.0f);
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		title = "Vulkan Example - Spherical Environment Mapping";
 	}
 

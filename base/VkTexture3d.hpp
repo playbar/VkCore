@@ -189,7 +189,7 @@ public:
 		zoom = -2.5f;
 		rotation = { 0.0f, 15.0f, 0.0f };
 		title = "Vulkan Example - 3D textures";
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 		srand(std::time(0));
 	}
 

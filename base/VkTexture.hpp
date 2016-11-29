@@ -76,7 +76,7 @@ public:
 		zoom = -2.5f;
 		rotation = { 0.0f, 15.0f, 0.0f };
 		title = "Vulkan Example - Texturing";
-		enableTextOverlay = true;
+		mEnableTextOverlay = true;
 	}
 
 	~VkTexture()
