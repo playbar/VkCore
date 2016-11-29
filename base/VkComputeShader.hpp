@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Compute shader image processing
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +23,7 @@ struct Vertex {
 	float uv[2];
 };
 
-class VulkanExample : public VulkanBase
+class VkComputeShader : public VulkanBase
 {
 private:
 	vkTools::VulkanTexture textureColorMap;
@@ -80,14 +74,14 @@ public:
 
 	int vertexBufferSize;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkComputeShader() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -2.0f;
 		enableTextOverlay = true;
 		title = "Vulkan Example - Compute shader image processing";
 	}
 
-	~VulkanExample()
+	~VkComputeShader()
 	{
 		// Graphics
 		vkDestroyPipeline(mDevice, graphics.pipeline, nullptr);
@@ -153,9 +147,9 @@ public:
 
 		tex->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		vkTools::setImageLayout(
-			layoutCmd, tex->image, 
-			VK_IMAGE_ASPECT_COLOR_BIT, 
-			VK_IMAGE_LAYOUT_UNDEFINED, 
+			layoutCmd, tex->image,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			VK_IMAGE_LAYOUT_UNDEFINED,
 			tex->imageLayout);
 
 		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
@@ -195,8 +189,8 @@ public:
 	void loadTextures()
 	{
 		textureLoader->loadTexture(
-			getAssetPath() + "textures/het_kanonschot_rgba8.ktx", 
-			VK_FORMAT_R8G8B8A8_UNORM, 
+			getAssetPath() + "textures/het_kanonschot_rgba8.ktx",
+			VK_FORMAT_R8G8B8A8_UNORM,
 			&textureColorMap,
 			false,
 			VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
@@ -307,10 +301,10 @@ public:
 #define dim 1.0f
 		std::vector<Vertex> vertexBuffer =
 		{
-			{ {  dim,  dim, 0.0f }, { 1.0f, 1.0f } },
-			{ { -dim,  dim, 0.0f }, { 0.0f, 1.0f } },
-			{ { -dim, -dim, 0.0f }, { 0.0f, 0.0f } },
-			{ {  dim, -dim, 0.0f }, { 1.0f, 0.0f } }
+			{ { dim,  dim, 0.0f },{ 1.0f, 1.0f } },
+			{ { -dim,  dim, 0.0f },{ 0.0f, 1.0f } },
+			{ { -dim, -dim, 0.0f },{ 0.0f, 0.0f } },
+			{ { dim, -dim, 0.0f },{ 1.0f, 0.0f } }
 		};
 #undef dim
 
@@ -413,7 +407,7 @@ public:
 				setLayoutBindings.size());
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &graphics.descriptorSetLayout));
-		
+
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&graphics.descriptorSetLayout,
@@ -458,7 +452,7 @@ public:
 				1);
 
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &graphics.descriptorSetPreCompute));
-		
+
 		VkDescriptorImageInfo texDescriptorBaseImage =
 			vkTools::initializers::descriptorImageInfo(
 				textureColorMap.sampler,
@@ -535,7 +529,7 @@ public:
 
 		// Rendering pipeline
 		// Load shaders
-		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages;
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/computeshader/texture.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/computeshader/texture.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -631,7 +625,7 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice,	&descriptorLayout, nullptr, &compute.descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &compute.descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
@@ -777,7 +771,7 @@ public:
 		setupDescriptorPool();
 		setupDescriptorSet();
 		prepareCompute();
-		buildCommandBuffers(); 
+		buildCommandBuffers();
 		prepared = true;
 	}
 
@@ -832,4 +826,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

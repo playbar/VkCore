@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Deferred shading with shadows from multiple light sources using geometry shader instancing
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,19 +39,18 @@
 // Must match the LIGHT_COUNT define in the shadow and deferred shaders
 #define LIGHT_COUNT 3
 
-// Vertex layout for this example
-// todo: create class for vertex layout
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+class VkDeferredShadows : public VulkanBase
 {
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-	vkMeshLoader::VERTEX_LAYOUT_TANGENT
-};
-
-class VulkanExample : public VulkanBase
-{
+	// Vertex layout for this example
+	// todo: create class for vertex layout
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_TANGENT
+	};
 public:
 	bool debugDisplay = false;
 	bool enableShadows = true;
@@ -82,7 +75,7 @@ public:
 			vkTools::VulkanTexture normalMap;
 		} background;
 	} textures;
-	
+
 	struct {
 		vkMeshLoader::MeshBuffer model;
 		vkMeshLoader::MeshBuffer background;
@@ -179,7 +172,7 @@ public:
 		return enabledFeatures;
 	}
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
+	VkDeferredShadows() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading with shadows (2016 by Sascha Willems)";
@@ -197,7 +190,7 @@ public:
 		paused = true;
 	}
 
-	~VulkanExample()
+	~VkDeferredShadows()
 	{
 		// Frame buffers
 		if (frameBuffers.deferred)
@@ -365,7 +358,7 @@ public:
 
 		// First pass: Shadow map generation
 		// -------------------------------------------------------------------------------------------------------
-	
+
 		clearValues[0].depthStencil = { 1.0f, 0 };
 
 		renderPassBeginInfo.renderPass = frameBuffers.shadow->renderPass;
@@ -567,8 +560,8 @@ public:
 		// Attribute descriptions
 		vertices.attributeDescriptions.clear();
 		vkMeshLoader::getVertexInputAttributeDescriptions(
-			vertexLayout, 
-			vertices.attributeDescriptions, 
+			vertexLayout,
+			vertices.attributeDescriptions,
 			VERTEX_BUFFER_BIND_ID);
 
 		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
@@ -738,7 +731,7 @@ public:
 		{
 			// Binding 0: Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-			descriptorSets.model,
+				descriptorSets.model,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.vsOffscreen.descriptor),
@@ -910,7 +903,7 @@ public:
 
 		pipelineCreateInfo.pStages = shadowStages.data();
 		pipelineCreateInfo.stageCount = static_cast<uint32_t>(shadowStages.size());
-		
+
 		// Shadow pass doesn't use any color attachments
 		colorBlendState.attachmentCount = 0;
 		colorBlendState.pAttachments = nullptr;
@@ -1064,7 +1057,7 @@ public:
 		vkUnmapMemory(mDevice, uniformData.uboShadowGS.memory);
 
 		uboFragmentLights.viewPos = glm::vec4(camera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);;
-	
+
 		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.fsLights.memory, 0, sizeof(uboFragmentLights), 0, (void **)&pData));
 		memcpy(pData, &uboFragmentLights, sizeof(uboFragmentLights));
 		vkUnmapMemory(mDevice, uniformData.fsLights.memory);
@@ -1177,4 +1170,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Texture loading (and display) example (including mip maps)
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +26,7 @@ struct Vertex {
 	float normal[3];
 };
 
-class VulkanExample : public VulkanBase
+class VkTexture : public VulkanBase
 {
 public:
 	// Contains all Vulkan objects that are required to store and use a texture
@@ -80,7 +74,7 @@ public:
 	VkDescriptorSet mDescriptorSet;
 	VkDescriptorSetLayout mDescriptorSetLayout;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkTexture() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -2.5f;
 		rotation = { 0.0f, 15.0f, 0.0f };
@@ -88,7 +82,7 @@ public:
 		enableTextOverlay = true;
 	}
 
-	~VulkanExample()
+	~VkTexture()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -138,7 +132,7 @@ public:
 			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 			break;
 		}
-		
+
 		// Target layouts (new)
 		switch (newImageLayout)
 		{
@@ -165,9 +159,9 @@ public:
 		// Put barrier inside setup command buffer
 		vkCmdPipelineBarrier(
 			cmdBuffer,
-			srcStageFlags, 
-			destStageFlags, 
-			VK_FLAGS_NONE, 
+			srcStageFlags,
+			destStageFlags,
+			VK_FLAGS_NONE,
 			0, nullptr,
 			0, nullptr,
 			1, &imageMemoryBarrier);
@@ -231,7 +225,7 @@ public:
 			// This buffer is used as a transfer source for the buffer copy
 			bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 			bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			
+
 			VK_CHECK_RESULT(vkCreateBuffer(mDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
 			// Get memory requirements for the staging buffer (alignment, memory type bits)
@@ -409,7 +403,7 @@ public:
 			mTexture.image = mappableImage;
 			mTexture.deviceMemory = mappableMemory;
 			mTexture.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			
+
 			VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 			// Setup image memory barrier transfer image to shader read layout
@@ -426,9 +420,9 @@ public:
 			subresourceRange.layerCount = 1;
 
 			setImageLayout(
-				copyCmd, 
+				copyCmd,
 				mTexture.image,
-				VK_IMAGE_ASPECT_COLOR_BIT, 
+				VK_IMAGE_ASPECT_COLOR_BIT,
 				VK_IMAGE_LAYOUT_PREINITIALIZED,
 				mTexture.imageLayout,
 				subresourceRange);
@@ -574,10 +568,10 @@ public:
 		// Setup vertices for a single uv-mapped quad made from two triangles
 		std::vector<Vertex> vertices =
 		{
-			{ {  1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
-			{ { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
-			{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
-			{ {  1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
+			{ { 1.0f,  1.0f, 0.0f },{ 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+			{ { -1.0f,  1.0f, 0.0f },{ 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+			{ { -1.0f, -1.0f, 0.0f },{ 0.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+			{ { 1.0f, -1.0f, 0.0f },{ 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
 		};
 
 		// Setup indices
@@ -608,8 +602,8 @@ public:
 		mVertices.bindingDescriptions.resize(1);
 		mVertices.bindingDescriptions[0] =
 			vkTools::initializers::vertexInputBindingDescription(
-				VERTEX_BUFFER_BIND_ID, 
-				sizeof(Vertex), 
+				VERTEX_BUFFER_BIND_ID,
+				sizeof(Vertex),
 				VK_VERTEX_INPUT_RATE_VERTEX);
 
 		// Attribute descriptions
@@ -621,7 +615,7 @@ public:
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
-				offsetof(Vertex, pos));			
+				offsetof(Vertex, pos));
 		// Location 1 : Texture coordinates
 		mVertices.attributeDescriptions[1] =
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -653,7 +647,7 @@ public:
 			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
 		};
 
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = 
+		VkDescriptorPoolCreateInfo descriptorPoolInfo =
 			vkTools::initializers::descriptorPoolCreateInfo(
 				static_cast<uint32_t>(poolSizes.size()),
 				poolSizes.data(),
@@ -664,21 +658,21 @@ public:
 
 	void setupDescriptorSetLayout()
 	{
-		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = 
+		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::descriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
-				VK_SHADER_STAGE_VERTEX_BIT, 
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Fragment shader image sampler
 			vkTools::initializers::descriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				VK_SHADER_STAGE_FRAGMENT_BIT, 
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				VK_SHADER_STAGE_FRAGMENT_BIT,
 				1)
 		};
 
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = 
+		VkDescriptorSetLayoutCreateInfo descriptorLayout =
 			vkTools::initializers::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
@@ -695,7 +689,7 @@ public:
 
 	void setupDescriptorSet()
 	{
-		VkDescriptorSetAllocateInfo allocInfo = 
+		VkDescriptorSetAllocateInfo allocInfo =
 			vkTools::initializers::descriptorSetAllocateInfo(
 				descriptorPool,
 				&mDescriptorSetLayout,
@@ -707,15 +701,15 @@ public:
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-				mDescriptorSet, 
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
-				0, 
+				mDescriptorSet,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				0,
 				&mUniformBufferVS.descriptor),
 			// Binding 1 : Fragment shader texture sampler
 			vkTools::initializers::writeDescriptorSet(
-				mDescriptorSet, 
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				1, 
+				mDescriptorSet,
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				1,
 				&mTexture.descriptor)
 		};
 
@@ -744,7 +738,7 @@ public:
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
 			vkTools::initializers::pipelineColorBlendStateCreateInfo(
-				1, 
+				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
@@ -772,7 +766,7 @@ public:
 				0);
 
 		// Load shaders
-		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages;
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/texture/texture.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/texture/texture.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -836,8 +830,8 @@ public:
 		setupVertexDescriptions();
 		prepareUniformBuffers();
 		loadTexture(
-			getAssetPath() + "textures/pattern_02_bc2.ktx", 
-			VK_FORMAT_BC2_UNORM_BLOCK, 
+			getAssetPath() + "textures/pattern_02_bc2.ktx",
+			VK_FORMAT_BC2_UNORM_BLOCK,
 			false);
 		setupDescriptorSetLayout();
 		preparePipelines();
@@ -901,4 +895,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

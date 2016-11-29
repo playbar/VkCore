@@ -147,6 +147,48 @@
     <ClInclude Include="VkTexturemipmapgen.hpp">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="VkTexturecubemap.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTextureArray.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTexture3d.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTexture.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTessellation.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTerraintessellation.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkDisplacement.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkDeferredShadows.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkDeferredMultisampling.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkDeferred.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkRaytracing.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkComputeShader.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkComputeParticles.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkComputecullandlod.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vulkanandroid.cpp">

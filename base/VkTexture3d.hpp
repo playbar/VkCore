@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - 3D texture loading (and generation using perlin noise) example
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,24 +29,23 @@ struct Vertex {
 	float normal[3];
 };
 
-// Translation of Ken Perlin's JAVA implementation (http://mrl.nyu.edu/~perlin/noise/)
 template <typename T>
 class PerlinNoise
 {
 private:
 	uint32_t permutations[512];
-	T fade(T t) 
-	{ 
-		return t * t * t * (t * (t * (T)6 - (T)15) + (T)10); 
+	T fade(T t)
+	{
+		return t * t * t * (t * (t * (T)6 - (T)15) + (T)10);
 	}
-	T lerp(T t, T a, T b) 
-	{ 
-		return a + t * (b - a); 
+	T lerp(T t, T a, T b)
+	{
+		return a + t * (b - a);
 	}
-	T grad(int hash, T x, T y, T z) 
+	T grad(int hash, T x, T y, T z)
 	{
 		// Convert LO 4 bits of hash code into 12 gradient directions
-		int h = hash & 15;                     
+		int h = hash & 15;
 		T u = h < 8 ? x : y;
 		T v = h < 4 ? y : h == 12 || h == 14 ? x : z;
 		return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
@@ -70,7 +63,7 @@ public:
 		for (uint32_t i = 0; i < 256; i++)
 		{
 			permutations[i] = permutations[256 + i] = plookup[i];
-		}		
+		}
 	}
 	T noise(T x, T y, T z)
 	{
@@ -97,7 +90,7 @@ public:
 		uint32_t BB = permutations[B + 1] + Z;
 
 		// And add blended results for 8 corners of the cube;
-		T res = lerp(w, lerp(v, 
+		T res = lerp(w, lerp(v,
 			lerp(u, grad(permutations[AA], x, y, z), grad(permutations[BA], x - 1, y, z)), lerp(u, grad(permutations[AB], x, y - 1, z), grad(permutations[BB], x - 1, y - 1, z))),
 			lerp(v, lerp(u, grad(permutations[AA + 1], x, y, z - 1), grad(permutations[BA + 1], x - 1, y, z - 1)), lerp(u, grad(permutations[AB + 1], x, y - 1, z - 1), grad(permutations[BB + 1], x - 1, y - 1, z - 1))));
 		return res;
@@ -110,13 +103,13 @@ class FractalNoise
 {
 private:
 	PerlinNoise<float> perlinNoise;
-	uint32_t octaves; 
+	uint32_t octaves;
 	T frequency;
 	T amplitude;
 	T persistence;
 public:
 
-	FractalNoise(const PerlinNoise<T> &perlinNoise) 
+	FractalNoise(const PerlinNoise<T> &perlinNoise)
 	{
 		this->perlinNoise = perlinNoise;
 		octaves = 6;
@@ -128,7 +121,7 @@ public:
 		T sum = 0;
 		T frequency = (T)1;
 		T amplitude = (T)1;
-		T max = (T)0;  
+		T max = (T)0;
 		for (int32_t i = 0; i < octaves; i++)
 		{
 			sum += perlinNoise.noise(x * frequency, y * frequency, z * frequency) * amplitude;
@@ -142,7 +135,7 @@ public:
 	}
 };
 
-class VulkanExample : public VulkanBase
+class VkTexture3d : public VulkanBase
 {
 public:
 	// Contains all Vulkan objects that are required to store and use a 3D texture
@@ -191,7 +184,7 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkTexture3d() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -2.5f;
 		rotation = { 0.0f, 15.0f, 0.0f };
@@ -200,7 +193,7 @@ public:
 		srand(std::time(0));
 	}
 
-	~VulkanExample()
+	~VkTexture3d()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -365,7 +358,7 @@ public:
 		VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
 		bufferCreateInfo.size = texMemSize;
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;			
+		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		VK_CHECK_RESULT(vkCreateBuffer(mDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
 		// Allocate host visible memory for data upload
@@ -421,7 +414,7 @@ public:
 			stagingBuffer,
 			texture.image,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1, 
+			1,
 			&bufferCopyRegion);
 
 		// Change texture image layout to shader read after all mip levels have been copied
@@ -521,10 +514,10 @@ public:
 		// Setup vertices for a single uv-mapped quad made from two triangles
 		std::vector<Vertex> vertices =
 		{
-			{ {  1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
-			{ { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
-			{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
-			{ {  1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
+			{ { 1.0f,  1.0f, 0.0f },{ 1.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+			{ { -1.0f,  1.0f, 0.0f },{ 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f } },
+			{ { -1.0f, -1.0f, 0.0f },{ 0.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+			{ { 1.0f, -1.0f, 0.0f },{ 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
 		};
 
 		// Setup indices
@@ -555,8 +548,8 @@ public:
 		vertices.inputBinding.resize(1);
 		vertices.inputBinding[0] =
 			vkTools::initializers::vertexInputBindingDescription(
-				VERTEX_BUFFER_BIND_ID, 
-				sizeof(Vertex), 
+				VERTEX_BUFFER_BIND_ID,
+				sizeof(Vertex),
 				VK_VERTEX_INPUT_RATE_VERTEX);
 
 		// Attribute descriptions
@@ -568,7 +561,7 @@ public:
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
-				offsetof(Vertex, pos));			
+				offsetof(Vertex, pos));
 		// Location 1 : Texture coordinates
 		vertices.inputAttributes[1] =
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -600,7 +593,7 @@ public:
 			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
 		};
 
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = 
+		VkDescriptorPoolCreateInfo descriptorPoolInfo =
 			vkTools::initializers::descriptorPoolCreateInfo(
 				static_cast<uint32_t>(poolSizes.size()),
 				poolSizes.data(),
@@ -611,21 +604,21 @@ public:
 
 	void setupDescriptorSetLayout()
 	{
-		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = 
+		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::descriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
-				VK_SHADER_STAGE_VERTEX_BIT, 
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Fragment shader image sampler
 			vkTools::initializers::descriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				VK_SHADER_STAGE_FRAGMENT_BIT, 
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				VK_SHADER_STAGE_FRAGMENT_BIT,
 				1)
 		};
 
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = 
+		VkDescriptorSetLayoutCreateInfo descriptorLayout =
 			vkTools::initializers::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
@@ -642,7 +635,7 @@ public:
 
 	void setupDescriptorSet()
 	{
-		VkDescriptorSetAllocateInfo allocInfo = 
+		VkDescriptorSetAllocateInfo allocInfo =
 			vkTools::initializers::descriptorSetAllocateInfo(
 				descriptorPool,
 				&descriptorSetLayout,
@@ -654,15 +647,15 @@ public:
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-				descriptorSet, 
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
-				0, 
+				descriptorSet,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				0,
 				&uniformBufferVS.descriptor),
 			// Binding 1 : Fragment shader texture sampler
 			vkTools::initializers::writeDescriptorSet(
-				descriptorSet, 
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				1, 
+				descriptorSet,
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				1,
 				&texture.descriptor)
 		};
 
@@ -691,7 +684,7 @@ public:
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
 			vkTools::initializers::pipelineColorBlendStateCreateInfo(
-				1, 
+				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
@@ -719,7 +712,7 @@ public:
 				0);
 
 		// Load shaders
-		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages;
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/texture3d/texture3d.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/texture3d/texture3d.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -849,4 +842,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

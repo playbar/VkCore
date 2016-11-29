@@ -1,11 +1,4 @@
-/*
-* Vulkan Example - Compute shader culling and LOD using indirect rendering
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,16 +31,16 @@
 
 #define MAX_LOD_LEVEL 5
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+class VkComputecullandlod : public VulkanBase
 {
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR
-};
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR
+	};
 
-class VulkanExample : public VulkanBase
-{
 public:
 	bool fixedFrustum = false;
 
@@ -119,7 +112,7 @@ public:
 
 	uint32_t objectCount = 0;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkComputecullandlod() : VulkanBase(ENABLE_VALIDATION)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Compute cull and lod";
@@ -130,7 +123,7 @@ public:
 		memset(&indirectStats, 0, sizeof(indirectStats));
 	}
 
-	~VulkanExample()
+	~VkComputecullandlod()
 	{
 		vkDestroyPipeline(mDevice, pipelines.plants, nullptr);
 		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
@@ -195,7 +188,7 @@ public:
 			vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.plants);
 			vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &meshes.lodObject.vertices.buf, offsets);
 			vkCmdBindVertexBuffers(mDrawCmdBuffers[i], INSTANCE_BUFFER_BIND_ID, 1, &instanceBuffer.buffer, offsets);
-			
+
 			vkCmdBindIndexBuffer(mDrawCmdBuffers[i], meshes.lodObject.indices.buf, 0, VK_INDEX_TYPE_UINT32);
 
 			if (mVulkanDevice->mFeatures.multiDrawIndirect)
@@ -209,7 +202,7 @@ public:
 				{
 					vkCmdDrawIndexedIndirect(mDrawCmdBuffers[i], indirectCommandsBuffer.buffer, j * sizeof(VkDrawIndexedIndirectCommand), 1, sizeof(VkDrawIndexedIndirectCommand));
 				}
-			}	
+			}
 
 			vkCmdEndRenderPass(mDrawCmdBuffers[i]);
 
@@ -231,7 +224,7 @@ public:
 			vkTools::initializers::vertexInputBindingDescription(VERTEX_BUFFER_BIND_ID, vkMeshLoader::vertexSize(vertexLayout), VK_VERTEX_INPUT_RATE_VERTEX);
 
 		// Binding 1: Per instance
-		vertices.bindingDescriptions[1] = 
+		vertices.bindingDescriptions[1] =
 			vkTools::initializers::vertexInputBindingDescription(INSTANCE_BUFFER_BIND_ID, sizeof(InstanceData), VK_VERTEX_INPUT_RATE_INSTANCE);
 
 		// Attribute descriptions
@@ -246,7 +239,7 @@ public:
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				0)
-			);
+		);
 		// Location 1 : Normal
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -254,7 +247,7 @@ public:
 				1,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				sizeof(float) * 3)
-			);
+		);
 		// Location 2 : Color
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -262,19 +255,19 @@ public:
 				2,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				sizeof(float) * 6)
-			);
+		);
 
 		// Instanced attributes
 		// Location 4: Position
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
 				INSTANCE_BUFFER_BIND_ID, 4, VK_FORMAT_R32G32B32_SFLOAT, offsetof(InstanceData, pos))
-			);
+		);
 		// Location 5: Scale
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
 				INSTANCE_BUFFER_BIND_ID, 5, VK_FORMAT_R32_SFLOAT, offsetof(InstanceData, scale))
-			);
+		);
 
 		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
 		vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
@@ -293,10 +286,10 @@ public:
 		VkBufferMemoryBarrier bufferBarrier = vkTools::initializers::bufferMemoryBarrier();
 		bufferBarrier.buffer = indirectCommandsBuffer.buffer;
 		bufferBarrier.size = indirectCommandsBuffer.descriptor.range;
-		bufferBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;						
-		bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;																																																								
-		bufferBarrier.srcQueueFamilyIndex = mVulkanDevice->queueFamilyIndices.graphics;			
-		bufferBarrier.dstQueueFamilyIndex = mVulkanDevice->queueFamilyIndices.compute;			
+		bufferBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+		bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+		bufferBarrier.srcQueueFamilyIndex = mVulkanDevice->queueFamilyIndices.graphics;
+		bufferBarrier.dstQueueFamilyIndex = mVulkanDevice->queueFamilyIndices.compute;
 
 		vkCmdPipelineBarrier(
 			compute.commandBuffer,
@@ -395,7 +388,7 @@ public:
 		{
 			// Binding 0: Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-			descriptorSet,
+				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.scene.descriptor),
@@ -854,5 +847,3 @@ public:
 		}
 	}
 };
-
-VULKAN_EXAMPLE_MAIN()

@@ -21,7 +21,14 @@
     <ClInclude Include="VDeleter.hpp" />
     <ClInclude Include="VkBloom.hpp" />
     <ClInclude Include="VkCamera.hpp" />
+    <ClInclude Include="VkComputecullandlod.hpp" />
+    <ClInclude Include="VkComputeParticles.hpp" />
+    <ClInclude Include="VkComputeShader.hpp" />
     <ClInclude Include="VkDebugMarker.hpp" />
+    <ClInclude Include="VkDeferred.hpp" />
+    <ClInclude Include="VkDeferredMultisampling.hpp" />
+    <ClInclude Include="VkDeferredShadows.hpp" />
+    <ClInclude Include="VkDisplacement.hpp" />
     <ClInclude Include="VkDistancefieldfonts.hpp" />
     <ClInclude Include="VkGears.hpp" />
     <ClInclude Include="VkGeometryShader.hpp" />
@@ -37,6 +44,7 @@
     <ClInclude Include="VkPipelines.hpp" />
     <ClInclude Include="VkPushConstants.hpp" />
     <ClInclude Include="VkRadialBlur.hpp" />
+    <ClInclude Include="VkRaytracing.hpp" />
     <ClInclude Include="VkScene.hpp" />
     <ClInclude Include="VkSceneRendering.hpp" />
     <ClInclude Include="VkShadowMapping.hpp" />
@@ -45,7 +53,13 @@
     <ClInclude Include="VkSphericalenvmapping.hpp" />
     <ClInclude Include="VkSsao.hpp" />
     <ClInclude Include="VkSubPasses.hpp" />
+    <ClInclude Include="VkTerraintessellation.hpp" />
+    <ClInclude Include="VkTessellation.hpp" />
     <ClInclude Include="VkTextOverLay.hpp" />
+    <ClInclude Include="VkTexture.hpp" />
+    <ClInclude Include="VkTexture3d.hpp" />
+    <ClInclude Include="VkTextureArray.hpp" />
+    <ClInclude Include="VkTexturecubemap.hpp" />
     <ClInclude Include="VkTexturemipmapgen.hpp" />
     <ClInclude Include="VkTexturesparseresidency.hpp" />
     <ClInclude Include="VkTriangle.hpp" />

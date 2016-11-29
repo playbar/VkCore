@@ -1,12 +1,4 @@
-/*
-* Vulkan Example - Attraction based compute shader particle system
-*
-* Updated compute shader by Lukas Bergdoll (https://github.com/Voultapher)
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +24,7 @@
 #define PARTICLE_COUNT 256 * 1024
 #endif
 
-class VulkanExample : public VulkanBase
+class VkComputeParticles : public VulkanBase
 {
 public:
 	float timer = 0.0f;
@@ -85,13 +77,13 @@ public:
 		glm::vec4 gradientPos;						// Texture coordiantes for the gradient ramp map
 	};
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkComputeParticles() : VulkanBase(ENABLE_VALIDATION)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Compute shader particle system";
 	}
 
-	~VulkanExample()
+	~VkComputeParticles()
 	{
 		// Graphics
 		vkDestroyPipeline(mDevice, graphics.pipeline, nullptr);
@@ -186,8 +178,8 @@ public:
 		bufferBarrier.size = compute.storageBuffer.descriptor.range;
 		bufferBarrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;						// Vertex shader invocations have finished reading from the buffer
 		bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;								// Compute shader wants to write to the buffer
-		// Compute and graphics queue may have different queue families (see VulkanDevice::createLogicalDevice)
-		// For the barrier to work across different queues, we need to set their family indices
+																								// Compute and graphics queue may have different queue families (see VulkanDevice::createLogicalDevice)
+																								// For the barrier to work across different queues, we need to set their family indices
 		bufferBarrier.srcQueueFamilyIndex = mVulkanDevice->queueFamilyIndices.graphics;			// Required as compute and graphics queue may have different families
 		bufferBarrier.dstQueueFamilyIndex = mVulkanDevice->queueFamilyIndices.compute;			// Required as compute and graphics queue may have different families
 
@@ -433,7 +425,7 @@ public:
 
 		// Rendering pipeline
 		// Load shaders
-		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages;
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/computeparticles/particle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/computeparticles/particle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -503,14 +495,14 @@ public:
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice,	&descriptorLayout, nullptr,	&compute.descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &compute.descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&compute.descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr,	&compute.pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &compute.pipelineLayout));
 
 		VkDescriptorSetAllocateInfo allocInfo =
 			vkTools::initializers::descriptorSetAllocateInfo(
@@ -555,7 +547,7 @@ public:
 			vkTools::initializers::commandBufferAllocateInfo(
 				compute.commandPool,
 				VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-				1);	
+				1);
 
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &cmdBufAllocateInfo, &compute.commandBuffer));
 
@@ -586,7 +578,7 @@ public:
 	void updateUniformBuffers()
 	{
 		compute.ubo.deltaT = frameTimer * 2.5f;
-		if (animate) 
+		if (animate)
 		{
 			compute.ubo.destX = sin(glm::radians(timer * 360.0f)) * 0.75f;
 			compute.ubo.destY = 0.0f;
@@ -658,7 +650,7 @@ public:
 					timer = 0.f;
 			}
 		}
-		
+
 		updateUniformBuffers();
 	}
 
@@ -678,5 +670,3 @@ public:
 		}
 	}
 };
-
-VULKAN_EXAMPLE_MAIN()

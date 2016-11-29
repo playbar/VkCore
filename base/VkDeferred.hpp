@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Multi sampling with explicit resolve for deferred shading example
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,25 +16,27 @@
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
-// todo: check if hardware supports sample number (or select max. supported)
-#define SAMPLE_COUNT VK_SAMPLE_COUNT_8_BIT
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-	vkMeshLoader::VERTEX_LAYOUT_TANGENT
-};
+// Texture properties
+#define TEX_DIM 2048
+#define TEX_FILTER VK_FILTER_LINEAR
 
-class VulkanExample : public VulkanBase
+// Offscreen frame buffer properties
+#define FB_DIM TEX_DIM
+
+class VkDeferred : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_TANGENT
+	};
 public:
 	bool debugDisplay = false;
-	bool useMSAA = true;
-	bool useSampleShading = true;
 
 	struct {
 		struct {
@@ -81,7 +77,6 @@ public:
 	struct {
 		Light lights[6];
 		glm::vec4 viewPos;
-		glm::ivec2 windowSize;
 	} uboFragmentLights;
 
 	struct {
@@ -91,15 +86,13 @@ public:
 	} uniformData;
 
 	struct {
-		VkPipeline deferred;				// Deferred lighting calculation
-		VkPipeline deferredNoMSAA;			// Deferred lighting calculation with explicit MSAA resolve
-		VkPipeline offscreen;				// (Offscreen) scene rendering (fill G-Buffers)
-		VkPipeline offscreenSampleShading;	// (Offscreen) scene rendering (fill G-Buffers) with sample shading rate enabled
-		VkPipeline debug;					// G-Buffers debug display
+		VkPipeline deferred;
+		VkPipeline offscreen;
+		VkPipeline debug;
 	} pipelines;
 
 	struct {
-		VkPipelineLayout deferred; 
+		VkPipelineLayout deferred;
 		VkPipelineLayout offscreen;
 	} pipelineLayouts;
 
@@ -120,12 +113,12 @@ public:
 	};
 	struct FrameBuffer {
 		int32_t width, height;
-		VkFramebuffer frameBuffer;		
+		VkFramebuffer frameBuffer;
 		FrameBufferAttachment position, normal, albedo;
 		FrameBufferAttachment depth;
 		VkRenderPass renderPass;
 	} offScreenFrameBuf;
-	
+
 	// One sampler for the frame buffer color attachments
 	VkSampler colorSampler;
 
@@ -134,7 +127,7 @@ public:
 	// Semaphore used to synchronize between offscreen and final scene rendering
 	VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkDeferred() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -8.0f;
 		rotation = { 0.0f, 0.0f, 0.0f };
@@ -148,10 +141,9 @@ public:
 		camera.position = { 2.15f, 0.3f, -8.75f };
 		camera.setRotation(glm::vec3(-0.75f, 12.5f, 0.0f));
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
-		paused = true;
 	}
 
-	~VulkanExample()
+	~VkDeferred()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -181,9 +173,7 @@ public:
 		vkDestroyFramebuffer(mDevice, offScreenFrameBuf.frameBuffer, nullptr);
 
 		vkDestroyPipeline(mDevice, pipelines.deferred, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.deferredNoMSAA, nullptr);
 		vkDestroyPipeline(mDevice, pipelines.offscreen, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.offscreenSampleShading, nullptr);
 		vkDestroyPipeline(mDevice, pipelines.debug, nullptr);
 
 		vkDestroyPipelineLayout(mDevice, pipelineLayouts.deferred, nullptr);
@@ -194,7 +184,7 @@ public:
 		// Meshes
 		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.model);
 		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.floor);
-		//vkMeshLoader::freeMeshBufferResources(device, &meshes.quad);
+		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.quad);
 
 		// Uniform buffers
 		vkTools::destroyUniformData(mDevice, &uniformData.vsOffscreen);
@@ -215,7 +205,7 @@ public:
 
 	// Create a frame buffer attachment
 	void createAttachment(
-		VkFormat format,  
+		VkFormat format,
 		VkImageUsageFlagBits usage,
 		FrameBufferAttachment *attachment,
 		VkCommandBuffer layoutCmd)
@@ -246,7 +236,7 @@ public:
 		image.extent.depth = 1;
 		image.mipLevels = 1;
 		image.arrayLayers = 1;
-		image.samples = SAMPLE_COUNT;
+		image.samples = VK_SAMPLE_COUNT_1_BIT;
 		image.tiling = VK_IMAGE_TILING_OPTIMAL;
 		image.usage = usage | VK_IMAGE_USAGE_SAMPLED_BIT;
 
@@ -259,7 +249,7 @@ public:
 		memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &attachment->mem));
 		VK_CHECK_RESULT(vkBindImageMemory(mDevice, attachment->image, attachment->mem, 0));
-		
+
 		VkImageViewCreateInfo imageView = vkTools::initializers::imageViewCreateInfo();
 		imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		imageView.format = format;
@@ -280,11 +270,8 @@ public:
 	{
 		VkCommandBuffer layoutCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
-		offScreenFrameBuf.width = this->width;
-		offScreenFrameBuf.height = this->height;
-
-		//offScreenFrameBuf.width = FB_DIM;
-		//offScreenFrameBuf.height = FB_DIM;
+		offScreenFrameBuf.width = FB_DIM;
+		offScreenFrameBuf.height = FB_DIM;
 
 		// Color attachments
 
@@ -332,7 +319,7 @@ public:
 		// Init attachment properties
 		for (uint32_t i = 0; i < 4; ++i)
 		{
-			attachmentDescs[i].samples = SAMPLE_COUNT;
+			attachmentDescs[i].samples = VK_SAMPLE_COUNT_1_BIT;
 			attachmentDescs[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			attachmentDescs[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			attachmentDescs[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -381,8 +368,8 @@ public:
 		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-		dependencies[1].srcSubpass = 0;													
-		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;								
+		dependencies[1].srcSubpass = 0;
+		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
 		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -397,10 +384,10 @@ public:
 		renderPassInfo.pSubpasses = &subpass;
 		renderPassInfo.dependencyCount = 2;
 		renderPassInfo.pDependencies = dependencies.data();
-	
+
 		VK_CHECK_RESULT(vkCreateRenderPass(mDevice, &renderPassInfo, nullptr, &offScreenFrameBuf.renderPass));
-	
-		std::array<VkImageView,4> attachments;
+
+		std::array<VkImageView, 4> attachments;
 		attachments[0] = offScreenFrameBuf.position.view;
 		attachments[1] = offScreenFrameBuf.normal.view;
 		attachments[2] = offScreenFrameBuf.albedo.view;
@@ -448,13 +435,14 @@ public:
 		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
 
 		// Clear values for all attachments written in the fragment sahder
-		std::array<VkClearValue,4> clearValues;
-		clearValues[0].color = clearValues[1].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+		std::array<VkClearValue, 4> clearValues;
+		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+		clearValues[1].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 		clearValues[2].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 		clearValues[3].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
-		renderPassBeginInfo.renderPass =  offScreenFrameBuf.renderPass;
+		renderPassBeginInfo.renderPass = offScreenFrameBuf.renderPass;
 		renderPassBeginInfo.framebuffer = offScreenFrameBuf.frameBuffer;
 		renderPassBeginInfo.renderArea.extent.width = offScreenFrameBuf.width;
 		renderPassBeginInfo.renderArea.extent.height = offScreenFrameBuf.height;
@@ -471,7 +459,7 @@ public:
 		VkRect2D scissor = vkTools::initializers::rect2D(offScreenFrameBuf.width, offScreenFrameBuf.height, 0, 0);
 		vkCmdSetScissor(offScreenCmdBuffer, 0, 1, &scissor);
 
-		vkCmdBindPipeline(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, useSampleShading ? pipelines.offscreenSampleShading : pipelines.offscreen);
+		vkCmdBindPipeline(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.offscreen);
 
 		VkDeviceSize offsets[1] = { 0 };
 
@@ -492,6 +480,15 @@ public:
 		VK_CHECK_RESULT(vkEndCommandBuffer(offScreenCmdBuffer));
 	}
 
+	void loadTextures()
+	{
+		textureLoader->loadTexture(getAssetPath() + "models/armor/colormap.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.model.colorMap);
+		textureLoader->loadTexture(getAssetPath() + "models/armor/normalmap.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.model.normalMap);
+
+		textureLoader->loadTexture(getAssetPath() + "textures/pattern_35_bc3.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.floor.colorMap);
+		textureLoader->loadTexture(getAssetPath() + "textures/pattern_35_normalmap_bc3.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.floor.normalMap);
+	}
+
 	void reBuildCommandBuffers()
 	{
 		if (!checkCommandBuffers())
@@ -500,7 +497,6 @@ public:
 			createCommandBuffers();
 		}
 		buildCommandBuffers();
-		buildDeferredCommandBuffer();
 	}
 
 	void buildCommandBuffers()
@@ -508,7 +504,7 @@ public:
 		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
-		clearValues[0].color = { { 1.0f, 1.0f, 1.0f, 0.0f } };
+		clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
@@ -541,20 +537,20 @@ public:
 			if (debugDisplay)
 			{
 				vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.debug);
-				vkCmdDraw(mDrawCmdBuffers[i], 3, 1, 0, 0);
+				vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &meshes.quad.vertices.buf, offsets);
+				vkCmdBindIndexBuffer(mDrawCmdBuffers[i], meshes.quad.indices.buf, 0, VK_INDEX_TYPE_UINT32);
+				vkCmdDrawIndexed(mDrawCmdBuffers[i], meshes.quad.indexCount, 1, 0, 0, 1);
 				// Move viewport to display final composition in lower right corner
 				viewport.x = viewport.width * 0.5f;
 				viewport.y = viewport.height * 0.5f;
-				viewport.width = (float)width * 0.5f;
-				viewport.height = (float)height * 0.5f;
 				vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 			}
 
-			camera.updateAspectRatio((float)viewport.width / (float)viewport.height);
-
 			// Final composition as full screen quad
-			vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, useMSAA ? pipelines.deferred : pipelines.deferredNoMSAA);
-			vkCmdDraw(mDrawCmdBuffers[i], 3, 1, 0, 0);
+			vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.deferred);
+			vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &meshes.quad.vertices.buf, offsets);
+			vkCmdBindIndexBuffer(mDrawCmdBuffers[i], meshes.quad.indices.buf, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(mDrawCmdBuffers[i], 6, 1, 0, 0, 1);
 
 			vkCmdEndRenderPass(mDrawCmdBuffers[i]);
 
@@ -562,21 +558,73 @@ public:
 		}
 	}
 
-	void loadAssets()
+	void loadMeshes()
 	{
-		textureLoader->loadTexture(getAssetPath() + "models/armor/colormap.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.model.colorMap);
-		textureLoader->loadTexture(getAssetPath() + "models/armor/normalmap.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.model.normalMap);
-
-		textureLoader->loadTexture(getAssetPath() + "textures/pattern_57_diffuse_bc3.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.floor.colorMap);
-		textureLoader->loadTexture(getAssetPath() + "textures/pattern_57_normal_bc3.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.floor.normalMap);
-
-		loadMesh(getAssetPath() + "models/armor/armor.dae", &meshes.model, vertexLayout, 1.0f);		
+		loadMesh(getAssetPath() + "models/armor/armor.dae", &meshes.model, vertexLayout, 1.0f);
 
 		vkMeshLoader::MeshCreateInfo meshCreateInfo;
-		meshCreateInfo.scale = glm::vec3(15.0f);
-		meshCreateInfo.uvscale = glm::vec2(8.0f, 8.0f);
-		meshCreateInfo.center = glm::vec3(0.0f, 2.3f, 0.0f);
-		loadMesh(getAssetPath() + "models/openbox.dae", &meshes.floor, vertexLayout, &meshCreateInfo);
+		meshCreateInfo.scale = glm::vec3(2.0f);
+		meshCreateInfo.uvscale = glm::vec2(4.0f);
+		meshCreateInfo.center = glm::vec3(0.0f, 2.35f, 0.0f);
+		loadMesh(getAssetPath() + "models/plane.obj", &meshes.floor, vertexLayout, &meshCreateInfo);
+	}
+
+	void generateQuads()
+	{
+		// Setup vertices for multiple screen aligned quads
+		// Used for displaying final result and debug 
+		struct Vertex {
+			float pos[3];
+			float uv[2];
+			float col[3];
+			float normal[3];
+			float tangent[3];
+		};
+
+		std::vector<Vertex> vertexBuffer;
+
+		float x = 0.0f;
+		float y = 0.0f;
+		for (uint32_t i = 0; i < 3; i++)
+		{
+			// Last component of normal is used for debug display sampler index
+			vertexBuffer.push_back({ { x + 1.0f, y + 1.0f, 0.0f },{ 1.0f, 1.0f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, (float)i } });
+			vertexBuffer.push_back({ { x,      y + 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, (float)i } });
+			vertexBuffer.push_back({ { x,      y,      0.0f },{ 0.0f, 0.0f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, (float)i } });
+			vertexBuffer.push_back({ { x + 1.0f, y,      0.0f },{ 1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, (float)i } });
+			x += 1.0f;
+			if (x > 1.0f)
+			{
+				x = 0.0f;
+				y += 1.0f;
+			}
+		}
+
+		createBuffer(
+			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			vertexBuffer.size() * sizeof(Vertex),
+			vertexBuffer.data(),
+			&meshes.quad.vertices.buf,
+			&meshes.quad.vertices.mem);
+
+		// Setup indices
+		std::vector<uint32_t> indexBuffer = { 0,1,2, 2,3,0 };
+		for (uint32_t i = 0; i < 3; ++i)
+		{
+			uint32_t indices[6] = { 0,1,2, 2,3,0 };
+			for (auto index : indices)
+			{
+				indexBuffer.push_back(i * 4 + index);
+			}
+		}
+		meshes.quad.indexCount = static_cast<uint32_t>(indexBuffer.size());
+
+		createBuffer(
+			VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			indexBuffer.size() * sizeof(uint32_t),
+			indexBuffer.data(),
+			&meshes.quad.indices.buf,
+			&meshes.quad.indices.mem);
 	}
 
 	void setupVertexDescriptions()
@@ -736,7 +784,7 @@ public:
 		writeDescriptorSets = {
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-			descriptorSet,
+				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.vsFullScreen.descriptor),
@@ -772,7 +820,7 @@ public:
 
 		// Model
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.model));
-		writeDescriptorSets = 
+		writeDescriptorSets =
 		{
 			// Binding 0: Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
@@ -848,7 +896,7 @@ public:
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
 			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
-				VK_TRUE, 
+				VK_TRUE,
 				VK_TRUE,
 				VK_COMPARE_OP_LESS_OR_EQUAL);
 
@@ -873,12 +921,16 @@ public:
 		// Final fullscreen pass pipeline
 		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferred/deferred.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferred/deferred.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
 			vkTools::initializers::pipelineCreateInfo(
 				pipelineLayouts.deferred,
 				mRenderPass,
 				0);
 
+		pipelineCreateInfo.pVertexInputState = &vertices.inputState;
 		pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
 		pipelineCreateInfo.pRasterizationState = &rasterizationState;
 		pipelineCreateInfo.pColorBlendState = &colorBlendState;
@@ -889,52 +941,16 @@ public:
 		pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		// Deferred
-
-		// Empty vertex input state, quads are generated by the vertex shader
-		VkPipelineVertexInputStateCreateInfo emptyInputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
-		pipelineCreateInfo.pVertexInputState = &emptyInputState;
-		pipelineCreateInfo.layout = pipelineLayouts.deferred;
-
-		// Use specialization constants to pass number of samples to the shader (used for MSAA resolve)
-		VkSpecializationMapEntry specializationEntry{};
-		specializationEntry.constantID = 0;
-		specializationEntry.offset = 0;
-		specializationEntry.size = sizeof(uint32_t);
-		
-		uint32_t specializationData = SAMPLE_COUNT;
-
-		VkSpecializationInfo specializationInfo;
-		specializationInfo.mapEntryCount = 1;
-		specializationInfo.pMapEntries = &specializationEntry;
-		specializationInfo.dataSize = sizeof(specializationData);
-		specializationInfo.pData = &specializationData;
-
-		// With MSAA
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling/deferred.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling/deferred.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		shaderStages[1].pSpecializationInfo = &specializationInfo;
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.deferred));
 
-		// No MSAA (1 sample)
-		specializationData = 1;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.deferredNoMSAA));
-
 		// Debug display pipeline
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling/debug.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling/debug.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferred/debug.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferred/debug.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.debug));
-		
-		// Offscreen scene rendering pipeline
-		pipelineCreateInfo.pVertexInputState = &vertices.inputState;
 
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredmultisampling/mrt.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredmultisampling/mrt.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-
-		//rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
-		//rasterizationState.lineWidth = 2.0f;
-		multisampleState.rasterizationSamples = SAMPLE_COUNT;
-		multisampleState.alphaToCoverageEnable = VK_TRUE;
+		// Offscreen pipeline
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferred/mrt.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferred/mrt.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		// Separate render pass
 		pipelineCreateInfo.renderPass = offScreenFrameBuf.renderPass;
@@ -955,10 +971,6 @@ public:
 		colorBlendState.pAttachments = blendAttachmentStates.data();
 
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.offscreen));
-
-		multisampleState.sampleShadingEnable = VK_TRUE;
-		multisampleState.minSampleShading = 0.25f;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.offscreenSampleShading));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -1010,7 +1022,7 @@ public:
 		if (debugDisplay)
 		{
 			uboVS.projection = glm::ortho(0.0f, 2.0f, 0.0f, 2.0f, -1.0f, 1.0f);
-		} 
+		}
 		else
 		{
 			uboVS.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
@@ -1076,7 +1088,7 @@ public:
 		uboFragmentLights.lights[0].position.z = cos(glm::radians(360.0f * timer)) * 5.0f;
 
 		uboFragmentLights.lights[1].position.x = -4.0f + sin(glm::radians(360.0f * timer) + 45.0f) * 2.0f;
-		uboFragmentLights.lights[1].position.z =  0.0f + cos(glm::radians(360.0f * timer) + 45.0f) * 2.0f;
+		uboFragmentLights.lights[1].position.z = 0.0f + cos(glm::radians(360.0f * timer) + 45.0f) * 2.0f;
 
 		uboFragmentLights.lights[2].position.x = 4.0f + sin(glm::radians(360.0f * timer)) * 2.0f;
 		uboFragmentLights.lights[2].position.z = 0.0f + cos(glm::radians(360.0f * timer)) * 2.0f;
@@ -1099,6 +1111,17 @@ public:
 	void draw()
 	{
 		VulkanBase::prepareFrame();
+
+		// The scene render command buffer has to wait for the offscreen
+		// rendering to be finished before we can use the framebuffer 
+		// color image for sampling during final rendering
+		// To ensure this we use a dedicated offscreen synchronization
+		// semaphore that will be signaled when offscreen renderin
+		// has been finished
+		// This is necessary as an implementation may start both
+		// command buffers at the same time, there is no guarantee
+		// that command buffers will be executed in the order they
+		// have been submitted by the application
 
 		// Offscreen rendering
 
@@ -1129,7 +1152,9 @@ public:
 	void prepare()
 	{
 		VulkanBase::prepare();
-		loadAssets();
+		loadTextures();
+		generateQuads();
+		loadMeshes();
 		setupVertexDescriptions();
 		prepareOffscreenFramebuffer();
 		prepareUniformBuffers();
@@ -1138,7 +1163,7 @@ public:
 		setupDescriptorPool();
 		setupDescriptorSet();
 		buildCommandBuffers();
-		buildDeferredCommandBuffer(); 
+		buildDeferredCommandBuffer();
 		prepared = true;
 	}
 
@@ -1153,7 +1178,6 @@ public:
 	virtual void viewChanged()
 	{
 		updateUniformBufferDeferredMatrices();
-		uboFragmentLights.windowSize = glm::ivec2(width, height);
 	}
 
 	void toggleDebugDisplay()
@@ -1167,15 +1191,7 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_F2:
-			useMSAA = !useMSAA;
-			reBuildCommandBuffers();
-			break;
-		case KEY_F3:
-			useSampleShading = !useSampleShading;
-			reBuildCommandBuffers();
-			break;
-		case KEY_F4:
+		case KEY_F1:
 		case GAMEPAD_BUTTON_A:
 			toggleDebugDisplay();
 			updateTextOverlay();
@@ -1188,9 +1204,7 @@ public:
 #if defined(__ANDROID__)
 		textOverlay->addText("Press \"Button A\" to toggle debug display", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
 #else
-		textOverlay->addText("MSAA (\"F2\"): " + std::to_string(useMSAA), 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
-		textOverlay->addText("Sample Shading (\"F3\"): " + std::to_string(useSampleShading), 5.0f, 105.0f, VulkanTextOverlay::alignLeft);
-		textOverlay->addText("G-Buffers (\"F4\")", 5.0f, 125.0f, VulkanTextOverlay::alignLeft);
+		textOverlay->addText("Press \"F1\" to toggle debug display", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
 #endif
 		// Render targets
 		if (debugDisplay)
@@ -1203,4 +1217,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

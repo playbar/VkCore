@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Dynamic terrain tessellation
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,16 +20,16 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-	vkMeshLoader::VERTEX_LAYOUT_UV
-};
 
-class VulkanExample : public VulkanBase
+class VkTerraintessellation : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_UV
+	};
 private:
 	struct {
 		vkTools::VulkanTexture heightMap;
@@ -112,7 +106,7 @@ public:
 	// View frustum passed to tessellation control shader for culling
 	vkTools::Frustum frustum;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkTerraintessellation() : VulkanBase(ENABLE_VALIDATION)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Dynamic terrain tessellation";
@@ -129,7 +123,7 @@ public:
 		//}
 	}
 
-	~VulkanExample()
+	~VkTerraintessellation()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -186,8 +180,8 @@ public:
 		VkQueryPoolCreateInfo queryPoolInfo = {};
 		queryPoolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
 		queryPoolInfo.queryType = VK_QUERY_TYPE_PIPELINE_STATISTICS;
-		queryPoolInfo.pipelineStatistics = 
-			VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT | 
+		queryPoolInfo.pipelineStatistics =
+			VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
 			VK_QUERY_PIPELINE_STATISTIC_TESSELLATION_EVALUATION_SHADER_INVOCATIONS_BIT;
 		queryPoolInfo.queryCount = 2;
 
@@ -272,7 +266,7 @@ public:
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
-		clearValues[0].color = { {0.2f, 0.2f, 0.2f, 0.0f} };
+		clearValues[0].color = { { 0.2f, 0.2f, 0.2f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
@@ -368,22 +362,22 @@ public:
 		};
 
 		~HeightMap()
-		{		
+		{
 			delete[] heightdata;
 		}
 
 		float getHeight(uint32_t x, uint32_t y)
 		{
 			glm::ivec2 rpos = glm::ivec2(x, y) * glm::ivec2(scale);
-			rpos.x = std::max(0, std::min(rpos.x, (int)dim-1));
-			rpos.y = std::max(0, std::min(rpos.y, (int)dim-1));
+			rpos.x = std::max(0, std::min(rpos.x, (int)dim - 1));
+			rpos.y = std::max(0, std::min(rpos.y, (int)dim - 1));
 			rpos /= glm::ivec2(scale);
 			return *(heightdata + (rpos.x + rpos.y * dim) * scale) / 65535.0f;
 		}
 	};
 
 	// Generate a terrain quad patch for feeding to the tessellation control shader
-	void generateTerrain() 
+	void generateTerrain()
 	{
 		struct Vertex {
 			glm::vec3 pos;
@@ -391,11 +385,11 @@ public:
 			glm::vec2 uv;
 		};
 
-		#define PATCH_SIZE 64
-		#define UV_SCALE 1.0f
+#define PATCH_SIZE 64
+#define UV_SCALE 1.0f
 
 		Vertex *vertices = new Vertex[PATCH_SIZE * PATCH_SIZE * 4];
-			
+
 		const float wx = 2.0f;
 		const float wy = 2.0f;
 
@@ -420,14 +414,14 @@ public:
 		for (auto x = 0; x < PATCH_SIZE; x++)
 		{
 			for (auto y = 0; y < PATCH_SIZE; y++)
-			{			
+			{
 				// Get height samples centered around current position
 				float heights[3][3];
 				for (auto hx = -1; hx <= 1; hx++)
 				{
 					for (auto hy = -1; hy <= 1; hy++)
 					{
-						heights[hx+1][hy+1] = heightMap.getHeight(x + hx, y + hy);
+						heights[hx + 1][hy + 1] = heightMap.getHeight(x + hx, y + hy);
 					}
 				}
 
@@ -439,7 +433,7 @@ public:
 				normal.z = heights[0][0] + 2.0f * heights[1][0] + heights[2][0] - heights[0][2] - 2.0f * heights[1][2] - heights[2][2];
 				// Calculate missing up component of the normal using the filtered x and y axis
 				// The first value controls the bump strength
-				normal.y = 0.25f * sqrt( 1.0f - normal.x * normal.x - normal.z * normal.z);
+				normal.y = 0.25f * sqrt(1.0f - normal.x * normal.x - normal.z * normal.z);
 
 				vertices[x + y * PATCH_SIZE].normal = glm::normalize(normal * glm::vec3(2.0f, 1.0f, 2.0f));
 			}
@@ -608,7 +602,7 @@ public:
 		{
 			// Binding 0 : Shared Tessellation shader ubo
 			vkTools::initializers::descriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
 				0),
 			// Binding 1 : Height map
@@ -662,9 +656,9 @@ public:
 		{
 			// Binding 0 : Shared tessellation shader ubo
 			vkTools::initializers::writeDescriptorSet(
-				descriptorSets.terrain, 
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
-				0, 
+				descriptorSets.terrain,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				0,
 				&uniformData.terrainTessellation.descriptor),
 			// Binding 1 : Displacement map
 			vkTools::initializers::writeDescriptorSet(
@@ -978,64 +972,3 @@ public:
 		textOverlay->addText("TE:" + std::to_string(pipelineStats[1]), width - 5.0f, 35.0f, VulkanTextOverlay::alignRight);
 	}
 };
-
-VulkanExample *vulkanExample;
-
-#if defined(_WIN32)
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleMessages(hWnd, uMsg, wParam, lParam);
-	}
-	return (DefWindowProc(hWnd, uMsg, wParam, lParam));
-}
-#elif defined(__linux__) && !defined(__ANDROID__) && !defined(_DIRECT2DISPLAY)
-static void handleEvent(const xcb_generic_event_t *event)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleEvent(event);
-	}
-}
-#endif
-
-// Main entry point
-#if defined(_WIN32)
-// Windows entry point
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
-#elif defined(__ANDROID__)
-// Android entry point
-void android_main(android_app* state)
-#elif defined(__linux__)
-// Linux entry point
-int main(const int argc, const char *argv[])
-#endif
-{
-#if defined(__ANDROID__)
-	// Removing this may cause the compiler to omit the main entry point 
-	// which would make the application crash at start
-	app_dummy();
-#endif
-	vulkanExample = new VulkanExample();
-#if defined(_WIN32)
-	vulkanExample->setupWindow(hInstance, WndProc);
-#elif defined(__ANDROID__)
-	// Attach vulkan example to global android application state
-	state->userData = vulkanExample;
-	state->onAppCmd = VulkanExample::handleAppCommand;
-	state->onInputEvent = VulkanExample::handleAppInput;
-	vulkanExample->androidApp = state;
-#elif defined(__linux__) && !defined(_DIRECT2DISPLAY)
-	vulkanExample->setupWindow();
-#endif
-#if !defined(__ANDROID__)
-	vulkanExample->initSwapchain();
-	vulkanExample->prepare();
-#endif
-	vulkanExample->renderLoop();
-	delete(vulkanExample);
-#if !defined(__ANDROID__)
-	return 0;
-#endif
-}

@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Compute shader ray tracing
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +23,7 @@
 #define TEX_DIM 2048
 #endif
 
-class VulkanExample : public VulkanBase
+class VkRaytracing : public VulkanBase
 {
 public:
 	vkTools::VulkanTexture textureComputeTarget;
@@ -72,7 +66,7 @@ public:
 
 	// SSBO sphere declaration 
 	struct Sphere {									// Shader uses std140 layout (so we only use vec4 instead of vec3)
-		glm::vec3 pos;								
+		glm::vec3 pos;
 		float radius;
 		glm::vec3 diffuse;
 		float specular;
@@ -90,7 +84,7 @@ public:
 		glm::ivec3 _pad;
 	};
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkRaytracing() : VulkanBase(ENABLE_VALIDATION)
 	{
 		title = "Vulkan Example - Compute shader ray tracing";
 		enableTextOverlay = true;
@@ -105,7 +99,7 @@ public:
 		camera.movementSpeed = 2.5f;
 	}
 
-	~VulkanExample()
+	~VkRaytracing()
 	{
 		// Graphics
 		vkDestroyPipeline(mDevice, graphics.pipeline, nullptr);
@@ -165,9 +159,9 @@ public:
 
 		tex->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		vkTools::setImageLayout(
-			layoutCmd, 
+			layoutCmd,
 			tex->image,
-			VK_IMAGE_ASPECT_COLOR_BIT, 
+			VK_IMAGE_ASPECT_COLOR_BIT,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			tex->imageLayout);
 
@@ -217,7 +211,7 @@ public:
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
-		clearValues[0].color = { {0.0f, 0.0f, 0.2f, 0.0f} };
+		clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
@@ -502,7 +496,7 @@ public:
 				0);
 
 		// Display pipeline
-		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages;
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/raytracing/texture.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/raytracing/texture.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -577,7 +571,7 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr,	&compute.descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &compute.descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
@@ -715,7 +709,7 @@ public:
 		setupDescriptorPool();
 		setupDescriptorSet();
 		prepareCompute();
-		buildCommandBuffers(); 
+		buildCommandBuffers();
 		prepared = true;
 	}
 
@@ -736,5 +730,3 @@ public:
 		updateUniformBuffers();
 	}
 };
-
-VULKAN_EXAMPLE_MAIN()
