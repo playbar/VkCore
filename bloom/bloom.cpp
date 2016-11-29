@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -36,7 +36,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_NORMAL
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool bloom = true;
@@ -124,7 +124,7 @@ public:
 		std::array<FrameBuffer, 2> framebuffers;
 	} offscreenPass;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -10.25f;
 		rotation = { 7.5f, -343.0f, 0.0f };
@@ -372,7 +372,7 @@ public:
 	{
 		if (offscreenPass.commandBuffer == VK_NULL_HANDLE)
 		{
-			offscreenPass.commandBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+			offscreenPass.commandBuffer = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 		}
 
 		if (offscreenPass.semaphore == VK_NULL_HANDLE)
@@ -962,7 +962,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// The scene render command buffer has to wait for the offscreen rendering to be finished before we can use the framebuffer 
 		// color image for sampling during final rendering
@@ -993,12 +993,12 @@ public:
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadAssets();
 		generateQuad();
 		setupVertexDescriptions();

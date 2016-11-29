@@ -23,12 +23,12 @@
 #include <glm/gtc/matrix_inverse.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 
@@ -91,7 +91,7 @@ public:
 
 	glm::vec4 lightPos = glm::vec4(1.0f, 2.0f, 0.0f, 0.0f);
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		width = 1280;
 		height = 720;
@@ -544,18 +544,18 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadTextures();
 		prepareVertices();
 		prepareUniformBuffers();

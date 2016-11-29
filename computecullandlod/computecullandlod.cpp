@@ -21,7 +21,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "vulkanbuffer.hpp"
 #include "frustum.hpp"
 
@@ -46,7 +46,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_COLOR
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool fixedFrustum = false;
@@ -119,11 +119,11 @@ public:
 
 	uint32_t objectCount = 0;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Compute cull and lod";
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = VkCamera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
 		camera.setTranslation(glm::vec3(0.5f, 0.0f, 0.0f));
 		camera.movementSpeed = 5.0f;
@@ -774,7 +774,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -783,7 +783,7 @@ public:
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 
 		// Submit compute commands
 		vkWaitForFences(mDevice, 1, &compute.fence, VK_TRUE, UINT64_MAX);
@@ -801,7 +801,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadAssets();
 		setupVertexDescriptions();
 		prepareBuffers();

@@ -21,7 +21,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "vulkandevice.hpp"
 #include "vulkanbuffer.hpp"
 
@@ -34,7 +34,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_UV,
 	vkMeshLoader::VERTEX_LAYOUT_NORMAL
 };
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	struct Texture {
@@ -79,11 +79,11 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		title = "Vulkan Example - Runtime mip map generation";
 		enableTextOverlay = true;
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = VkCamera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 1024.0f);
 		camera.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
 		camera.setTranslation(glm::vec3(40.75f, 0.0f, 0.0f));
@@ -190,7 +190,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &texture.deviceMemory));
 		VK_CHECK_RESULT(vkBindImageMemory(mDevice, texture.image, texture.deviceMemory, 0));
 
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		VkImageSubresourceRange subresourceRange = {};
 		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -222,7 +222,7 @@ public:
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			subresourceRange);
 
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		// Clean up staging resources
 		vkFreeMemory(mDevice, stagingMemory, nullptr);
@@ -232,7 +232,7 @@ public:
 		// ---------------------------------------------------------------
 		// We copy down the whole mip chain doing a blit from mip-1 to mip
 		// An alternative way would be to always blit from the first mip level and sample that one down
-		VkCommandBuffer blitCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer blitCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		// Copy down mips from n-1 to n
 		for (int32_t i = 1; i < texture.mipLevels; i++)
@@ -301,7 +301,7 @@ public:
 			texture.imageLayout,
 			subresourceRange);
 
-		VulkanExampleBase::flushCommandBuffer(blitCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(blitCmd, mQueue, true);
 		// ---------------------------------------------------------------
 
 		// Create samplers
@@ -407,7 +407,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -416,7 +416,7 @@ public:
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void loadAssets()
@@ -671,7 +671,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadAssets();
 		setupVertexDescriptions();
 		prepareUniformBuffers();

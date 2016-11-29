@@ -20,7 +20,7 @@
 #include <gli/gli.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -33,7 +33,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_UV
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool displaySkybox = true;
@@ -76,7 +76,7 @@ public:
 	VkPipelineLayout pipelineLayout;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -4.0f;
 		rotationSpeed = 0.25f;
@@ -193,7 +193,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &cubeMap.deviceMemory));
 		VK_CHECK_RESULT(vkBindImageMemory(mDevice, cubeMap.image, cubeMap.deviceMemory, 0));
 
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		// Setup buffer copy regions for each face including all of it's miplevels
 		std::vector<VkBufferImageCopy> bufferCopyRegions;
@@ -256,7 +256,7 @@ public:
 			cubeMap.imageLayout,
 			subresourceRange);
 
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		// Create sampler
 		VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
@@ -668,18 +668,18 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadMeshes();
 		setupVertexDescriptions();
 		prepareUniformBuffers();

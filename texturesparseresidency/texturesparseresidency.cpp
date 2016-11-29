@@ -29,7 +29,7 @@ todos:
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "vulkandevice.hpp"
 #include "vulkanbuffer.hpp"
 #include "vulkanheightmap.hpp"
@@ -183,7 +183,7 @@ struct VirtualTexture
 uint32_t memoryTypeIndex;
 int32_t lastFilledMip = 0;
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	//todo: comments
@@ -241,7 +241,7 @@ public:
 		return enabledFeatures;
 	}
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION, getEnabledFeatures)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
 	{
 		zoom = -1.3f; 
 		rotation = { 76.25f, 0.0f, 0.0f }; 
@@ -253,7 +253,7 @@ public:
 		{
 			vkTools::exitFatal("Device does not support sparse residency for 2D images!", "Feature not supported");
 		}
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = VkCamera::CameraType::firstperson;
 		camera.movementSpeed = 50.0f;
 #ifndef __ANDROID__
 		camera.rotationSpeed = 0.25f;
@@ -652,7 +652,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Sparse bindings
 //		vkQueueBindSparse(queue, 1, &bindSparseInfo, VK_NULL_HANDLE);
@@ -666,7 +666,7 @@ public:
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void loadAssets()
@@ -918,7 +918,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadAssets();
 		generateTerrain();
 		setupVertexDescriptions();

@@ -80,13 +80,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\base\vulkandebug.cpp" />
-    <ClCompile Include="..\base\vulkanexamplebase.cpp" />
+    <ClCompile Include="..\base\VulkanBase.cpp" />
     <ClCompile Include="..\base\vulkantools.cpp" />
     <ClCompile Include="pipelines.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\base\vulkandebug.h" />
-    <ClInclude Include="..\base\vulkanexamplebase.h" />
+    <ClInclude Include="..\base\VulkanBase.h" />
     <ClInclude Include="..\base\vulkantools.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

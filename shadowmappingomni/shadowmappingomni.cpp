@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -40,7 +40,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_NORMAL
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool displayCubeMap = false;
@@ -125,7 +125,7 @@ public:
 
 	VkFormat fbDepthFormat;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -175.0f;
 		zoomSpeed = 10.0f;
@@ -209,7 +209,7 @@ public:
 		VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
 		VkMemoryRequirements memReqs;
 
-		VkCommandBuffer layoutCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer layoutCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		// Create cube map image
 		VK_CHECK_RESULT(vkCreateImage(mDevice, &imageCreateInfo, nullptr, &shadowCubeMap.image));
@@ -235,7 +235,7 @@ public:
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			subresourceRange);
 
-		VulkanExampleBase::flushCommandBuffer(layoutCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
 
 		// Create sampler
 		VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
@@ -313,7 +313,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &offscreenPass.color.mem));
 		VK_CHECK_RESULT(vkBindImageMemory(mDevice, offscreenPass.color.image, offscreenPass.color.mem, 0));
 
-		VkCommandBuffer layoutCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer layoutCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		vkTools::setImageLayout(
 			layoutCmd,
@@ -354,7 +354,7 @@ public:
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-		VulkanExampleBase::flushCommandBuffer(layoutCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
 
 		depthStencilView.image = offscreenPass.depth.image;
 		VK_CHECK_RESULT(vkCreateImageView(mDevice, &depthStencilView, nullptr, &offscreenPass.depth.view));
@@ -494,7 +494,7 @@ public:
 	{
 		if (offscreenPass.commandBuffer == VK_NULL_HANDLE)
 		{
-			offscreenPass.commandBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+			offscreenPass.commandBuffer = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 		}
 		if (offscreenPass.semaphore == VK_NULL_HANDLE)
 		{
@@ -998,7 +998,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Offscreen rendering
 
@@ -1023,12 +1023,12 @@ public:
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadAssets();
 		setupVertexDescriptions();
 		prepareUniformBuffers();

@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -31,7 +31,7 @@ struct Vertex {
 	glm::vec3 color;
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool wireframe = false;
@@ -81,7 +81,7 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -5.5f;
 		zoomSpeed = 2.5f;
@@ -263,7 +263,7 @@ public:
 				&mesh.indices.mem);
 
 			// Copy from staging buffers
-			VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+			VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 			VkBufferCopy copyRegion = {};
 
@@ -283,7 +283,7 @@ public:
 				1,
 				&copyRegion);
 
-			VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+			VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 			vkDestroyBuffer(mDevice, vertexStaging.buffer, nullptr);
 			vkFreeMemory(mDevice, vertexStaging.memory, nullptr);
@@ -570,7 +570,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -579,12 +579,12 @@ public:
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadTextures();
 		loadMesh();
 		setupVertexDescriptions();

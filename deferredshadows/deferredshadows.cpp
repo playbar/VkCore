@@ -20,7 +20,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "vulkanframebuffer.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
@@ -56,7 +56,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_TANGENT
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool debugDisplay = false;
@@ -179,11 +179,11 @@ public:
 		return enabledFeatures;
 	}
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION, getEnabledFeatures)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading with shadows (2016 by Sascha Willems)";
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = VkCamera::CameraType::firstperson;
 #if defined(__ANDROID__)
 		camera.movementSpeed = 2.5f;
 #else
@@ -349,7 +349,7 @@ public:
 	{
 		if (commandBuffers.deferred == VK_NULL_HANDLE)
 		{
-			commandBuffers.deferred = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+			commandBuffers.deferred = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 		}
 
 		// Create a semaphore used to synchronize offscreen rendering and usage
@@ -464,7 +464,7 @@ public:
 		for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
 		{
 			// Set target frame buffer
-			renderPassBeginInfo.framebuffer = VulkanExampleBase::frameBuffers[i];
+			renderPassBeginInfo.framebuffer = VulkanBase::frameBuffers[i];
 
 			VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
 
@@ -1072,7 +1072,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Offscreen rendering
 
@@ -1099,12 +1099,12 @@ public:
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadTextures();
 		generateQuads();
 		loadMeshes();

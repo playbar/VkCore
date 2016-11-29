@@ -34,7 +34,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "vulkandevice.hpp"
 #include "vulkanbuffer.hpp"
 
@@ -543,7 +543,7 @@ public:
 	}
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool wireframe = false;
@@ -557,11 +557,11 @@ public:
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 	} vertices;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		rotationSpeed = 0.5f;
 		enableTextOverlay = true;
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = VkCamera::CameraType::firstperson;
 		camera.movementSpeed = 7.5f;
 		camera.position = { 15.0f, -13.5f, 0.0f };
 		camera.setRotation(glm::vec3(5.0f, 90.0f, 0.0f));
@@ -780,7 +780,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -789,12 +789,12 @@ public:
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void loadScene()
 	{
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 		scene = new Scene(mVulkanDevice, mQueue, textureLoader);
 
 #if defined(__ANDROID__)
@@ -808,7 +808,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		setupVertexDescriptions();
 		loadScene();
 		preparePipelines();

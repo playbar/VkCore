@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -170,7 +170,7 @@ struct Scene {
 	}
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool wireframe = true;
@@ -232,7 +232,7 @@ public:
 		const char name[17] = "debug marker tag";
 	} demoTag;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -8.5f;
 		zoomSpeed = 2.5f;
@@ -464,7 +464,7 @@ public:
 	{
 		if (offscreenPass.commandBuffer == VK_NULL_HANDLE)
 		{
-			offscreenPass.commandBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+			offscreenPass.commandBuffer = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 		}
 		if (offscreenPass.semaphore == VK_NULL_HANDLE)
 		{
@@ -607,7 +607,7 @@ public:
 				&scene->indices.mem);
 
 			// Copy from staging buffers
-			VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+			VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 			VkBufferCopy copyRegion = {};
 
@@ -627,7 +627,7 @@ public:
 				1,
 				&copyRegion);
 
-			VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+			VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 			vkDestroyBuffer(mDevice, vertexStaging.buffer, nullptr);
 			vkFreeMemory(mDevice, vertexStaging.memory, nullptr);
@@ -1072,7 +1072,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Offscreen rendering
 		if (glow)
@@ -1098,12 +1098,12 @@ public:
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		DebugMarker::setup(mDevice);
 		loadScene();
 		prepareOffscreen();

@@ -21,7 +21,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "vulkandevice.hpp"
 #include "vulkanbuffer.hpp"
 
@@ -142,7 +142,7 @@ public:
 	}
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	// Contains all Vulkan objects that are required to store and use a 3D texture
@@ -191,7 +191,7 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -2.5f;
 		rotation = { 0.0f, 15.0f, 0.0f };
@@ -383,7 +383,7 @@ public:
 		memcpy(mapped, data, texMemSize);
 		vkUnmapMemory(mDevice, stagingMemory);
 
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		// Image barrier for optimal image
 
@@ -434,7 +434,7 @@ public:
 			texture.imageLayout,
 			subresourceRange);
 
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		// Clean up staging resources
 		delete[] data;
@@ -504,7 +504,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -513,7 +513,7 @@ public:
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void generateQuad()
@@ -786,7 +786,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		generateQuad();
 		setupVertexDescriptions();
 		prepareUniformBuffers();

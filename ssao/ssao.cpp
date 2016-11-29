@@ -19,7 +19,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -42,7 +42,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	struct {
@@ -154,13 +154,13 @@ public:
 	// Semaphore used to synchronize between offscreen and final scene rendering
 	VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -8.0f;
 		rotation = { 0.0f, 0.0f, 0.0f };
 		enableTextOverlay = true;
 		title = "Vulkan Example - Screen space ambient occlusion";
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = VkCamera::CameraType::firstperson;
 		camera.movementSpeed = 5.0f;
 #ifndef __ANDROID__
 		camera.rotationSpeed = 0.25f;
@@ -280,7 +280,7 @@ public:
 	void prepareOffscreenFramebuffers()
 	{
 		// Attachments
-		VkCommandBuffer layoutCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer layoutCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 #if defined(__ANDROID__)
 		const uint32_t ssaoWidth = width / 2;
@@ -311,7 +311,7 @@ public:
 		// SSAO blur
 		createAttachment(VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.ssaoBlur.color, width, height);					// Color
 
-		VulkanExampleBase::flushCommandBuffer(layoutCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
 
 		// Render passes
 
@@ -533,7 +533,7 @@ public:
 
 		if (offScreenCmdBuffer == VK_NULL_HANDLE)
 		{
-			offScreenCmdBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+			offScreenCmdBuffer = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 		}
 
 		// Create a semaphore used to synchronize offscreen rendering and usage
@@ -668,7 +668,7 @@ public:
 		for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
 		{
 			// Set target frame buffer
-			renderPassBeginInfo.framebuffer = VulkanExampleBase::frameBuffers[i];
+			renderPassBeginInfo.framebuffer = VulkanBase::frameBuffers[i];
 
 			VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
 
@@ -1075,7 +1075,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Offscreen rendering
 		mSubmitInfo.pWaitSemaphores = &semaphores.presentComplete;
@@ -1090,12 +1090,12 @@ public:
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadAssets();
 		setupVertexDescriptions();
 		prepareOffscreenFramebuffers();

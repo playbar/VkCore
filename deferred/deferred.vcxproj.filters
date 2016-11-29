@@ -18,13 +18,13 @@
     <ClCompile Include="..\base\vulkandebug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\vulkanexamplebase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\base\vulkantools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="deferred.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\VulkanBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,10 +32,10 @@
     <ClInclude Include="..\base\vulkandebug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\base\vulkanexamplebase.h">
+    <ClInclude Include="..\base\vulkantools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\base\vulkantools.h">
+    <ClInclude Include="..\base\VulkanBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,7 +20,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define INSTANCE_BUFFER_BIND_ID 1
@@ -36,7 +36,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_COLOR
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	struct {
@@ -87,7 +87,7 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -12.0f;
 		rotationSpeed = 0.25f;
@@ -468,7 +468,7 @@ public:
 			VkBuffer buffer;
 		} stagingBuffer;
 
-		VulkanExampleBase::createBuffer(
+		VulkanBase::createBuffer(
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
 			instanceBuffer.size,
@@ -476,7 +476,7 @@ public:
 			&stagingBuffer.buffer,
 			&stagingBuffer.memory);
 
-		VulkanExampleBase::createBuffer(
+		VulkanBase::createBuffer(
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			instanceBuffer.size,
@@ -485,7 +485,7 @@ public:
 			&instanceBuffer.memory);
 
 		// Copy to staging buffer
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		VkBufferCopy copyRegion = { };
 		copyRegion.size = instanceBuffer.size;
@@ -496,7 +496,7 @@ public:
 			1,
 			&copyRegion);
 
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		instanceBuffer.descriptor.range = instanceBuffer.size;
 		instanceBuffer.descriptor.buffer = instanceBuffer.buffer;
@@ -545,7 +545,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -554,12 +554,12 @@ public:
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadTextures();
 		loadMeshes();
 		prepareInstanceData();

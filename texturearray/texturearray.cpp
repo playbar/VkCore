@@ -19,7 +19,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -30,7 +30,7 @@ struct Vertex {
 	float uv[2];
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	// Number of array layers in texture array
@@ -78,7 +78,7 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -15.0f;
 		rotationSpeed = 0.25f;
@@ -241,7 +241,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &textureArray.deviceMemory));
 		VK_CHECK_RESULT(vkBindImageMemory(mDevice, textureArray.image, textureArray.deviceMemory, 0));
 
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		// Image barrier for optimal image (target)
 		// Set initial layout for all array layers (faces) of the optimal (target) tiled texture
@@ -279,7 +279,7 @@ public:
 			textureArray.imageLayout,
 			subresourceRange);
 
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		// Create sampler
 		VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
@@ -655,18 +655,18 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		setupVertexDescriptions();
 		loadTextures();
 		generateQuad();

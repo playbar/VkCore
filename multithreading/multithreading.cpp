@@ -20,7 +20,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #include "threadpool.hpp"
 #include "frustum.hpp"
@@ -37,7 +37,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_COLOR,
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	struct {
@@ -118,7 +118,7 @@ public:
 	// View frustum for culling invisible objects
 	vkTools::Frustum frustum;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -32.5f;
 		zoomSpeed = 2.5f;
@@ -584,7 +584,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		updateCommandBuffers(frameBuffers[mCurrentBuffer]);
 
@@ -602,12 +602,12 @@ public:
 		VK_CHECK_RESULT(fenceRes);
 		vkResetFences(mDevice, 1, &renderFence);
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		// Create a fence for synchronization
 		VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FLAGS_NONE);
 		vkCreateFence(mDevice, &fenceCreateInfo, NULL, &renderFence);

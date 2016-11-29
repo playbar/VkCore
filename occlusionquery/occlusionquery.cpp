@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -32,7 +32,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_COLOR,
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	struct {
@@ -88,7 +88,7 @@ public:
 	// Passed query samples
 	uint64_t passedSamples[2] = { 1,1 };
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		width = 1280;
 		height = 720;
@@ -303,7 +303,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
@@ -312,7 +312,7 @@ public:
 		// Read query results for displaying in next frame
 		getQueryResults();
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void loadMeshes()
@@ -611,7 +611,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadMeshes();
 		setupQueryResultBuffer();
 		setupVertexDescriptions();
@@ -635,7 +635,7 @@ public:
 	{
 		vkDeviceWaitIdle(mDevice);
 		updateUniformBuffers();
-		VulkanExampleBase::updateTextOverlay();
+		VulkanBase::updateTextOverlay();
 	}
 
 	virtual void getOverlayText(VulkanTextOverlay *textOverlay)

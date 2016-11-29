@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{e10c18f6-dd6a-488b-9ff7-3aaa61fa3b32}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="frustum.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="keycodes.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="threadpool.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VDeleter.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkCamera.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanandroid.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanbuffer.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkandebug.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkandevice.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanframebuffer.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanheightmap.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanMeshLoader.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanswapchain.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkantextoverlay.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkanTextureLoader.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkantools.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanBase.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTriangle.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="vulkanandroid.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkandebug.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkantools.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanBase.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

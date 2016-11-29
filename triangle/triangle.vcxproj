@@ -59,7 +59,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>..\libs\vulkan\vulkan-1.lib;..\libs\assimp\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\libs\vulkan\vulkan-1.lib;..\libs\assimp\assimp.lib;..\libs\vkcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -79,9 +79,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\base\vulkandebug.cpp" />
-    <ClCompile Include="..\base\vulkanexamplebase.cpp" />
-    <ClCompile Include="..\base\vulkantools.cpp" />
     <ClCompile Include="triangle.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -42,12 +42,12 @@
 #include "vulkanTextureLoader.hpp"
 #include "vulkanMeshLoader.hpp"
 #include "vulkantextoverlay.hpp"
-#include "camera.hpp"
+#include "VkCamera.hpp"
 
 // Function pointer for getting physical device fetures to be enabled
 typedef VkPhysicalDeviceFeatures (*PFN_GetEnabledFeatures)();
 
-class VulkanExampleBase
+class VulkanBase
 {
 private:	
 	// Set to true when example is created with enabled validation layers
@@ -163,7 +163,7 @@ public:
 	// Use to adjust mouse zoom speed
 	float zoomSpeed = 1.0f;
 
-	Camera camera;
+	VkCamera camera;
 
 	glm::vec3 rotation = glm::vec3();
 	glm::vec3 cameraPos = glm::vec3();
@@ -208,10 +208,10 @@ public:
 #endif
 
 	// Default ctor
-	VulkanExampleBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn = nullptr);
+	VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn = nullptr);
 
 	// dtor
-	~VulkanExampleBase();
+	~VulkanBase();
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
 	void initVulkan(bool enableValidation);

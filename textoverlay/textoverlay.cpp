@@ -22,7 +22,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "vulkandevice.hpp"
 #include "vulkantextoverlay.hpp"
 
@@ -40,7 +40,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 };
 
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	//VulkanTextOverlay *mTextOverlay = nullptr;
@@ -91,7 +91,7 @@ public:
 	} descriptorSets;
 
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -4.5f;
 		zoomSpeed = 2.5f;
@@ -515,7 +515,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -529,12 +529,12 @@ public:
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		mTextOverlay->submit(mQueue, mCurrentBuffer);
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadTextures();
 		loadMeshes();
 		setupVertexDescriptions();

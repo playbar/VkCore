@@ -21,7 +21,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -32,7 +32,7 @@
 #define PARTICLE_COUNT 256 * 1024
 #endif
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	float timer = 0.0f;
@@ -85,7 +85,7 @@ public:
 		glm::vec4 gradientPos;						// Texture coordiantes for the gradient ramp map
 	};
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Compute shader particle system";
@@ -266,11 +266,11 @@ public:
 			storageBufferSize);
 
 		// Copy to staging buffer
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = storageBufferSize;
 		vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, compute.storageBuffer.buffer, 1, &copyRegion);
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		stagingBuffer.destroy();
 
@@ -605,13 +605,13 @@ public:
 	void draw()
 	{
 		// Submit graphics commands
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 
 		// Submit compute commands
 		vkWaitForFences(mDevice, 1, &compute.fence, VK_TRUE, UINT64_MAX);
@@ -626,7 +626,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadTextures();
 		prepareStorageBuffers();
 		prepareUniformBuffers();

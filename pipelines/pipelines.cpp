@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -32,7 +32,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_COLOR
 };
 
-class VulkanExample: public VulkanExampleBase 
+class VulkanExample: public VulkanBase 
 {
 public:
 	struct {
@@ -72,7 +72,7 @@ public:
 		return enabledFeatures;
 	}
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION, getEnabledFeatures)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
 	{
 		zoom = -10.5f;
 		rotation = glm::vec3(-25.0f, 15.0f, 0.0f);
@@ -431,18 +431,18 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadMeshes();
 		setupVertexDescriptions();
 		prepareUniformBuffers();

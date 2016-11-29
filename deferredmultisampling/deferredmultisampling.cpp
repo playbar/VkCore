@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -35,7 +35,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_TANGENT
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	bool debugDisplay = false;
@@ -134,13 +134,13 @@ public:
 	// Semaphore used to synchronize between offscreen and final scene rendering
 	VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -8.0f;
 		rotation = { 0.0f, 0.0f, 0.0f };
 		enableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading (2016 by Sascha Willems)";
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = VkCamera::CameraType::firstperson;
 		camera.movementSpeed = 5.0f;
 #ifndef __ANDROID__
 		camera.rotationSpeed = 0.25f;
@@ -278,7 +278,7 @@ public:
 	// blitted to our render target
 	void prepareOffscreenFramebuffer()
 	{
-		VkCommandBuffer layoutCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer layoutCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		offScreenFrameBuf.width = this->width;
 		offScreenFrameBuf.height = this->height;
@@ -322,7 +322,7 @@ public:
 			&offScreenFrameBuf.depth,
 			layoutCmd);
 
-		VulkanExampleBase::flushCommandBuffer(layoutCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
 
 		// Set up separate renderpass with references
 		// to the color and depth attachments
@@ -438,7 +438,7 @@ public:
 	{
 		if (offScreenCmdBuffer == VK_NULL_HANDLE)
 		{
-			offScreenCmdBuffer = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+			offScreenCmdBuffer = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 		}
 
 		// Create a semaphore used to synchronize offscreen rendering and usage
@@ -1098,7 +1098,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Offscreen rendering
 
@@ -1123,12 +1123,12 @@ public:
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadAssets();
 		setupVertexDescriptions();
 		prepareOffscreenFramebuffer();

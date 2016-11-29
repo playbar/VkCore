@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -29,7 +29,7 @@ struct Vertex {
 	float uv[2];
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 private:
 	vkTools::VulkanTexture textureColorMap;
@@ -80,7 +80,7 @@ public:
 
 	int vertexBufferSize;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -2.0f;
 		enableTextOverlay = true;
@@ -149,7 +149,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &tex->deviceMemory));
 		VK_CHECK_RESULT(vkBindImageMemory(mDevice, tex->image, tex->deviceMemory, 0));
 
-		VkCommandBuffer layoutCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer layoutCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		tex->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		vkTools::setImageLayout(
@@ -158,7 +158,7 @@ public:
 			VK_IMAGE_LAYOUT_UNDEFINED, 
 			tex->imageLayout);
 
-		VulkanExampleBase::flushCommandBuffer(layoutCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
 
 		// Create sampler
 		VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
@@ -744,13 +744,13 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 
 		// Submit compute commands
 		// Use a fence to ensure that compute command buffer has finished executin before using it again
@@ -766,7 +766,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadTextures();
 		generateQuad();
 		setupVertexDescriptions();

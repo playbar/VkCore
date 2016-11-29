@@ -20,7 +20,7 @@
 #include <gli/gli.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "frustum.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
@@ -34,7 +34,7 @@ std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	vkMeshLoader::VERTEX_LAYOUT_UV
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 private:
 	struct {
@@ -112,11 +112,11 @@ public:
 	// View frustum passed to tessellation control shader for culling
 	vkTools::Frustum frustum;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Dynamic terrain tessellation";
-		camera.type = Camera::CameraType::firstperson;
+		camera.type = VkCamera::CameraType::firstperson;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
 		camera.setRotation(glm::vec3(-12.0f, 159.0f, 0.0f));
 		camera.setTranslation(glm::vec3(18.0f, 22.5f, 57.5f));
@@ -504,7 +504,7 @@ public:
 			&meshes.terrain.indices.mem);
 
 		// Copy from staging buffers
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		VkBufferCopy copyRegion = {};
 
@@ -524,7 +524,7 @@ public:
 			1,
 			&copyRegion);
 
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		vkDestroyBuffer(mDevice, vertexStaging.buffer, nullptr);
 		vkFreeMemory(mDevice, vertexStaging.memory, nullptr);
@@ -870,7 +870,7 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -882,12 +882,12 @@ public:
 		// Read query results for displaying in next frame
 		getQueryResults();
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadMeshes();
 		loadTextures();
 		generateTerrain();

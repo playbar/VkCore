@@ -18,7 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
@@ -29,7 +29,7 @@
 #define TEX_DIM 2048
 #endif
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	vkTools::VulkanTexture textureComputeTarget;
@@ -90,14 +90,14 @@ public:
 		glm::ivec3 _pad;
 	};
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		title = "Vulkan Example - Compute shader ray tracing";
 		enableTextOverlay = true;
 		compute.ubo.aspectRatio = (float)width / (float)height;
 		timerSpeed *= 0.25f;
 
-		camera.type = Camera::CameraType::lookat;
+		camera.type = VkCamera::CameraType::lookat;
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
 		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 		camera.setTranslation(glm::vec3(0.0f, 0.0f, -4.0f));
@@ -161,7 +161,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &tex->deviceMemory));
 		VK_CHECK_RESULT(vkBindImageMemory(mDevice, tex->image, tex->deviceMemory, 0));
 
-		VkCommandBuffer layoutCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer layoutCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 		tex->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		vkTools::setImageLayout(
@@ -171,7 +171,7 @@ public:
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			tex->imageLayout);
 
-		VulkanExampleBase::flushCommandBuffer(layoutCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
 
 		// Create sampler
 		VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
@@ -341,11 +341,11 @@ public:
 			storageBufferSize);
 
 		// Copy to staging buffer
-		VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = storageBufferSize;
 		vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, compute.storageBuffers.spheres.buffer, 1, &copyRegion);
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		stagingBuffer.destroy();
 
@@ -376,10 +376,10 @@ public:
 			storageBufferSize);
 
 		// Copy to staging buffer
-		copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		copyRegion.size = storageBufferSize;
 		vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, compute.storageBuffers.planes.buffer, 1, &copyRegion);
-		VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+		VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 		stagingBuffer.destroy();
 	}
@@ -683,14 +683,14 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 
 		// Submit compute commands
 		// Use a fence to ensure that compute command buffer has finished executing before using it again
@@ -706,7 +706,7 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		prepareStorageBuffers();
 		prepareUniformBuffers();
 		prepareTextureTarget(&textureComputeTarget, TEX_DIM, TEX_DIM, VK_FORMAT_R8G8B8A8_UNORM);

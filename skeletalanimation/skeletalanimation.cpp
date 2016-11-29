@@ -19,7 +19,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkanexamplebase.h"
+#include "VulkanBase.h"
 #include "vulkanbuffer.hpp"
 
 #define VERTEX_BUFFER_BIND_ID 0
@@ -335,7 +335,7 @@ private:
 	}
 };
 
-class VulkanExample : public VulkanExampleBase
+class VulkanExample : public VulkanBase
 {
 public:
 	struct {
@@ -394,7 +394,7 @@ public:
 
 	float runningTime = 0.0f;
 
-	VulkanExample() : VulkanExampleBase(ENABLE_VALIDATION)
+	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -150.0f;
 		zoomSpeed = 2.5f;
@@ -598,7 +598,7 @@ public:
 				&skinnedMesh->meshBuffer.indices.mem);
 
 			// Copy from staging buffers
-			VkCommandBuffer copyCmd = VulkanExampleBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+			VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
 			VkBufferCopy copyRegion = {};
 
@@ -618,7 +618,7 @@ public:
 				1,
 				&copyRegion);
 
-			VulkanExampleBase::flushCommandBuffer(copyCmd, mQueue, true);
+			VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 			vkDestroyBuffer(mDevice, vertexStaging.buffer, nullptr);
 			vkFreeMemory(mDevice, vertexStaging.memory, nullptr);
@@ -650,7 +650,7 @@ public:
 	{
 		textureLoader->loadTexture(getAssetPath() + "textures/goblin_bc3.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.colorMap);
 		textureLoader->loadTexture(getAssetPath() + "textures/trail_bc3.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.floor);
-		VulkanExampleBase::loadMesh(getAssetPath() + "models/plane_z.obj", &meshes.floor, vertexLayout, 512.0f);
+		VulkanBase::loadMesh(getAssetPath() + "models/plane_z.obj", &meshes.floor, vertexLayout, 512.0f);
 	}
 
 	void setupVertexDescriptions()
@@ -971,18 +971,18 @@ public:
 
 	void draw()
 	{
-		VulkanExampleBase::prepareFrame();
+		VulkanBase::prepareFrame();
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
-		VulkanExampleBase::submitFrame();
+		VulkanBase::submitFrame();
 	}
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		VulkanBase::prepare();
 		loadAssets();
 		loadMesh();
 		setupVertexDescriptions();
