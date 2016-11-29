@@ -21,6 +21,11 @@
     <ClInclude Include="VDeleter.hpp" />
     <ClInclude Include="VkCamera.hpp" />
     <ClInclude Include="VkScene.hpp" />
+    <ClInclude Include="VkShadowMapping.hpp" />
+    <ClInclude Include="VkShadowMappingomni.hpp" />
+    <ClInclude Include="VkSkeletalAnimation.hpp" />
+    <ClInclude Include="VkSphericalenvmapping.hpp" />
+    <ClInclude Include="VkSsao.hpp" />
     <ClInclude Include="VkSubPasses.hpp" />
     <ClInclude Include="VkTextOverLay.hpp" />
     <ClInclude Include="VkTriangle.hpp" />

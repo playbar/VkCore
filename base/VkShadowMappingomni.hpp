@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Omni directional shadows using a dynamic cube map
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,17 +25,16 @@
 #define FB_DIM TEX_DIM
 #define FB_COLOR_FORMAT VK_FORMAT_R32_SFLOAT 
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout = 
+class VkShadowMappingomni : public VulkanBase
 {
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL
-};
-
-class VulkanExample : public VulkanBase
-{
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL
+	};
 public:
 	bool displayCubeMap = false;
 
@@ -69,7 +62,7 @@ public:
 		glm::mat4 model;
 	} uboVSquad;
 
-	glm::vec4 lightPos = glm::vec4(0.0f, -25.0f, 0.0f, 1.0); 
+	glm::vec4 lightPos = glm::vec4(0.0f, -25.0f, 0.0f, 1.0);
 
 	struct {
 		glm::mat4 projection;
@@ -92,7 +85,7 @@ public:
 	} pipelines;
 
 	struct {
-		VkPipelineLayout scene; 
+		VkPipelineLayout scene;
 		VkPipelineLayout offscreen;
 	} pipelineLayouts;
 
@@ -125,7 +118,7 @@ public:
 
 	VkFormat fbDepthFormat;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkShadowMappingomni() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -175.0f;
 		zoomSpeed = 10.0f;
@@ -135,7 +128,7 @@ public:
 		title = "Vulkan Example - Point light shadows";
 	}
 
-	~VulkanExample()
+	~VkShadowMappingomni()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -188,7 +181,7 @@ public:
 	{
 		shadowCubeMap.width = TEX_DIM;
 		shadowCubeMap.height = TEX_DIM;
-		
+
 		// 32 bit float format for higher precision
 		VkFormat format = VK_FORMAT_R32_SFLOAT;
 
@@ -317,9 +310,9 @@ public:
 
 		vkTools::setImageLayout(
 			layoutCmd,
-			offscreenPass.color.image, 
-			VK_IMAGE_ASPECT_COLOR_BIT, 
-			VK_IMAGE_LAYOUT_UNDEFINED, 
+			offscreenPass.color.image,
+			VK_IMAGE_ASPECT_COLOR_BIT,
+			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 		colorImageView.image = offscreenPass.color.image;
@@ -349,7 +342,7 @@ public:
 
 		vkTools::setImageLayout(
 			layoutCmd,
-			offscreenPass.depth.image, 
+			offscreenPass.depth.image,
 			VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -510,7 +503,7 @@ public:
 		VkViewport viewport = vkTools::initializers::viewport((float)offscreenPass.width, (float)offscreenPass.height, 0.0f, 1.0f);
 		vkCmdSetViewport(offscreenPass.commandBuffer, 0, 1, &viewport);
 
-		VkRect2D scissor = vkTools::initializers::rect2D(offscreenPass.width, offscreenPass.height,	0, 0);
+		VkRect2D scissor = vkTools::initializers::rect2D(offscreenPass.width, offscreenPass.height, 0, 0);
 		vkCmdSetScissor(offscreenPass.commandBuffer, 0, 1, &scissor);
 
 		VkImageSubresourceRange subresourceRange = {};
@@ -617,7 +610,7 @@ public:
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(mDrawCmdBuffers[i]));
 		}
-	}	
+	}
 
 	void loadAssets()
 	{
@@ -760,7 +753,7 @@ public:
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-			descriptorSets.scene,
+				descriptorSets.scene,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.scene.descriptor),
@@ -1089,64 +1082,3 @@ public:
 	}
 };
 
-
-VulkanExample *vulkanExample;
-
-#if defined(_WIN32)
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleMessages(hWnd, uMsg, wParam, lParam);
-	}
-	return (DefWindowProc(hWnd, uMsg, wParam, lParam));
-}
-#elif defined(__linux__) && !defined(__ANDROID__) && !defined(_DIRECT2DISPLAY)
-static void handleEvent(const xcb_generic_event_t *event)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleEvent(event);
-	}
-}
-#endif
-
-// Main entry point
-#if defined(_WIN32)
-// Windows entry point
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
-#elif defined(__ANDROID__)
-// Android entry point
-void android_main(android_app* state)
-#elif defined(__linux__)
-// Linux entry point
-int main(const int argc, const char *argv[])
-#endif
-{
-#if defined(__ANDROID__)
-	// Removing this may cause the compiler to omit the main entry point 
-	// which would make the application crash at start
-	app_dummy();
-#endif
-	vulkanExample = new VulkanExample();
-#if defined(_WIN32)
-	vulkanExample->setupWindow(hInstance, WndProc);
-#elif defined(__ANDROID__)
-	// Attach vulkan example to global android application state
-	state->userData = vulkanExample;
-	state->onAppCmd = VulkanExample::handleAppCommand;
-	state->onInputEvent = VulkanExample::handleAppInput;
-	vulkanExample->androidApp = state;
-#elif defined(__linux__) && !defined(_DIRECT2DISPLAY)
-	vulkanExample->setupWindow();
-#endif
-#if !defined(__ANDROID__)
-	vulkanExample->initSwapchain();
-	vulkanExample->prepare();
-#endif
-	vulkanExample->renderLoop();
-	delete(vulkanExample);
-#if !defined(__ANDROID__)
-	return 0;
-#endif
-}

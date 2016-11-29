@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Shadow mapping for directional light sources
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,17 +32,18 @@
 // Offscreen frame buffer properties
 #define FB_COLOR_FORMAT VK_FORMAT_R8G8B8A8_UNORM
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL
-};
 
-class VulkanExample : public VulkanBase
+
+class VkShadowMapping : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL
+	};
 public:
 	bool displayShadowMap = false;
 	bool lightPOV = false;
@@ -139,7 +134,7 @@ public:
 		VkSemaphore semaphore = VK_NULL_HANDLE;
 	} offscreenPass;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkShadowMapping() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -20.0f;
 		rotation = { -15.0f, -390.0f, 0.0f };
@@ -148,7 +143,7 @@ public:
 		timerSpeed *= 0.5f;
 	}
 
-	~VulkanExample()
+	~VkShadowMapping()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -210,7 +205,7 @@ public:
 		subpass.colorAttachmentCount = 0;												// No color attachments
 		subpass.pDepthStencilAttachment = &depthReference;								// Reference to our depth attachment
 
-		// Use subpass dependencies for layout transitions
+																						// Use subpass dependencies for layout transitions
 		std::array<VkSubpassDependency, 2> dependencies;
 
 		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -303,7 +298,7 @@ public:
 
 		// Create frame buffer
 		VkFramebufferCreateInfo fbufCreateInfo = vkTools::initializers::framebufferCreateInfo();
-		fbufCreateInfo.renderPass = offscreenPass.renderPass; 
+		fbufCreateInfo.renderPass = offscreenPass.renderPass;
 		fbufCreateInfo.attachmentCount = 1;
 		fbufCreateInfo.pAttachments = &offscreenPass.depth.view;
 		fbufCreateInfo.width = offscreenPass.width;
@@ -548,7 +543,7 @@ public:
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::descriptorSetLayoutBinding(
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Fragment shader image sampler
@@ -832,7 +827,7 @@ public:
 			uboVSscene.projection = glm::perspective(glm::radians(lightFOV), (float)width / (float)height, zNear, zFar);
 			uboVSscene.view = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		}
-	
+
 		uboVSscene.depthBiasMVP = uboOffscreenVS.depthMVP;
 
 		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.scene.memory, 0, sizeof(uboVSscene), 0, (void **)&pData));
@@ -858,7 +853,7 @@ public:
 	void draw()
 	{
 		VulkanBase::prepareFrame();
-		
+
 		// The scene render command buffer has to wait for the offscreen rendering (and transfer) to be finished before using the shadow map
 		// Therefore we synchronize using an additional semaphore
 
@@ -964,4 +959,3 @@ public:
 
 };
 
-VULKAN_EXAMPLE_MAIN()

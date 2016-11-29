@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Skeletal animation
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,7 +82,7 @@ struct BoneInfo
 	};
 };
 
-class SkinnedMesh 
+class SkinnedMesh
 {
 public:
 	// Bone related stuff
@@ -335,7 +329,7 @@ private:
 	}
 };
 
-class VulkanExample : public VulkanBase
+class VkSkeletalAnimation : public VulkanBase
 {
 public:
 	struct {
@@ -394,7 +388,7 @@ public:
 
 	float runningTime = 0.0f;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkSkeletalAnimation() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -150.0f;
 		zoomSpeed = 2.5f;
@@ -405,7 +399,7 @@ public:
 		cameraPos = { 0.0f, 0.0f, 12.0f };
 	}
 
-	~VulkanExample()
+	~VkSkeletalAnimation()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -433,7 +427,7 @@ public:
 		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
-		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f} };
+		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
@@ -624,7 +618,7 @@ public:
 			vkFreeMemory(mDevice, vertexStaging.memory, nullptr);
 			vkDestroyBuffer(mDevice, indexStaging.buffer, nullptr);
 			vkFreeMemory(mDevice, indexStaging.memory, nullptr);
-		} 
+		}
 		else
 		{
 			// Vertex buffer
@@ -774,7 +768,7 @@ public:
 				1);
 
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
-		
+
 		VkDescriptorImageInfo texDescriptor =
 			vkTools::initializers::descriptorImageInfo(
 				textures.colorMap.sampler,
@@ -1048,5 +1042,3 @@ public:
 		}
 	}
 };
-
-VULKAN_EXAMPLE_MAIN()

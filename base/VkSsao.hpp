@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Screen space ambient occlusion example
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,17 +27,16 @@
 #define SSAO_NOISE_DIM 4
 #endif
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+class VkSsao : public VulkanBase
 {
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-};
-
-class VulkanExample : public VulkanBase
-{
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+	};
 public:
 	struct {
 		vkTools::VulkanTexture ssaoNoise;
@@ -123,7 +116,7 @@ public:
 	};
 	struct FrameBuffer {
 		int32_t width, height;
-		VkFramebuffer frameBuffer;		
+		VkFramebuffer frameBuffer;
 		VkRenderPass renderPass;
 		void setSize(int32_t w, int32_t h)
 		{
@@ -154,7 +147,7 @@ public:
 	// Semaphore used to synchronize between offscreen and final scene rendering
 	VkSemaphore offscreenSemaphore = VK_NULL_HANDLE;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkSsao() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -8.0f;
 		rotation = { 0.0f, 0.0f, 0.0f };
@@ -170,7 +163,7 @@ public:
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 64.0f);
 	}
 
-	~VulkanExample()
+	~VkSsao()
 	{
 		vkDestroySampler(mDevice, colorSampler, nullptr);
 
@@ -218,7 +211,7 @@ public:
 
 	// Create a frame buffer attachment
 	void createAttachment(
-		VkFormat format,  
+		VkFormat format,
 		VkImageUsageFlagBits usage,
 		FrameBufferAttachment *attachment,
 		uint32_t width,
@@ -263,7 +256,7 @@ public:
 		memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &attachment->mem));
 		VK_CHECK_RESULT(vkBindImageMemory(mDevice, attachment->image, attachment->mem, 0));
-		
+
 		VkImageViewCreateInfo imageView = vkTools::initializers::imageViewCreateInfo();
 		imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		imageView.format = format;
@@ -305,10 +298,10 @@ public:
 		createAttachment(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.offscreen.albedo, width, height);			// Albedo (color)
 		createAttachment(attDepthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, &frameBuffers.offscreen.depth, width, height);			// Depth
 
-		// SSAO
+																																				// SSAO
 		createAttachment(VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.ssao.color, ssaoWidth, ssaoHeight);				// Color
 
-		// SSAO blur
+																																				// SSAO blur
 		createAttachment(VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.ssaoBlur.color, width, height);					// Color
 
 		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
@@ -550,7 +543,7 @@ public:
 		clearValues[3].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
-		renderPassBeginInfo.renderPass =  frameBuffers.offscreen.renderPass;
+		renderPassBeginInfo.renderPass = frameBuffers.offscreen.renderPass;
 		renderPassBeginInfo.framebuffer = frameBuffers.offscreen.frameBuffer;
 		renderPassBeginInfo.renderArea.extent.width = frameBuffers.offscreen.width;
 		renderPassBeginInfo.renderArea.extent.height = frameBuffers.offscreen.height;
@@ -848,8 +841,8 @@ public:
 			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.offscreen.position.view, VK_IMAGE_LAYOUT_GENERAL),
 			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.offscreen.normal.view, VK_IMAGE_LAYOUT_GENERAL),
 			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.offscreen.albedo.view, VK_IMAGE_LAYOUT_GENERAL),
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.ssao.color.view, VK_IMAGE_LAYOUT_GENERAL),  
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.ssaoBlur.color.view, VK_IMAGE_LAYOUT_GENERAL), 
+			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.ssao.color.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.ssaoBlur.color.view, VK_IMAGE_LAYOUT_GENERAL),
 		};
 		writeDescriptorSets = {
 			vkTools::initializers::writeDescriptorSet(descriptorSets.composition, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageDescriptors[0]),			// FS Sampler Position+Depth
@@ -889,7 +882,7 @@ public:
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
 			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
-				VK_TRUE, 
+				VK_TRUE,
 				VK_TRUE,
 				VK_COMPARE_OP_LESS_OR_EQUAL);
 
@@ -1104,7 +1097,7 @@ public:
 		setupLayoutsAndDescriptors();
 		preparePipelines();
 		buildCommandBuffers();
-		buildDeferredCommandBuffer(); 
+		buildDeferredCommandBuffer();
 		prepared = true;
 	}
 
@@ -1172,4 +1165,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

@@ -1,16 +1,3 @@
-/*
-* Vulkan Example - Basic indexed triangle rendering
-*
-* Note:
-*	This is a "pedal to the metal" example to show off how to get Vulkan up an displaying something
-*	Contrary to the other examples, this one won't make use of helper functions or initializers
-*	Except in a few cases (swap chain setup e.g.)
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,8 +8,9 @@
 #include "VkScene.hpp"
 #include "VkTextOverLay.hpp"
 #include "VkSubPasses.hpp"
+#include "VkShadowMapping.hpp"
 
-VkSubPasses *vulkanExample;
+VkShadowMapping *vulkanExample;
 
 #if defined(_WIN32)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -60,7 +48,7 @@ int main(const int argc, const char *argv[])
 	// which would make the application crash at start
 	app_dummy();
 #endif
-	vulkanExample = new VkSubPasses();
+	vulkanExample = new VkShadowMapping();
 #if defined(_WIN32)
 	vulkanExample->setupWindow(hInstance, WndProc);
 #elif defined(__ANDROID__)

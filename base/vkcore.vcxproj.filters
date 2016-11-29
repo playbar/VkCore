@@ -69,6 +69,21 @@
     <ClInclude Include="VkSubPasses.hpp">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="VkSsao.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkSphericalenvmapping.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkSkeletalAnimation.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkShadowMappingomni.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkShadowMapping.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vulkanandroid.cpp">
