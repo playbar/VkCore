@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Using subpasses for G-Buffer compositing
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,16 +20,17 @@
 
 #define NUM_LIGHTS 32
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-};
 
-class VulkanExample : public VulkanBase
+class VkSubPasses : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+	};
+
 public:
 	struct {
 		vkMeshLoader::MeshBuffer scene;
@@ -99,8 +94,8 @@ public:
 	struct Attachments {
 		FrameBufferAttachment position, normal, albedo;
 	} attachments;
-	
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+
+	VkSubPasses() : VulkanBase(ENABLE_VALIDATION)
 	{
 		enableTextOverlay = false;
 		title = "Vulkan Example - Subpasses";
@@ -114,7 +109,7 @@ public:
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 	}
 
-	~VulkanExample()
+	~VkSubPasses()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -133,7 +128,7 @@ public:
 
 		vkDestroyPipeline(mDevice, pipelines.offscreen, nullptr);
 		vkDestroyPipeline(mDevice, pipelines.composition, nullptr);
-	
+
 		vkDestroyPipelineLayout(mDevice, pipelineLayouts.offscreen, nullptr);
 		vkDestroyPipelineLayout(mDevice, pipelineLayouts.composition, nullptr);
 
@@ -243,7 +238,7 @@ public:
 	// Override render pass setup from base class
 	void setupRenderPass()
 	{
-		createGBufferAttachments(); 
+		createGBufferAttachments();
 
 		std::array<VkAttachmentDescription, 5> attachments{};
 		// Color attachment
@@ -294,7 +289,7 @@ public:
 		attachments[4].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		attachments[4].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-		std::array<VkSubpassDescription,2> subpassDescriptions{};
+		std::array<VkSubpassDescription, 2> subpassDescriptions{};
 
 		// First subpass: Fill G-Buffer components
 
@@ -570,7 +565,7 @@ public:
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
 			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
-				VK_TRUE, 
+				VK_TRUE,
 				VK_TRUE,
 				VK_COMPARE_OP_LESS_OR_EQUAL);
 
@@ -626,7 +621,7 @@ public:
 		// Offscreen pipeline
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/subpasses/gbuffer.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/subpasses/gbuffer.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-	
+
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.offscreen));
 	}
 
@@ -666,7 +661,7 @@ public:
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayouts.composition));
 
 		// Pipeline layout
-		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = 
+		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(&descriptorSetLayouts.composition, 1);
 
 		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.composition));
@@ -736,7 +731,7 @@ public:
 			vkTools::initializers::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
-			vkTools::initializers::pipelineColorBlendStateCreateInfo(1,	&blendAttachmentState);
+			vkTools::initializers::pipelineColorBlendStateCreateInfo(1, &blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
 			vkTools::initializers::pipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
@@ -747,12 +742,12 @@ public:
 		VkPipelineMultisampleStateCreateInfo multisampleState =
 			vkTools::initializers::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT, 0);
 
-		std::vector<VkDynamicState> dynamicStateEnables = {	VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		std::vector<VkDynamicState> dynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 		VkPipelineDynamicStateCreateInfo dynamicState =
 			vkTools::initializers::pipelineDynamicStateCreateInfo(dynamicStateEnables.data(), static_cast<uint32_t>(dynamicStateEnables.size()), 0);
 
 		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
-		
+
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/subpasses/composition.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/subpasses/composition.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
@@ -840,13 +835,13 @@ public:
 
 		std::mt19937 rndGen((unsigned)time(NULL));
 		std::uniform_real_distribution<float> rndDist(-1.0f, 1.0f);
-		std::uniform_int_distribution<uint32_t> rndCol(0, static_cast<uint32_t>(colors.size()-1));
+		std::uniform_int_distribution<uint32_t> rndCol(0, static_cast<uint32_t>(colors.size() - 1));
 
 		for (auto& light : uboLights.lights)
 		{
 			light.position = glm::vec4(rndDist(rndGen) * 6.0f, 0.25f + std::abs(rndDist(rndGen)) * 4.0f, rndDist(rndGen) * 6.0f, 1.0f);
 			light.color = colors[rndCol(rndGen)];
-			light.radius = 1.0f + std::abs(rndDist(rndGen));			
+			light.radius = 1.0f + std::abs(rndDist(rndGen));
 		}
 	}
 
@@ -917,4 +912,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

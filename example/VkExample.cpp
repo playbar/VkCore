@@ -18,8 +18,11 @@
 #include <vector>
 #include <exception>
 #include "VkTriangle.hpp"
+#include "VkScene.hpp"
+#include "VkTextOverLay.hpp"
+#include "VkSubPasses.hpp"
 
-VkTriangle *vulkanExample;
+VkSubPasses *vulkanExample;
 
 #if defined(_WIN32)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -57,7 +60,7 @@ int main(const int argc, const char *argv[])
 	// which would make the application crash at start
 	app_dummy();
 #endif
-	vulkanExample = new VkTriangle();
+	vulkanExample = new VkSubPasses();
 #if defined(_WIN32)
 	vulkanExample->setupWindow(hInstance, WndProc);
 #elif defined(__ANDROID__)

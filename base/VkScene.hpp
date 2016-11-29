@@ -1,21 +1,4 @@
-/*
-* Vulkan Demo Scene 
-*
-* Don't take this a an example, it's more of a personal playground
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* Note : Different license than the other examples!
-*
-* This code is licensed under the Mozilla Public License Version 2.0 (http://opensource.org/licenses/MPL-2.0)
-*/
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <vector>
-
+#pragma once
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -28,7 +11,7 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
-class VulkanExample : public VulkanBase
+class VkScene : public VulkanBase
 {
 public:
 
@@ -91,7 +74,7 @@ public:
 
 	glm::vec4 lightPos = glm::vec4(1.0f, 2.0f, 0.0f, 0.0f);
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkScene() : VulkanBase(ENABLE_VALIDATION)
 	{
 		width = 1280;
 		height = 720;
@@ -102,7 +85,7 @@ public:
 		title = "Vulkan Demo Scene - (c) 2016 by Sascha Willems";
 	}
 
-	~VulkanExample()
+	~VkScene()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -127,8 +110,8 @@ public:
 	void loadTextures()
 	{
 		textureLoader->loadCubemap(
-			getAssetPath() + "textures/cubemap_vulkan.ktx", 
-			VK_FORMAT_R8G8B8A8_UNORM, 
+			getAssetPath() + "textures/cubemap_vulkan.ktx",
+			VK_FORMAT_R8G8B8A8_UNORM,
 			&textures.skybox);
 	}
 
@@ -179,7 +162,7 @@ public:
 
 	void prepareVertices()
 	{
-		struct Vertex 
+		struct Vertex
 		{
 			float pos[3];
 			float normal[3];
@@ -188,7 +171,7 @@ public:
 		};
 
 		std::vector<std::string> meshFiles = { "vulkanscenelogos.dae", "vulkanscenebackground.dae", "vulkanscenemodels.dae", "cube.obj" };
-		std::vector<VkPipeline*> meshPipelines = { &pipelines.logos, &pipelines.models, &pipelines.models, &pipelines.skybox};
+		std::vector<VkPipeline*> meshPipelines = { &pipelines.logos, &pipelines.models, &pipelines.models, &pipelines.skybox };
 
 		// todo : Use mesh function for loading
 		float scale = 1.0f;
@@ -211,13 +194,13 @@ public:
 			}
 			for (size_t m = 0; m < scene.m_Entries.size(); m++)
 			{
-				for (size_t v = 0; v < scene.m_Entries[m].Vertices.size(); v++) 
+				for (size_t v = 0; v < scene.m_Entries[m].Vertices.size(); v++)
 				{
 					glm::vec3 pos = (scene.m_Entries[m].Vertices[v].m_pos + offset) * scale;
 					glm::vec3 normal = scene.m_Entries[m].Vertices[v].m_normal;
 					glm::vec2 uv = scene.m_Entries[m].Vertices[v].m_tex;
 					glm::vec3 col = scene.m_Entries[m].Vertices[v].m_color;
-					Vertex vert = 
+					Vertex vert =
 					{
 						{ pos.x, pos.y, pos.z },
 						{ normal.x, -normal.y, normal.z },
@@ -526,7 +509,7 @@ public:
 			glm::vec3(0, 0, -zoom),
 			cameraPos,
 			glm::vec3(0, 1, 0)
-			);
+		);
 
 		uboVS.model = glm::mat4();
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -580,5 +563,3 @@ public:
 	}
 
 };
-
-VULKAN_EXAMPLE_MAIN()

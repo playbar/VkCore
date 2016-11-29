@@ -11,9 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{DE1DEF4B-307E-45C2-90CC-8023327294E2}</ProjectGuid>
+    <ProjectGuid>{3E6755A8-7370-4449-A8B7-4FCDCABD242C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>VkExample</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -59,7 +60,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>..\libs\vulkan\vulkan-1.lib;..\libs\assimp\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\libs\vulkan\vulkan-1.lib;..\libs\assimp\assimp.lib;..\libs\vkcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -79,21 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\base\vulkandebug.cpp" />
-    <ClCompile Include="..\base\VulkanBase.cpp" />
-    <ClCompile Include="..\base\vulkantools.cpp" />
-    <ClCompile Include="subpasses.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\base\vulkandebug.h" />
-    <ClInclude Include="..\base\VulkanBase.h" />
-    <ClInclude Include="..\base\vulkantools.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\data\shaders\subpasses\composition.frag" />
-    <None Include="..\data\shaders\subpasses\composition.vert" />
-    <None Include="..\data\shaders\subpasses\gbuffer.frag" />
-    <None Include="..\data\shaders\subpasses\gbuffer.vert" />
+    <ClCompile Include="VkExample.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -60,6 +60,15 @@
     <ClInclude Include="VkTriangle.hpp">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="VkScene.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTextOverLay.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkSubPasses.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vulkanandroid.cpp">
