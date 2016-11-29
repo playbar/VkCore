@@ -77,7 +77,7 @@ public:
 		// Specs require 128 bytes, so if the device complies our 
 		// push constant buffer should always fit into memory
 		VkPhysicalDeviceProperties deviceProps;
-		vkGetPhysicalDeviceProperties(mPhysicalDevice, &deviceProps);
+		vkGetPhysicalDeviceProperties(mVulkanDevice->mPhysicalDevice, &deviceProps);
 		assert(sizeof(pushConstants) <= deviceProps.limits.maxPushConstantsSize);
 #endif
 	}

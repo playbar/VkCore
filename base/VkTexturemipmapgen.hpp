@@ -130,7 +130,7 @@ public:
 		texture.mipLevels = floor(log2(std::max(texture.width, texture.height))) + 1;
 
 		// Get device properites for the requested texture format
-		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &formatProperties);
+		vkGetPhysicalDeviceFormatProperties(mVulkanDevice->mPhysicalDevice, format, &formatProperties);
 
 		// Mip-chain generation requires support for blit source and destination
 		assert(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT);

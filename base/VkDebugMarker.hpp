@@ -283,7 +283,7 @@ public:
 
 		// Find a suitable depth format
 		VkFormat fbDepthFormat;
-		VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mPhysicalDevice, &fbDepthFormat);
+		VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &fbDepthFormat);
 		assert(validDepthFormat);
 
 		// Color attachment

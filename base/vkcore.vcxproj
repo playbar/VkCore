@@ -79,6 +79,7 @@
     <ClInclude Include="vulkantools.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="VkCoreDevice.cpp" />
     <ClCompile Include="vulkanandroid.cpp" />
     <ClCompile Include="VulkanBase.cpp" />
     <ClCompile Include="vulkandebug.cpp" />

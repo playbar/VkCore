@@ -192,7 +192,7 @@ public:
 		mTexture.mipLevels = static_cast<uint32_t>(tex2D.levels());
 
 		// Get device properites for the requested texture format
-		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &formatProperties);
+		vkGetPhysicalDeviceFormatProperties(mVulkanDevice->mPhysicalDevice, format, &formatProperties);
 
 		// Only use linear tiling if requested (and supported by the device)
 		// Support for linear tiling is mostly limited, so prefer to use

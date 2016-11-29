@@ -224,7 +224,7 @@ public:
 		// Format support check
 		// 3D texture support in Vulkan is mandatory (in contrast to OpenGL) so no need to check if it's supported
 		VkFormatProperties formatProperties;
-		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, texture.format, &formatProperties);
+		vkGetPhysicalDeviceFormatProperties(mVulkanDevice->mPhysicalDevice, texture.format, &formatProperties);
 		// Check if format supports transfer
 		if (!formatProperties.optimalTilingFeatures & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 		{

@@ -109,7 +109,7 @@ public:
 		VkFormatProperties formatProperties;
 
 		// Get device properties for the requested texture format
-		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &formatProperties);
+		vkGetPhysicalDeviceFormatProperties(mVulkanDevice->mPhysicalDevice, format, &formatProperties);
 		// Check if requested image format supports image storage operations
 		assert(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT);
 
@@ -558,12 +558,12 @@ public:
 	void getComputeQueue()
 	{
 		uint32_t queueFamilyCount;
-		vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &queueFamilyCount, NULL);
+		vkGetPhysicalDeviceQueueFamilyProperties(mVulkanDevice->mPhysicalDevice, &queueFamilyCount, NULL);
 		assert(queueFamilyCount >= 1);
 
 		std::vector<VkQueueFamilyProperties> queueFamilyProperties;
 		queueFamilyProperties.resize(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(mPhysicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+		vkGetPhysicalDeviceQueueFamilyProperties(mVulkanDevice->mPhysicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
 		// Some devices have dedicated compute queues, so we first try to find a queue that supports compute and not graphics
 		bool computeQueueFound = false;

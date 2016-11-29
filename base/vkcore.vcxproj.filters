@@ -209,5 +209,8 @@
     <ClCompile Include="vulkangear.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="VkCoreDevice.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

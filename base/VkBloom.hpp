@@ -271,7 +271,7 @@ public:
 
 		// Find a suitable depth format
 		VkFormat fbDepthFormat;
-		VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mPhysicalDevice, &fbDepthFormat);
+		VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &fbDepthFormat);
 		assert(validDepthFormat);
 
 		// Create a separate render pass for the offscreen rendering as it may differ from the one used for scene rendering

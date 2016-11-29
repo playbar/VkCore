@@ -789,7 +789,7 @@ public:
 		VkAttachmentDescription osAttachments[2] = {};
 
 		// Find a suitable depth format
-		VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mPhysicalDevice, &fbDepthFormat);
+		VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &fbDepthFormat);
 		assert(validDepthFormat);
 
 		osAttachments[0].format = FB_COLOR_FORMAT;

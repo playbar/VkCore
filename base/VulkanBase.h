@@ -70,7 +70,7 @@ protected:
 	VkInstance mInstance;
 	VkCoreDevice *mVulkanDevice;
 
-	VkPhysicalDevice mPhysicalDevice;
+	//VkPhysicalDevice mPhysicalDevice;
 	VkDevice mDevice;
 	VkPhysicalDeviceProperties mDeviceProperties;
 	VkPhysicalDeviceFeatures mDeviceFeatures;

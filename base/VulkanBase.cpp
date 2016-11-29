@@ -1,11 +1,3 @@
-/*
-* Vulkan Example base class
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
-
 #include "VulkanBase.h"
 
 std::vector<const char*> VulkanBase::args;
@@ -829,31 +821,31 @@ void VulkanBase::initVulkan(bool enableValidation)
 	// This example will always use the first physical device reported,
 	// change the vector index if you have multiple Vulkan devices installed
 	// and want to use another one
-	mPhysicalDevice = physicalDevices[0];
+	//mPhysicalDevice = physicalDevices[0];
 
 	// Vulkan device creation
 	// This is handled by a separate class that gets a logical device representation
 	// and encapsulates functions related to a device
-	mVulkanDevice = new VkCoreDevice(mPhysicalDevice);
+	mVulkanDevice = new VkCoreDevice(physicalDevices[0]);
 	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(enabledFeatures));
 	mDevice = mVulkanDevice->mLogicalDevice;
 
 	// todo: remove
 	// Store properties (including limits) and features of the phyiscal device
 	// So examples can check against them and see if a feature is actually supported
-	vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
-	vkGetPhysicalDeviceFeatures(mPhysicalDevice, &mDeviceFeatures);
+	vkGetPhysicalDeviceProperties(mVulkanDevice->mPhysicalDevice, &mDeviceProperties);
+	vkGetPhysicalDeviceFeatures(mVulkanDevice->mPhysicalDevice, &mDeviceFeatures);
 	// Gather physical device memory properties
-	vkGetPhysicalDeviceMemoryProperties(mPhysicalDevice, &mDeviceMemoryProperties);
+	vkGetPhysicalDeviceMemoryProperties(mVulkanDevice->mPhysicalDevice, &mDeviceMemoryProperties);
 
 	// Get a graphics queue from the device
 	vkGetDeviceQueue(mDevice, mVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
 
 	// Find a suitable depth format
-	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mPhysicalDevice, &depthFormat);
+	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &depthFormat);
 	assert(validDepthFormat);
 
-	mSwapChain.connect(mInstance, mPhysicalDevice, mDevice);
+	mSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mDevice);
 
 	// Create synchronization objects
 	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();

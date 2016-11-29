@@ -290,14 +290,14 @@ public:
 
 		// Get device properites for the requested texture format
 		VkFormatProperties formatProperties;
-		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice, format, &formatProperties);
+		vkGetPhysicalDeviceFormatProperties(mVulkanDevice->mPhysicalDevice, format, &formatProperties);
 
 		// Get sparse image properties
 		std::vector<VkSparseImageFormatProperties> sparseProperties;
 		// Sparse properties count for the desired format
 		uint32_t sparsePropertiesCount;
 		vkGetPhysicalDeviceSparseImageFormatProperties(
-			mPhysicalDevice,
+			mVulkanDevice->mPhysicalDevice,
 			format,
 			VK_IMAGE_TYPE_2D,
 			VK_SAMPLE_COUNT_1_BIT,
@@ -315,7 +315,7 @@ public:
 		// Get actual image format properties
 		sparseProperties.resize(sparsePropertiesCount);
 		vkGetPhysicalDeviceSparseImageFormatProperties(
-			mPhysicalDevice,
+			mVulkanDevice->mPhysicalDevice,
 			format,
 			VK_IMAGE_TYPE_2D,
 			VK_SAMPLE_COUNT_1_BIT,
