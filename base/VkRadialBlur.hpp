@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Fullscreen radial blur (Single pass offscreen effect)
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,17 +21,17 @@
 #define FB_DIM 512
 #define FB_COLOR_FORMAT VK_FORMAT_R8G8B8A8_UNORM
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL
-};
 
-class VulkanExample : public VulkanBase
+class VkRadialBlur : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL
+	};
 public:
 	bool blur = true;
 	bool displayTexture = false;
@@ -113,7 +107,7 @@ public:
 		VkSemaphore semaphore = VK_NULL_HANDLE;
 	} offscreenPass;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkRadialBlur() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -10.0f;
 		rotation = { -16.25f, -28.75f, 0.0f };
@@ -122,7 +116,7 @@ public:
 		title = "Vulkan Example - Radial blur";
 	}
 
-	~VulkanExample()
+	~VkRadialBlur()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -592,9 +586,9 @@ public:
 				&uniformData.scene.descriptor),
 			// Binding 1: Color gradient sampler
 			vkTools::initializers::writeDescriptorSet(
-				descriptorSets.scene, 
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				1, 
+				descriptorSets.scene,
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				1,
 				&textures.gradient.descriptor),
 		};
 		vkUpdateDescriptorSets(mDevice, offScreenWriteDescriptorSets.size(), offScreenWriteDescriptorSets.data(), 0, NULL);
@@ -613,9 +607,9 @@ public:
 				&uniformData.blurParams.descriptor),
 			// Binding 0: Fragment shader texture sampler
 			vkTools::initializers::writeDescriptorSet(
-				descriptorSets.radialBlur, 
+				descriptorSets.radialBlur,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-				1, 
+				1,
 				&offscreenPass.descriptor),
 		};
 
@@ -879,4 +873,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

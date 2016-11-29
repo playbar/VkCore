@@ -8,9 +8,9 @@
 #include "VkScene.hpp"
 #include "VkTextOverLay.hpp"
 #include "VkSubPasses.hpp"
-#include "VkShadowMapping.hpp"
+#include "VkParallaxMapping.hpp"
 
-VkShadowMapping *vulkanExample;
+VkParallaxMapping *vulkanExample;
 
 #if defined(_WIN32)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -48,7 +48,7 @@ int main(const int argc, const char *argv[])
 	// which would make the application crash at start
 	app_dummy();
 #endif
-	vulkanExample = new VkShadowMapping();
+	vulkanExample = new VkParallaxMapping();
 #if defined(_WIN32)
 	vulkanExample->setupWindow(hInstance, WndProc);
 #elif defined(__ANDROID__)

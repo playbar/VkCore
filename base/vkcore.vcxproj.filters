@@ -84,6 +84,24 @@
     <ClInclude Include="VkShadowMapping.hpp">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="VkSceneRendering.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkRadialBlur.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkPushConstants.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkPipelines.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkParticlefire.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkParallaxMapping.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vulkanandroid.cpp">

@@ -20,7 +20,13 @@
     <ClInclude Include="threadpool.hpp" />
     <ClInclude Include="VDeleter.hpp" />
     <ClInclude Include="VkCamera.hpp" />
+    <ClInclude Include="VkParallaxMapping.hpp" />
+    <ClInclude Include="VkParticlefire.hpp" />
+    <ClInclude Include="VkPipelines.hpp" />
+    <ClInclude Include="VkPushConstants.hpp" />
+    <ClInclude Include="VkRadialBlur.hpp" />
     <ClInclude Include="VkScene.hpp" />
+    <ClInclude Include="VkSceneRendering.hpp" />
     <ClInclude Include="VkShadowMapping.hpp" />
     <ClInclude Include="VkShadowMappingomni.hpp" />
     <ClInclude Include="VkSkeletalAnimation.hpp" />

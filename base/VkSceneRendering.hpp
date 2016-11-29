@@ -1,25 +1,4 @@
-/*
-* Vulkan Example - Scene rendering
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*
-* Summary:
-* Renders a scene made of multiple meshes with different materials and textures.
-*
-* The example loads a scene made up of multiple meshes into one vertex and index buffer to only
-* have one (big) memory allocation. In Vulkan it's advised to keep number of memory allocations
-* down and try to allocate large blocks of memory at once instead of having many small allocations.
-*
-* Every mesh has a separate material and multiple descriptor sets (set = x layout qualifier in GLSL)
-* are used to bind a uniform buffer with global matrices and the mesh' material's sampler at once.
-*
-* To demonstrate another way of passing data the example also uses push constants for passing
-* material properties.
-*
-* Note that this example is just one way of rendering a scene made up of multiple meshes iin Vulkan.
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -193,8 +172,8 @@ private:
 			VK_SHADER_STAGE_VERTEX_BIT,
 			0));
 		descriptorLayout = vkTools::initializers::descriptorSetLayoutCreateInfo(
-				setLayoutBindings.data(),
-				static_cast<uint32_t>(setLayoutBindings.size()));
+			setLayoutBindings.data(),
+			static_cast<uint32_t>(setLayoutBindings.size()));
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(vulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayouts.scene));
 
 		// Set 1: Material data
@@ -211,8 +190,8 @@ private:
 
 		// We will be using a push constant block to pass material properties to the fragment shaders
 		VkPushConstantRange pushConstantRange = vkTools::initializers::pushConstantRange(
-			VK_SHADER_STAGE_FRAGMENT_BIT, 
-			sizeof(SceneMaterialProperites), 
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+			sizeof(SceneMaterialProperites),
 			0);
 		pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 		pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
@@ -317,7 +296,7 @@ private:
 		// For better performance we only create one index and vertex buffer to keep number of memory allocations down
 		size_t vertexDataSize = vertices.size() * sizeof(Vertex);
 		size_t indexDataSize = indices.size() * sizeof(uint32_t);
-		
+
 		vk::Buffer vertexStaging, indexStaging;
 
 		// Vertex buffer
@@ -543,7 +522,7 @@ public:
 	}
 };
 
-class VulkanExample : public VulkanBase
+class VkSceneRendering : public VulkanBase
 {
 public:
 	bool wireframe = false;
@@ -557,7 +536,7 @@ public:
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 	} vertices;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkSceneRendering() : VulkanBase(ENABLE_VALIDATION)
 	{
 		rotationSpeed = 0.5f;
 		enableTextOverlay = true;
@@ -569,7 +548,7 @@ public:
 		title = "Vulkan Example - Scene rendering";
 	}
 
-	~VulkanExample()
+	~VkSceneRendering()
 	{
 		delete(scene);
 	}
@@ -590,7 +569,7 @@ public:
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
-		clearValues[0].color = { { 0.25f, 0.25f, 0.25f, 1.0f} };
+		clearValues[0].color = { { 0.25f, 0.25f, 0.25f, 1.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
@@ -877,63 +856,3 @@ public:
 	}
 };
 
-VulkanExample *vulkanExample;
-
-#if defined(_WIN32)
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleMessages(hWnd, uMsg, wParam, lParam);
-	}
-	return (DefWindowProc(hWnd, uMsg, wParam, lParam));
-}
-#elif defined(__linux__) && !defined(__ANDROID__) && !defined(_DIRECT2DISPLAY)
-static void handleEvent(const xcb_generic_event_t *event)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleEvent(event);
-}
-		}
-#endif
-
-// Main entry point
-#if defined(_WIN32)
-// Windows entry point
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
-#elif defined(__ANDROID__)
-// Android entry point
-void android_main(android_app* state)
-#elif defined(__linux__)
-// Linux entry point
-int main(const int argc, const char *argv[])
-#endif
-{
-#if defined(__ANDROID__)
-	// Removing this may cause the compiler to omit the main entry point 
-	// which would make the application crash at start
-	app_dummy();
-#endif
-	vulkanExample = new VulkanExample();
-#if defined(_WIN32)
-	vulkanExample->setupWindow(hInstance, WndProc);
-#elif defined(__ANDROID__)
-	// Attach vulkan example to global android application state
-	state->userData = vulkanExample;
-	state->onAppCmd = VulkanExample::handleAppCommand;
-	state->onInputEvent = VulkanExample::handleAppInput;
-	vulkanExample->androidApp = state;
-#elif defined(__linux__) && !defined(_DIRECT2DISPLAY)
-	vulkanExample->setupWindow();
-#endif
-#if !defined(__ANDROID__)
-	vulkanExample->initSwapchain();
-	vulkanExample->prepare();
-#endif
-	vulkanExample->renderLoop();
-	delete(vulkanExample);
-#if !defined(__ANDROID__)
-	return 0;
-#endif
-}
