@@ -1,13 +1,3 @@
-/*
-* Vulkan Example - Animated gears using multiple uniform buffers
-*
-* See readme.md for details
-*
-* Copyright (C) 2015 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
-
 #pragma once
 
 #include <math.h>
@@ -23,13 +13,13 @@
 #include "vulkandevice.hpp"
 #include "vulkanbuffer.hpp"
 
-struct Vertex
+struct VertexGear
 {
 	float pos[3];
 	float normal[3];
 	float color[3];
 
-	Vertex(const glm::vec3& p, const glm::vec3& n, const glm::vec3& c)
+	VertexGear(const glm::vec3& p, const glm::vec3& n, const glm::vec3& c)
 	{
 		pos[0] = p.x;
 		pos[1] = p.y;
@@ -82,7 +72,7 @@ private:
 	UBO ubo;
 	vkTools::UniformData uniformData;
 
-	int32_t newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal);
+	int32_t newVertex(std::vector<VertexGear> *vBuffer, float x, float y, float z, const glm::vec3& normal);
 	void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c);
 
 	void prepareUniformBuffer();

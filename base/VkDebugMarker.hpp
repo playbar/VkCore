@@ -118,15 +118,7 @@ namespace DebugMarker
 	}
 };
 
-// Vertex layout used in this example
-struct Vertex {
-	glm::vec3 pos;
-	glm::vec3 normal;
-	glm::vec2 uv;
-	glm::vec3 color;
-};
-
-struct Scene {
+struct BugMarScene {
 	struct {
 		VkBuffer buf;
 		VkDeviceMemory mem;
@@ -161,6 +153,14 @@ struct Scene {
 
 class VkDebugMarker : public VulkanBase
 {
+	// Vertex layout used in this example
+	struct Vertex 
+	{
+		glm::vec3 pos;
+		glm::vec3 normal;
+		glm::vec2 uv;
+		glm::vec3 color;
+	};
 public:
 	bool wireframe = true;
 	bool glow = true;
@@ -171,7 +171,7 @@ public:
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 	} vertices;
 
-	Scene scene, sceneGlow;
+	BugMarScene scene, sceneGlow;
 
 	struct {
 		vkTools::UniformData vsScene;
@@ -503,7 +503,7 @@ public:
 	}
 
 	// Load a model file as separate meshes into a scene
-	void loadModel(std::string filename, Scene *scene)
+	void loadModel(std::string filename, BugMarScene *scene)
 	{
 		VulkanMeshLoader *meshLoader = new VulkanMeshLoader(mVulkanDevice);
 #if defined(__ANDROID__)

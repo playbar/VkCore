@@ -18,17 +18,6 @@
 
 #define ENABLE_VALIDATION false
 
-// Vertex layout used in this example
-struct Vertex {
-	glm::vec3 pos;
-	glm::vec3 normal;
-	glm::vec2 uv;
-	glm::vec3 color;
-	// Max. four bones per vertex
-	float boneWeights[4];
-	uint32_t boneIDs[4];
-};
-
 std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 {
 	vkMeshLoader::VERTEX_LAYOUT_POSITION,
@@ -330,6 +319,18 @@ private:
 
 class VkSkeletalAnimation : public VulkanBase
 {
+
+	// Vertex layout used in this example
+	struct Vertex 
+	{
+		glm::vec3 pos;
+		glm::vec3 normal;
+		glm::vec2 uv;
+		glm::vec3 color;
+		// Max. four bones per vertex
+		float boneWeights[4];
+		uint32_t boneIDs[4];
+	};
 public:
 	struct {
 		vkTools::VulkanTexture colorMap;

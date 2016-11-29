@@ -17,12 +17,6 @@
 
 #define ENABLE_VALIDATION false
 
-// Vertex layout for this example
-struct Vertex {
-	float pos[3];
-	float uv[2];
-};
-
 // AngelCode .fnt format structs and classes
 struct bmchar {
 	uint32_t x, y;
@@ -50,6 +44,12 @@ int32_t nextValuePair(std::stringstream *stream)
 
 class VkDistancefieldfonts : public VulkanBase
 {
+	// Vertex layout for this example
+	struct Vertex
+	{
+		float pos[3];
+		float uv[2];
+	};
 public:
 	bool splitScreen = true;
 

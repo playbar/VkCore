@@ -1,10 +1,4 @@
-/*
-* View frustum culling class
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-*/
-
+#pragma once
 #include <array>
 #include <math.h>
 #include <glm/glm.hpp>

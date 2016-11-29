@@ -16,14 +16,14 @@
 
 #define ENABLE_VALIDATION false
 
-// Vertex layout for this example
-struct Vertex {
-	float pos[3];
-	float uv[2];
-};
-
 class VkComputeShader : public VulkanBase
 {
+	// Vertex layout for this example
+	struct Vertex
+	{
+		float pos[3];
+		float uv[2];
+	};
 private:
 	vkTools::VulkanTexture textureColorMap;
 	vkTools::VulkanTexture textureComputeTarget;

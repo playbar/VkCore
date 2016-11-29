@@ -16,15 +16,15 @@
 
 #define ENABLE_VALIDATION false
 
-// Vertex layout for this example
-struct Vertex {
-	float pos[3];
-	float uv[2];
-	float normal[3];
-};
-
 class VkTexture : public VulkanBase
 {
+	// Vertex layout for this example
+	struct Vertex 
+	{
+		float pos[3];
+		float uv[2];
+		float normal[3];
+	};
 public:
 	// Contains all Vulkan objects that are required to store and use a texture
 	// Note that this repository contains a texture loader (vulkantextureloader.h)

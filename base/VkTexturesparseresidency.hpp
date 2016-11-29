@@ -22,13 +22,6 @@
 
 #define ENABLE_VALIDATION false
 
-// Vertex layout for this example
-struct Vertex {
-	float pos[3];
-	float normal[3];
-	float uv[2];
-};
-
 // Virtual texture page as a part of the partially resident texture
 // Contains memory bindings, offsets and status information
 struct VirtualTexturePage
@@ -164,6 +157,14 @@ int32_t lastFilledMip = 0;
 
 class VkTexturesparseresidency : public VulkanBase
 {
+	// Vertex layout for this example
+	struct Vertex
+	{
+		float pos[3];
+		float normal[3];
+		float uv[2];
+	};
+
 	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
 	{
 		vkMeshLoader::VERTEX_LAYOUT_POSITION,

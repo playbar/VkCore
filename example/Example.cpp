@@ -4,13 +4,52 @@
 #include <assert.h>
 #include <vector>
 #include <exception>
-#include "VkTriangle.hpp"
-#include "VkScene.hpp"
-#include "VkTextOverLay.hpp"
-#include "VkSubPasses.hpp"
+#include "VkBloom.hpp"
 #include "VkComputecullandlod.hpp"
+#include "VkComputeParticles.hpp"
+#include "VkComputeShader.hpp"
+#include "VkDebugMarker.hpp"
+#include "VkDeferred.hpp"
+#include "VkDeferredMultisampling.hpp"
+#include "VkDeferredShadows.hpp"
+#include "VkDisplacement.hpp"
+#include "VkDistancefieldfonts.hpp"
+#include "VkGears.hpp"
+#include "VkGeometryShader.hpp"
+#include "VkIndirectdraw.hpp"
+#include "VkInstancing.hpp"
+#include "VkMesh.hpp"
+#include "VkMultisampling.hpp"
+#include "VkMultiThreading.hpp"
+#include "VkOcclusionquery.hpp"
+#include "VkOffScreen.hpp"
+#include "VkParallaxMapping.hpp"
+#include "VkParticlefire.hpp"
+#include "VkPipelines.hpp"
+#include "VkPushConstants.hpp"
+#include "VkRadialBlur.hpp"
+#include "VkRaytracing.hpp"
+#include "VkScene.hpp"
+#include "VkSceneRendering.hpp"
+#include "VkShadowMapping.hpp"
+#include "VkShadowMappingomni.hpp"
+#include "VkSkeletalAnimation.hpp"
+#include "VkSphericalenvmapping.hpp"
+#include "VkSsao.hpp"
+#include "VkSubPasses.hpp"
+#include "VkTerraintessellation.hpp"
+#include "VkTessellation.hpp"
+#include "VkTextOverLay.hpp"
+#include "VkTexture.hpp"
+#include "VkTexture3d.hpp"
+#include "VkTextureArray.hpp"
+#include "VkTexturecubemap.hpp"
+#include "VkTexturemipmapgen.hpp"
+#include "VkTexturesparseresidency.hpp"
+#include "VkTriangle.hpp"
 
-VkTriangle *vulkanExample;
+
+VkTexturemipmapgen *vulkanExample;
 
 #if defined(_WIN32)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -47,7 +86,7 @@ int main(const int argc, const char *argv[])
 	app_dummy();
 #endif	
 #if defined(_WIN32)
-	vulkanExample = new VkTriangle();
+	vulkanExample = new VkTexturemipmapgen();
 	vulkanExample->setupWindow(hInstance, WndProc);
 	vulkanExample->initSwapchain();
 	vulkanExample->prepare();

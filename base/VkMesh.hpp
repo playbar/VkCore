@@ -15,17 +15,16 @@
 
 #define ENABLE_VALIDATION false
 
-// Vertex layout used in this example
-struct Vertex {
-	glm::vec3 pos;
-	glm::vec3 normal;
-	glm::vec2 uv;
-	glm::vec3 color;
-};
-
 class VkMesh : public VulkanBase
 {
-
+	// Vertex layout used in this example
+	struct Vertex
+	{
+		glm::vec3 pos;
+		glm::vec3 normal;
+		glm::vec2 uv;
+		glm::vec3 color;
+	};
 public:
 	bool wireframe = false;
 

@@ -18,7 +18,7 @@
 #define ENABLE_VALIDATION false
 
 // Vertex layout used in this example
-struct Vertex {
+struct SceneVertex {
 	glm::vec3 pos;
 	glm::vec3 normal;
 	glm::vec2 uv;
@@ -243,7 +243,7 @@ private:
 	// Load all meshes from the scene and generate the buffers for rendering them
 	void loadMeshes(VkCommandBuffer copyCmd)
 	{
-		std::vector<Vertex> vertices;
+		std::vector<SceneVertex> vertices;
 		std::vector<uint32_t> indices;
 		uint32_t indexBase = 0;
 
@@ -267,7 +267,7 @@ private:
 
 			for (uint32_t v = 0; v < aMesh->mNumVertices; v++)
 			{
-				Vertex vertex;
+				SceneVertex vertex;
 				vertex.pos = glm::make_vec3(&aMesh->mVertices[v].x);
 				vertex.pos.y = -vertex.pos.y;
 				vertex.uv = hasUV ? glm::make_vec2(&aMesh->mTextureCoords[0][v].x) : glm::vec2(0.0f);
@@ -291,7 +291,7 @@ private:
 
 		// Create buffers
 		// For better performance we only create one index and vertex buffer to keep number of memory allocations down
-		size_t vertexDataSize = vertices.size() * sizeof(Vertex);
+		size_t vertexDataSize = vertices.size() * sizeof(SceneVertex);
 		size_t indexDataSize = indices.size() * sizeof(uint32_t);
 
 		vk::Buffer vertexStaging, indexStaging;
@@ -607,7 +607,7 @@ public:
 		vertices.bindingDescriptions[0] =
 			vkTools::initializers::vertexInputBindingDescription(
 				VERTEX_BUFFER_BIND_ID,
-				sizeof(Vertex),
+				sizeof(SceneVertex),
 				VK_VERTEX_INPUT_RATE_VERTEX);
 
 		// Attribute descriptions

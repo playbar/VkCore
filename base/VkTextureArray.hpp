@@ -16,14 +16,15 @@
 
 #define ENABLE_VALIDATION false
 
-// Vertex layout for this example
-struct Vertex {
-	float pos[3];
-	float uv[2];
-};
-
 class VkTextureArray : public VulkanBase
 {
+	// Vertex layout for this example
+	struct Vertex
+	{
+		float pos[3];
+		float uv[2];
+	};
+
 public:
 	// Number of array layers in texture array
 	// Also used as instance count

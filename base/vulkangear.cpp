@@ -1,18 +1,8 @@
-/*
-* Vulkan Example - Animated gears using multiple uniform buffers
-*
-* See readme.md for details
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
-
 #include "vulkangear.h"
 
-int32_t VulkanGear::newVertex(std::vector<Vertex> *vBuffer, float x, float y, float z, const glm::vec3& normal)
+int32_t VulkanGear::newVertex(std::vector<VertexGear> *vBuffer, float x, float y, float z, const glm::vec3& normal)
 {
-	Vertex v(glm::vec3(x, y, z), normal, color);
+	VertexGear v(glm::vec3(x, y, z), normal, color);
 	vBuffer->push_back(v);
 	return vBuffer->size() - 1;
 }
@@ -41,7 +31,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 	this->rotOffset = gearinfo->rotOffset;
 	this->rotSpeed = gearinfo->rotSpeed;
 
-	std::vector<Vertex> vBuffer;
+	std::vector<VertexGear> vBuffer;
 	std::vector<uint32_t> iBuffer;
 
 	int i, j;
@@ -168,7 +158,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix1, ix3, ix2);
 	}
 
-	int vertexBufferSize = vBuffer.size() * sizeof(Vertex);
+	int vertexBufferSize = vBuffer.size() * sizeof(VertexGear);
 	int indexBufferSize = iBuffer.size() * sizeof(uint32_t);
 
 	bool useStaging = true;

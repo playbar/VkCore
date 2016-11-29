@@ -21,12 +21,6 @@
 
 #define ENABLE_VALIDATION false
 
-// Vertex layout for this example
-struct Vertex {
-	float pos[3];
-	float uv[2];
-	float normal[3];
-};
 
 template <typename T>
 class PerlinNoise
@@ -136,6 +130,13 @@ public:
 
 class VkTexture3d : public VulkanBase
 {
+	// Vertex layout for this example
+	struct Vertex
+	{
+		float pos[3];
+		float uv[2];
+		float normal[3];
+	};
 public:
 	// Contains all Vulkan objects that are required to store and use a 3D texture
 	struct Texture {

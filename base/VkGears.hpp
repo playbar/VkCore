@@ -145,7 +145,7 @@ public:
 		vertices.bindingDescriptions[0] =
 			vkTools::initializers::vertexInputBindingDescription(
 				VERTEX_BUFFER_BIND_ID,
-				sizeof(Vertex),
+				sizeof(VertexGear),
 				VK_VERTEX_INPUT_RATE_VERTEX);
 
 		// Attribute descriptions

@@ -4,8 +4,6 @@
 
 
 #define ENABLE_VALIDATION true
-// Set to "true" to use staging buffers for uploading vertex and index data to device local memory
-// See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING false
 
 #include <glm/glm.hpp>
