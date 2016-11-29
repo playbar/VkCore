@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Animated gears using multiple uniform buffers
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,15 +12,24 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
-#include "vulkangear.h"
 #include "VulkanBase.h"
 
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
-class VulkanExample : public VulkanBase
+class VkGeometryShader : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR
+	};
+
 public:
+	bool displayNormals = true;
+
 	struct {
 		VkPipelineVertexInputStateCreateInfo inputState;
 		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
@@ -34,36 +37,65 @@ public:
 	} vertices;
 
 	struct {
+		vkMeshLoader::MeshBuffer object;
+	} meshes;
+
+	struct {
+		glm::mat4 projection;
+		glm::mat4 model;
+	} uboVS;
+
+	struct {
+		glm::mat4 projection;
+		glm::mat4 model;
+	} uboGS;
+
+	struct {
+		vkTools::UniformData VS;
+		vkTools::UniformData GS;
+	} uniformData;
+
+	struct {
 		VkPipeline solid;
+		VkPipeline normals;
 	} pipelines;
 
-	std::vector<VulkanGear*> gears;
-
 	VkPipelineLayout pipelineLayout;
+	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkGeometryShader() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -16.0f;
-		rotation = glm::vec3(-23.75, 41.25, 21.0);
-		timerSpeed *= 0.25f;
+		zoom = -8.0f;
+		rotation = glm::vec3(0.0f, -25.0f, 0.0f);
 		enableTextOverlay = true;
-		title = "Vulkan Example - Gears";
+		title = "Vulkan Example - Geometry shader";
 	}
 
-	~VulkanExample()
+	~VkGeometryShader()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
 		vkDestroyPipeline(mDevice, pipelines.solid, nullptr);
+		vkDestroyPipeline(mDevice, pipelines.normals, nullptr);
 
 		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
 		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
 
-		for (auto& gear : gears)
+		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.object);
+
+		vkTools::destroyUniformData(mDevice, &uniformData.VS);
+		vkTools::destroyUniformData(mDevice, &uniformData.GS);
+	}
+
+	void reBuildCommandBuffers()
+	{
+		if (!checkCommandBuffers())
 		{
-			delete(gear);
+			destroyCommandBuffers();
+			createCommandBuffers();
 		}
+		buildCommandBuffers();
 	}
 
 	void buildCommandBuffers()
@@ -71,7 +103,7 @@ public:
 		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
-		clearValues[0].color = defaultClearColor;
+		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
@@ -85,23 +117,37 @@ public:
 
 		for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
 		{
+			// Set target frame buffer
 			renderPassBeginInfo.framebuffer = frameBuffers[i];
 
 			VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
 
 			vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f
+			);
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
 			VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
 			vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
-			vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.solid);
+			vkCmdSetLineWidth(mDrawCmdBuffers[i], 1.0f);
 
-			for (auto& gear : gears)
+			vkCmdBindDescriptorSets(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, NULL);
+
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &meshes.object.vertices.buf, offsets);
+			vkCmdBindIndexBuffer(mDrawCmdBuffers[i], meshes.object.indices.buf, 0, VK_INDEX_TYPE_UINT32);
+
+			// Solid shading
+			vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.solid);
+			vkCmdDrawIndexed(mDrawCmdBuffers[i], meshes.object.indexCount, 1, 0, 0, 0);
+
+			// Normal debugging
+			if (displayNormals)
 			{
-				gear->draw(mDrawCmdBuffers[i], pipelineLayout);
+				vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.normals);
+				vkCmdDrawIndexed(mDrawCmdBuffers[i], meshes.object.indexCount, 1, 0, 0, 0);
 			}
 
 			vkCmdEndRenderPass(mDrawCmdBuffers[i]);
@@ -110,56 +156,25 @@ public:
 		}
 	}
 
-	void prepareVertices()
+	void loadMeshes()
 	{
-		// Gear definitions
-		std::vector<float> innerRadiuses = { 1.0f, 0.5f, 1.3f };
-		std::vector<float> outerRadiuses = { 4.0f, 2.0f, 2.0f };
-		std::vector<float> widths = { 1.0f, 2.0f, 0.5f };
-		std::vector<int32_t> toothCount = { 20, 10, 10 };
-		std::vector<float> toothDepth = { 0.7f, 0.7f, 0.7f };
-		std::vector<glm::vec3> colors = {
-			glm::vec3(1.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 1.0f, 0.2f),
-			glm::vec3(0.0f, 0.0f, 1.0f)
-		};
-		std::vector<glm::vec3> positions = {
-			glm::vec3(-3.0, 0.0, 0.0),
-			glm::vec3(3.1, 0.0, 0.0),
-			glm::vec3(-3.1, -6.2, 0.0)
-		};
-		std::vector<float> rotationSpeeds = { 1.0f, -2.0f, -2.0f };
-		std::vector<float> rotationOffsets = { 0.0f, -9.0f, -30.0f };
+		loadMesh(getAssetPath() + "models/suzanne.obj", &meshes.object, vertexLayout, 0.25f);
+	}
 
-		gears.resize(positions.size());
-		for (int32_t i = 0; i < gears.size(); ++i)
-		{
-			GearInfo gearInfo = {};
-			gearInfo.innerRadius = innerRadiuses[i];
-			gearInfo.outerRadius = outerRadiuses[i];
-			gearInfo.width = widths[i];
-			gearInfo.numTeeth = toothCount[i];
-			gearInfo.toothDepth = toothDepth[i];
-			gearInfo.color = colors[i];
-			gearInfo.pos = positions[i];
-			gearInfo.rotSpeed = rotationSpeeds[i];
-			gearInfo.rotOffset = rotationOffsets[i];
-
-			gears[i] = new VulkanGear(mVulkanDevice);
-			gears[i]->generate(&gearInfo, mQueue);
-		}
-
-		// Binding and attribute descriptions are shared across all gears
+	void setupVertexDescriptions()
+	{
+		// Binding description
 		vertices.bindingDescriptions.resize(1);
 		vertices.bindingDescriptions[0] =
 			vkTools::initializers::vertexInputBindingDescription(
 				VERTEX_BUFFER_BIND_ID,
-				sizeof(Vertex),
+				vkMeshLoader::vertexSize(vertexLayout),
 				VK_VERTEX_INPUT_RATE_VERTEX);
 
 		// Attribute descriptions
 		// Describes memory layout and shader positions
 		vertices.attributeDescriptions.resize(3);
+
 		// Location 0 : Position
 		vertices.attributeDescriptions[0] =
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -167,13 +182,15 @@ public:
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				0);
-		// Location 1 : Normal
+
+		// Location 1 : Normals
 		vertices.attributeDescriptions[1] =
 			vkTools::initializers::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				1,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				sizeof(float) * 3);
+
 		// Location 2 : Color
 		vertices.attributeDescriptions[2] =
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -182,6 +199,7 @@ public:
 				VK_FORMAT_R32G32B32_SFLOAT,
 				sizeof(float) * 6);
 
+		// Assign to vertex buffer
 		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
 		vertices.inputState.vertexBindingDescriptionCount = vertices.bindingDescriptions.size();
 		vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
@@ -191,18 +209,17 @@ public:
 
 	void setupDescriptorPool()
 	{
-		// One UBO for each gear
+		// Example uses two ubos
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3),
+			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
 			vkTools::initializers::descriptorPoolCreateInfo(
 				poolSizes.size(),
 				poolSizes.data(),
-				// Three descriptor sets (for each gear)
-				3);
+				2);
 
 		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
@@ -211,11 +228,16 @@ public:
 	{
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
-			// Binding 0 : Vertex shader uniform buffer
+			// Binding 0 : Vertex shader ubo
 			vkTools::initializers::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
-				0)
+				0),
+			// Binding 1 : Geometry shader ubo
+			vkTools::initializers::descriptorSetLayoutBinding(
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VK_SHADER_STAGE_GEOMETRY_BIT,
+				1)
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
@@ -233,12 +255,33 @@ public:
 		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
-	void setupDescriptorSets()
+	void setupDescriptorSet()
 	{
-		for (auto& gear : gears)
+		VkDescriptorSetAllocateInfo allocInfo =
+			vkTools::initializers::descriptorSetAllocateInfo(
+				descriptorPool,
+				&descriptorSetLayout,
+				1);
+
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
+
+		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
-			gear->setupDescriptorSet(descriptorPool, descriptorSetLayout);
-		}
+			// Binding 0 : Vertex shader shader ubo
+			vkTools::initializers::writeDescriptorSet(
+				descriptorSet,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				0,
+				&uniformData.VS.descriptor),
+			// Binding 1 : Geometry shader ubo
+			vkTools::initializers::writeDescriptorSet(
+				descriptorSet,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				1,
+				&uniformData.GS.descriptor)
+		};
+
+		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -282,7 +325,8 @@ public:
 
 		std::vector<VkDynamicState> dynamicStateEnables = {
 			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
+			VK_DYNAMIC_STATE_SCISSOR,
+			VK_DYNAMIC_STATE_LINE_WIDTH
 		};
 		VkPipelineDynamicStateCreateInfo dynamicState =
 			vkTools::initializers::pipelineDynamicStateCreateInfo(
@@ -290,12 +334,14 @@ public:
 				dynamicStateEnables.size(),
 				0);
 
-		// Solid rendering pipeline
-		// Load shaders
-		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/gears.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/gears.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		// Tessellation pipeline
+		// Load shaders
+		std::array<VkPipelineShaderStageCreateInfo, 3> shaderStages;
+
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/geometryshader/base.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/geometryshader/base.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStages[2] = loadShader(getAssetPath() + "shaders/geometryshader/normaldebug.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
 			vkTools::initializers::pipelineCreateInfo(
@@ -313,17 +359,66 @@ public:
 		pipelineCreateInfo.pDynamicState = &dynamicState;
 		pipelineCreateInfo.stageCount = shaderStages.size();
 		pipelineCreateInfo.pStages = shaderStages.data();
+		pipelineCreateInfo.renderPass = mRenderPass;
 
+		// Normal debugging pipeline
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.normals));
+
+		// Solid rendering pipeline
+		shaderStages[0] = loadShader(getAssetPath() + "shaders/geometryshader/mesh.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShader(getAssetPath() + "shaders/geometryshader/mesh.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		pipelineCreateInfo.stageCount = 2;
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
+	}
+
+	// Prepare and initialize uniform buffer containing shader uniforms
+	void prepareUniformBuffers()
+	{
+		// Vertex shader uniform buffer block
+		createBuffer(
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			sizeof(uboVS),
+			nullptr,
+			&uniformData.VS.buffer,
+			&uniformData.VS.memory,
+			&uniformData.VS.descriptor);
+
+		// Geometry shader uniform buffer block
+		createBuffer(
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			sizeof(uboGS),
+			nullptr,
+			&uniformData.GS.buffer,
+			&uniformData.GS.memory,
+			&uniformData.GS.descriptor);
+
+		updateUniformBuffers();
 	}
 
 	void updateUniformBuffers()
 	{
-		glm::mat4 perspective = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-		for (auto& gear : gears)
-		{
-			gear->updateUniformBuffer(perspective, rotation, zoom, timer * 360.0f);
-		}
+		// Vertex shader
+		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+
+		uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		uint8_t *pData;
+		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.VS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		memcpy(pData, &uboVS, sizeof(uboVS));
+		vkUnmapMemory(mDevice, uniformData.VS.memory);
+
+		// Geometry shader
+		uboGS.model = uboVS.model;
+		uboGS.projection = uboVS.projection;
+		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.GS.memory, 0, sizeof(uboGS), 0, (void **)&pData));
+		memcpy(pData, &uboGS, sizeof(uboGS));
+		vkUnmapMemory(mDevice, uniformData.GS.memory);
 	}
 
 	void draw()
@@ -343,12 +438,13 @@ public:
 	void prepare()
 	{
 		VulkanBase::prepare();
-		prepareVertices();
+		loadMeshes();
+		setupVertexDescriptions();
+		prepareUniformBuffers();
 		setupDescriptorSetLayout();
 		preparePipelines();
 		setupDescriptorPool();
-		setupDescriptorSets();
-		updateUniformBuffers();
+		setupDescriptorSet();
 		buildCommandBuffers();
 		prepared = true;
 	}
@@ -357,78 +453,38 @@ public:
 	{
 		if (!prepared)
 			return;
-		vkDeviceWaitIdle(mDevice);
 		draw();
-		vkDeviceWaitIdle(mDevice);
-		if (!paused)
-		{
-			updateUniformBuffers();
-		}
 	}
 
 	virtual void viewChanged()
 	{
 		updateUniformBuffers();
 	}
-};
 
-VulkanExample *vulkanExample;
-
-#if defined(_WIN32)
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	if (vulkanExample != NULL)
+	void toggleNormals()
 	{
-		vulkanExample->handleMessages(hWnd, uMsg, wParam, lParam);
+		displayNormals = !displayNormals;
+		reBuildCommandBuffers();
 	}
-	return (DefWindowProc(hWnd, uMsg, wParam, lParam));
-}
-#elif defined(__linux__) && !defined(__ANDROID__) && !defined(_DIRECT2DISPLAY)
-static void handleEvent(const xcb_generic_event_t *event)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleEvent(event);
-	}
-}
-#endif
 
-// Main entry point
-#if defined(_WIN32)
-// Windows entry point
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
-#elif defined(__ANDROID__)
-// Android entry point
-void android_main(android_app* state)
-#elif defined(__linux__)
-// Linux entry point
-int main(const int argc, const char *argv[])
-#endif
-{
+
+	virtual void keyPressed(uint32_t keyCode)
+	{
+		switch (keyCode)
+		{
+		case KEY_N:
+		case GAMEPAD_BUTTON_A:
+			toggleNormals();
+			break;
+		}
+	}
+
+	virtual void getOverlayText(VulkanTextOverlay *textOverlay)
+	{
 #if defined(__ANDROID__)
-	// Removing this may cause the compiler to omit the main entry point 
-	// which would make the application crash at start
-	app_dummy();
-#endif
-	vulkanExample = new VulkanExample();
-#if defined(_WIN32)
-	vulkanExample->setupWindow(hInstance, WndProc);
-#elif defined(__ANDROID__)
-	// Attach vulkan example to global android application state
-	state->userData = vulkanExample;
-	state->onAppCmd = VulkanExample::handleAppCommand;
-	state->onInputEvent = VulkanExample::handleAppInput;
-	vulkanExample->androidApp = state;
-#elif defined(__linux__) && !defined(_DIRECT2DISPLAY)
-	vulkanExample->setupWindow();
-#endif
-#if !defined(__ANDROID__)
-	vulkanExample->initSwapchain();
-	vulkanExample->prepare();
-#endif
-	vulkanExample->renderLoop();
-	delete(vulkanExample);
-#if !defined(__ANDROID__)
-	return 0;
-#endif
-}
+		textOverlay->addText("Press \"Button A\" to toggle normals", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
+#else
+		textOverlay->addText("Press \"n\" to toggle normals", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
+#endif	
+	}
+};

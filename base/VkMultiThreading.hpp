@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Multi threaded command buffer generation and rendering
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,17 +22,16 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
-// Vertex layout used in this example
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+class VkMultiThreading : public VulkanBase
 {
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-};
-
-class VulkanExample : public VulkanBase
-{
+	// Vertex layout used in this example
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+	};
 public:
 	struct {
 		VkPipelineVertexInputStateCreateInfo inputState;
@@ -81,7 +74,7 @@ public:
 		glm::mat4 mvp;
 		glm::vec3 color;
 	};
-	
+
 	struct ObjectData {
 		glm::mat4 model;
 		glm::vec3 pos;
@@ -118,7 +111,7 @@ public:
 	// View frustum for culling invisible objects
 	vkTools::Frustum frustum;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkMultiThreading() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -32.5f;
 		zoomSpeed = 2.5f;
@@ -141,7 +134,7 @@ public:
 		numObjectsPerThread = 512 / numThreads;
 	}
 
-	~VulkanExample()
+	~VkMultiThreading()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -186,7 +179,7 @@ public:
 		// Create a secondary command buffer for rendering the star sphere
 		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &cmdBufAllocateInfo, &secondaryCommandBuffer));
-		
+
 		threadData.resize(numThreads);
 
 		createSetupCommandBuffer();
@@ -201,7 +194,7 @@ public:
 		for (uint32_t i = 0; i < numThreads; i++)
 		{
 			ThreadData *thread = &threadData[i];
-			
+
 			// Create one command pool for each thread
 			VkCommandPoolCreateInfo cmdPoolInfo = vkTools::initializers::commandPoolCreateInfo();
 			cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
@@ -236,7 +229,7 @@ public:
 				thread->pushConstBlock[j].color = glm::vec3(rnd(1.0f), rnd(1.0f), rnd(1.0f));
 			}
 		}
-	
+
 	}
 
 	// Builds the secondary command buffer for each thread
@@ -246,7 +239,7 @@ public:
 		ObjectData *objectData = &thread->objectData[cmdBufferIndex];
 
 		// Check visibility against view frustum
-		objectData->visible = frustum.checkSphere(objectData->pos, objectSphereDim * 0.5f); 
+		objectData->visible = frustum.checkSphere(objectData->pos, objectSphereDim * 0.5f);
 
 		if (!objectData->visible)
 		{
@@ -355,7 +348,7 @@ public:
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
-		clearValues[0].color = { {0.0f, 0.0f, 0.2f, 0.0f} };
+		clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
@@ -397,7 +390,7 @@ public:
 				threadPool.threads[t]->addJob([=] { threadRenderCode(t, i, inheritanceInfo); });
 			}
 		}
-			
+
 		threadPool.wait();
 
 		// Only submit if object is within the current view frustum
@@ -637,5 +630,3 @@ public:
 		textOverlay->addText("Using " + std::to_string(numThreads) + " threads", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
 	}
 };
-
-VULKAN_EXAMPLE_MAIN()

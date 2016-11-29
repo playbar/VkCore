@@ -1,23 +1,4 @@
-/*
-* Vulkan Example - Indirect drawing 
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*
-* Summary:
-* Use a device local buffer that stores draw commands for instanced rendering of different meshes stored
-* in the same buffer.
-*
-* Indirect drawing offloads draw command generation and offers the ability to update them on the GPU 
-* without the CPU having to touch the buffer again, also reducing the number of drawcalls.
-*
-* The example shows how to setup and fill such a buffer on the CPU side, stages it to the device and
-* shows how to render it using only one draw command.
-*
-* See readme.md for details
-*
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,17 +32,17 @@
 #define PLANT_RADIUS 25.0f
 #endif
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR
-};
 
-class VulkanExample : public VulkanBase
+class VkIndirectdraw : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR
+	};
 public:
 	struct {
 		VkPipelineVertexInputStateCreateInfo inputState;
@@ -120,7 +101,7 @@ public:
 	// Store the indirect draw commands containing index offsets and instance count per object
 	std::vector<VkDrawIndexedIndirectCommand> indirectCommands;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkIndirectdraw() : VulkanBase(ENABLE_VALIDATION)
 	{
 		enableTextOverlay = true;
 		title = "Vulkan Example - Indirect rendering";
@@ -131,7 +112,7 @@ public:
 		camera.movementSpeed = 5.0f;
 	}
 
-	~VulkanExample()
+	~VkIndirectdraw()
 	{
 		vkDestroyPipeline(mDevice, pipelines.plants, nullptr);
 		vkDestroyPipeline(mDevice, pipelines.ground, nullptr);
@@ -197,7 +178,7 @@ public:
 			vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &meshes.plants.vertices.buf, offsets);
 			// Binding point 1 : Instance data buffer
 			vkCmdBindVertexBuffers(mDrawCmdBuffers[i], INSTANCE_BUFFER_BIND_ID, 1, &instanceBuffer.buffer, offsets);
-			
+
 			vkCmdBindIndexBuffer(mDrawCmdBuffers[i], meshes.plants.indices.buf, 0, VK_INDEX_TYPE_UINT32);
 
 			// If the multi draw feature is supported:
@@ -260,7 +241,7 @@ public:
 		vertices.bindingDescriptions[1] =
 			vkTools::initializers::vertexInputBindingDescription(
 				INSTANCE_BUFFER_BIND_ID,
-				sizeof(InstanceData), 
+				sizeof(InstanceData),
 				// Input rate for the data passed to shader
 				// Step for each instance rendered
 				VK_VERTEX_INPUT_RATE_INSTANCE);
@@ -277,7 +258,7 @@ public:
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				0)
-			);
+		);
 		// Location 1 : Normal
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -285,7 +266,7 @@ public:
 				1,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				sizeof(float) * 3)
-			);
+		);
 		// Location 2 : Texture coordinates
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -293,7 +274,7 @@ public:
 				2,
 				VK_FORMAT_R32G32_SFLOAT,
 				sizeof(float) * 6)
-			);
+		);
 		// Location 3 : Color
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -301,29 +282,29 @@ public:
 				3,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				sizeof(float) * 8)
-			);
+		);
 
 		// Instanced attributes
 		// Location 4: Position
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
 				INSTANCE_BUFFER_BIND_ID, 4, VK_FORMAT_R32G32B32_SFLOAT, offsetof(InstanceData, pos))
-			);
+		);
 		// Location 5: Rotation
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
 				INSTANCE_BUFFER_BIND_ID, 5, VK_FORMAT_R32G32B32_SFLOAT, offsetof(InstanceData, rot))
-			);
+		);
 		// Location 6: Scale
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
 				INSTANCE_BUFFER_BIND_ID, 6, VK_FORMAT_R32_SFLOAT, offsetof(InstanceData, scale))
-			);
+		);
 		// Location 7: Texture array layer index
 		vertices.attributeDescriptions.push_back(
 			vkTools::initializers::vertexInputAttributeDescription(
 				INSTANCE_BUFFER_BIND_ID, 7, VK_FORMAT_R32_SINT, offsetof(InstanceData, texIndex))
-			);
+		);
 
 		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
 		vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
@@ -400,7 +381,7 @@ public:
 		{
 			// Binding 0: Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-			descriptorSet,
+				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.scene.descriptor),
@@ -521,7 +502,7 @@ public:
 			indirectCmd.firstInstance = m * OBJECT_INSTANCE_COUNT;
 			indirectCmd.firstIndex = meshDescriptor.indexBase;
 			indirectCmd.indexCount = meshDescriptor.indexCount;
-			
+
 			indirectCommands.push_back(indirectCmd);
 
 			m++;
@@ -669,5 +650,3 @@ public:
 		}
 	}
 };
-
-VULKAN_EXAMPLE_MAIN()

@@ -20,6 +20,15 @@
     <ClInclude Include="threadpool.hpp" />
     <ClInclude Include="VDeleter.hpp" />
     <ClInclude Include="VkCamera.hpp" />
+    <ClInclude Include="VkGears.hpp" />
+    <ClInclude Include="VkGeometryShader.hpp" />
+    <ClInclude Include="VkIndirectdraw.hpp" />
+    <ClInclude Include="VkInstancing.hpp" />
+    <ClInclude Include="VkMesh.hpp" />
+    <ClInclude Include="VkMultisampling.hpp" />
+    <ClInclude Include="VkMultiThreading.hpp" />
+    <ClInclude Include="VkOcclusionquery.hpp" />
+    <ClInclude Include="VkOffScreen.hpp" />
     <ClInclude Include="VkParallaxMapping.hpp" />
     <ClInclude Include="VkParticlefire.hpp" />
     <ClInclude Include="VkPipelines.hpp" />
@@ -41,6 +50,7 @@
     <ClInclude Include="vulkandebug.h" />
     <ClInclude Include="vulkandevice.hpp" />
     <ClInclude Include="vulkanframebuffer.hpp" />
+    <ClInclude Include="vulkangear.h" />
     <ClInclude Include="vulkanheightmap.hpp" />
     <ClInclude Include="vulkanMeshLoader.hpp" />
     <ClInclude Include="vulkanswapchain.hpp" />
@@ -52,6 +62,7 @@
     <ClCompile Include="vulkanandroid.cpp" />
     <ClCompile Include="VulkanBase.cpp" />
     <ClCompile Include="vulkandebug.cpp" />
+    <ClCompile Include="vulkangear.cpp" />
     <ClCompile Include="vulkantools.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -111,7 +122,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;VK_USE_PLATFORM_WIN32_KHR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;VK_USE_PLATFORM_WIN32_KHR;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\external-deps\include;..\external\glm;..\external\gli;..\external\assimp;..\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>
       </RuntimeTypeInfo>

@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Multisampling using resolve attachments
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,17 +31,17 @@ struct {
 	} depth;
 } multisampleTarget;
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-};
 
-class VulkanExample : public VulkanBase
+class VkMultisampling : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+	};
 public:
 	bool useSampleShading = false;
 
@@ -84,7 +78,7 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkMultisampling() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -7.5f;
 		zoomSpeed = 2.5f;
@@ -93,7 +87,7 @@ public:
 		title = "Vulkan Example - Multisampling";
 	}
 
-	~VulkanExample()
+	~VkMultisampling()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -200,7 +194,7 @@ public:
 		{
 			memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		}
-		
+
 		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &multisampleTarget.depth.memory));
 		vkBindImageMemory(mDevice, multisampleTarget.depth.image, multisampleTarget.depth.memory, 0);
 
@@ -279,7 +273,7 @@ public:
 		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		// Two resolve attachment references for color and depth
-		std::array<VkAttachmentReference,2> resolveReferences = {};
+		std::array<VkAttachmentReference, 2> resolveReferences = {};
 		resolveReferences[0].attachment = 1;
 		resolveReferences[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		resolveReferences[1].attachment = 3;
@@ -491,7 +485,7 @@ public:
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::descriptorSetLayoutBinding(
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Fragment shader combined sampler
@@ -525,7 +519,7 @@ public:
 				1);
 
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
-		
+
 		VkDescriptorImageInfo texDescriptor =
 			vkTools::initializers::descriptorImageInfo(
 				textures.colorMap.sampler,
@@ -536,7 +530,7 @@ public:
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-			descriptorSet,
+				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.vsScene.descriptor),
@@ -622,7 +616,7 @@ public:
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/mesh/mesh.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		// Setup multi sampling
 		multisampleState.rasterizationSamples = SAMPLE_COUNT;		// Number of samples to use for rasterization
-		
+
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.MSAA));
 
 		// MSAA with sample shading pipeline
@@ -630,7 +624,7 @@ public:
 		// Note: This will trade performance for are more stable image
 		multisampleState.sampleShadingEnable = VK_TRUE;				// Enable per-sample shading (instead of per-fragment)
 		multisampleState.minSampleShading = 0.25f;					// Minimum fraction for sample shading
-		
+
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.MSAASampleShading));
 	}
 
@@ -640,7 +634,7 @@ public:
 		// Vertex shader uniform buffer block
 		createBuffer(
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			sizeof(uboVS),
 			nullptr,
 			&uniformData.vsScene.buffer,
@@ -728,5 +722,3 @@ public:
 		}
 	}
 };
-
-VULKAN_EXAMPLE_MAIN()

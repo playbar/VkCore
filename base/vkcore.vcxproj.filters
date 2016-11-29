@@ -102,6 +102,36 @@
     <ClInclude Include="VkParallaxMapping.hpp">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="VkOffScreen.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkOcclusionquery.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkMultiThreading.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkMultisampling.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkMesh.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkInstancing.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkIndirectdraw.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkGeometryShader.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkGears.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="vulkangear.h">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vulkanandroid.cpp">
@@ -114,6 +144,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="VulkanBase.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkangear.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
