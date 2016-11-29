@@ -6,9 +6,8 @@
 #include <assert.h>
 #include <vector>
 #include <algorithm>
+#include "define.h"
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -17,7 +16,6 @@
 #include "VulkanBase.h"
 #include "vulkanframebuffer.hpp"
 
-#define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
 // Shadowmap properties

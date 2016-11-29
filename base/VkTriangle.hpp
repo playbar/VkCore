@@ -1,20 +1,19 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include "define.h"
+
+
+#define ENABLE_VALIDATION true
+// Set to "true" to use staging buffers for uploading vertex and index data to device local memory
+// See "prepareVertices" for details on what's staging and on why to use it
+#define USE_STAGING false
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 #include "VDeleter.hpp"
-
-#define VERTEX_BUFFER_BIND_ID 0
-// Set to "true" to enable Vulkan's validation layers (see vulkandebug.cpp for details)
-#define ENABLE_VALIDATION true
-// Set to "true" to use staging buffers for uploading vertex and index data to device local memory
-// See "prepareVertices" for details on what's staging and on why to use it
-#define USE_STAGING false
 
 class VkTriangle : public VulkanBase
 {
@@ -100,7 +99,7 @@ public:
 		width = 1280;
 		height = 720;
 		zoom = -2.5f;
-		title = "Vulkan Example - Basic indexed triangle";
+		title = "Vulkan triangle";
 		// Values not set here are initialized in the base class constructor
 	}
 
@@ -135,7 +134,6 @@ public:
 	// Upon success it will return the index of the memory type that fits our requestes memory properties
 	// This is necessary as implementations can offer an arbitrary number of memory types with different
 	// memory properties. 
-	// You can check http://vulkan.gpuinfo.org/ for details on different memory configurations
 	uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
 	{
 		// Iterate over all memory types available for the device used in this example

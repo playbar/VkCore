@@ -1,0 +1,8 @@
+#pragma once
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
+#define VERTEX_BUFFER_BIND_ID 0
+
+

@@ -15,6 +15,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="define.h" />
     <ClInclude Include="frustum.hpp" />
     <ClInclude Include="keycodes.hpp" />
     <ClInclude Include="threadpool.hpp" />

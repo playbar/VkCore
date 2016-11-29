@@ -10,7 +10,7 @@
 #include "VkSubPasses.hpp"
 #include "VkComputecullandlod.hpp"
 
-VkComputecullandlod *vulkanExample;
+VkTriangle *vulkanExample;
 
 #if defined(_WIN32)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -44,29 +44,33 @@ int main(const int argc, const char *argv[])
 #endif
 {
 #if defined(__ANDROID__)
-	// Removing this may cause the compiler to omit the main entry point 
-	// which would make the application crash at start
 	app_dummy();
-#endif
-	vulkanExample = new VkComputecullandlod();
+#endif	
 #if defined(_WIN32)
+	vulkanExample = new VkTriangle();
 	vulkanExample->setupWindow(hInstance, WndProc);
+	vulkanExample->initSwapchain();
+	vulkanExample->prepare();
+	vulkanExample->renderLoop();
+	delete(vulkanExample);
+	return 0;
 #elif defined(__ANDROID__)
+	vulkanExample = new VkTriangle();
 	// Attach vulkan example to global android application state
 	state->userData = vulkanExample;
 	state->onAppCmd = VkTriangle::handleAppCommand;
 	state->onInputEvent = VkTriangle::handleAppInput;
 	vulkanExample->androidApp = state;
-#elif defined(__linux__) && !defined(_DIRECT2DISPLAY)
-	vulkanExample->setupWindow();
-#endif
-#if !defined(__ANDROID__)
-	vulkanExample->initSwapchain();
-	vulkanExample->prepare();
-#endif
 	vulkanExample->renderLoop();
 	delete(vulkanExample);
-#if !defined(__ANDROID__)
+#elif defined(__linux__) && !defined(_DIRECT2DISPLAY)
+	vulkanExample = new VkTriangle();
+	vulkanExample->setupWindow();
+	vulkanExample->initSwapchain();
+	vulkanExample->prepare();
+	vulkanExample->renderLoop();
+	delete(vulkanExample);
 	return 0;
 #endif
+
 }

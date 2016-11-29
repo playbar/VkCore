@@ -7,9 +7,7 @@
 #include <time.h> 
 #include <vector>
 #include <random>
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include "define.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -17,7 +15,6 @@
 #include "VulkanBase.h"
 #include "vulkanbuffer.hpp"
 
-#define VERTEX_BUFFER_BIND_ID 0
 #define INSTANCE_BUFFER_BIND_ID 1
 #define ENABLE_VALIDATION false
 

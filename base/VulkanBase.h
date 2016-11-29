@@ -24,9 +24,7 @@
 
 #include <iostream>
 #include <chrono>
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include "define.h"
 #include <glm/glm.hpp>
 #include <string>
 #include <array>

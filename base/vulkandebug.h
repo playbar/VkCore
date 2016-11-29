@@ -17,8 +17,7 @@
 #ifdef __ANDROID__
 #include "vulkanandroid.h"
 #endif
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include "define.h"
 #include <glm/glm.hpp>
 
 namespace vkDebug
