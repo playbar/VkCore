@@ -132,6 +132,21 @@
     <ClInclude Include="vulkangear.h">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="VkDistancefieldfonts.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkDebugMarker.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkBloom.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTexturesparseresidency.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkTexturemipmapgen.hpp">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vulkanandroid.cpp">

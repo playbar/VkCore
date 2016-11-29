@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Example for VK_EXT_debug_marker extension. To be used in conjuction with a debugging app like RenderDoc (https://renderdoc.org)
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,11 +22,7 @@
 #define OFFSCREEN_FORMAT VK_FORMAT_R8G8B8A8_UNORM
 #define OFFSCREEN_FILTER VK_FILTER_LINEAR;
 
-// Setup and functions for the VK_EXT_debug_marker_extension
-// Extension spec can be found at https://github.com/KhronosGroup/Vulkan-Docs/blob/1.0-VK_EXT_debug_marker/doc/specs/vulkan/appendices/VK_EXT_debug_marker.txt
-// Note that the extension will only be present if run from an offline debugging application
-// The actual check for extension presence and enabling it on the device is done in the example base class
-// See VulkanExampleBase::createInstance and VulkanExampleBase::createDevice (base/vulkanexamplebase.cpp)
+
 namespace DebugMarker
 {
 	bool active = false;
@@ -170,7 +160,7 @@ struct Scene {
 	}
 };
 
-class VulkanExample : public VulkanBase
+class VkDebugMarker : public VulkanBase
 {
 public:
 	bool wireframe = true;
@@ -232,7 +222,7 @@ public:
 		const char name[17] = "debug marker tag";
 	} demoTag;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkDebugMarker() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -8.5f;
 		zoomSpeed = 2.5f;
@@ -243,7 +233,7 @@ public:
 		title = "Vulkan Example - VK_EXT_debug_marker";
 	}
 
-	~VulkanExample()
+	~VkDebugMarker()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -780,7 +770,7 @@ public:
 			VK_CHECK_RESULT(vkEndCommandBuffer(mDrawCmdBuffers[i]));
 		}
 	}
-	
+
 	void setupVertexDescriptions()
 	{
 		// Binding description
@@ -854,7 +844,7 @@ public:
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::descriptorSetLayoutBinding(
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Fragment shader combined sampler
@@ -1007,7 +997,7 @@ public:
 		rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizationState.cullMode = VK_CULL_MODE_NONE;
 		blendAttachmentState.colorWriteMask = 0xF;
-		blendAttachmentState.blendEnable =  VK_TRUE;
+		blendAttachmentState.blendEnable = VK_TRUE;
 		blendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
 		blendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
 		blendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -1160,64 +1150,3 @@ public:
 		}
 	}
 };
-
-VulkanExample *vulkanExample;
-
-#if defined(_WIN32)
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleMessages(hWnd, uMsg, wParam, lParam);
-	}
-	return (DefWindowProc(hWnd, uMsg, wParam, lParam));
-}
-#elif defined(__linux__) && !defined(__ANDROID__) && !defined(_DIRECT2DISPLAY)
-static void handleEvent(const xcb_generic_event_t *event)
-{
-	if (vulkanExample != NULL)
-	{
-		vulkanExample->handleEvent(event);
-}
-		}
-#endif
-
-// Main entry point
-#if defined(_WIN32)
-// Windows entry point
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
-#elif defined(__ANDROID__)
-// Android entry point
-void android_main(android_app* state)
-#elif defined(__linux__)
-// Linux entry point
-int main(const int argc, const char *argv[])
-#endif
-{
-#if defined(__ANDROID__)
-	// Removing this may cause the compiler to omit the main entry point 
-	// which would make the application crash at start
-	app_dummy();
-#endif
-	vulkanExample = new VulkanExample();
-#if defined(_WIN32)
-	vulkanExample->setupWindow(hInstance, WndProc);
-#elif defined(__ANDROID__)
-	// Attach vulkan example to global android application state
-	state->userData = vulkanExample;
-	state->onAppCmd = VulkanExample::handleAppCommand;
-	state->onInputEvent = VulkanExample::handleAppInput;
-	vulkanExample->androidApp = state;
-#elif defined(__linux__) && !defined(_DIRECT2DISPLAY)
-	vulkanExample->setupWindow();
-#endif
-#if !defined(__ANDROID__)
-	vulkanExample->initSwapchain();
-	vulkanExample->prepare();
-#endif
-	vulkanExample->renderLoop();
-	delete(vulkanExample);
-#if !defined(__ANDROID__)
-	return 0;
-#endif
-}

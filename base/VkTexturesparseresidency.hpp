@@ -1,18 +1,4 @@
-/*
-* Vulkan Example - Sparse texture residency example
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
-
-/*
-todos: 
-- check sparse binding support on queue
-- residencyNonResidentStrict
-- meta data
-- Run-time image data upload
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,24 +29,18 @@ struct Vertex {
 	float normal[3];
 	float uv[2];
 };
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-};
 
 // Virtual texture page as a part of the partially resident texture
 // Contains memory bindings, offsets and status information
 struct VirtualTexturePage
-{	
+{
 	VkOffset3D offset;
 	VkExtent3D extent;
 	VkSparseImageMemoryBind imageMemoryBind;							// Sparse image memory bind for this page
 	VkDeviceSize size;													// Page (memory) size in bytes
 	uint32_t mipLevel;													// Mip level that this page belongs to
 	uint32_t layer;														// Array layer that this page belongs to
-	uint32_t index;	
+	uint32_t index;
 
 	VirtualTexturePage()
 	{
@@ -118,7 +98,7 @@ struct VirtualTexture
 	VkSparseImageMemoryBindInfo imageMemoryBindInfo;					// Sparse image memory bind info 
 	VkSparseImageOpaqueMemoryBindInfo opaqueMemoryBindInfo;				// Sparse image opaque memory bind info (mip tail)
 	uint32_t mipTailStart;												// First mip level in mip tail
-	
+
 	VirtualTexturePage* addPage(VkOffset3D offset, VkExtent3D extent, const VkDeviceSize size, const uint32_t mipLevel, uint32_t layer)
 	{
 		VirtualTexturePage newPage;
@@ -183,8 +163,15 @@ struct VirtualTexture
 uint32_t memoryTypeIndex;
 int32_t lastFilledMip = 0;
 
-class VulkanExample : public VulkanBase
+class VkTexturesparseresidency : public VulkanBase
 {
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+	};
+
 public:
 	//todo: comments
 	struct SparseTexture : VirtualTexture {
@@ -236,15 +223,15 @@ public:
 	static VkPhysicalDeviceFeatures getEnabledFeatures()
 	{
 		VkPhysicalDeviceFeatures enabledFeatures = {};
-		enabledFeatures.shaderResourceResidency = VK_TRUE;		
+		enabledFeatures.shaderResourceResidency = VK_TRUE;
 		enabledFeatures.shaderResourceMinLod = VK_TRUE;
 		return enabledFeatures;
 	}
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
+	VkTexturesparseresidency() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
 	{
-		zoom = -1.3f; 
-		rotation = { 76.25f, 0.0f, 0.0f }; 
+		zoom = -1.3f;
+		rotation = { 76.25f, 0.0f, 0.0f };
 		title = "Vulkan Example - Sparse texture residency";
 		enableTextOverlay = true;
 		std::cout.imbue(std::locale(""));
@@ -263,7 +250,7 @@ public:
 		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 1024.0f);
 	}
 
-	~VulkanExample()
+	~VkTexturesparseresidency()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -297,7 +284,7 @@ public:
 		texture.device = mVulkanDevice->mLogicalDevice;
 		texture.width = width;
 		texture.height = height;
-		texture.mipLevels = floor(log2(std::max(width, height))) + 1; 
+		texture.mipLevels = floor(log2(std::max(width, height))) + 1;
 		texture.layerCount = layerCount;
 		texture.format = format;
 
@@ -402,7 +389,7 @@ public:
 			//todo:multiple reqs
 			texture.mipTailStart = reqs.imageMipTailFirstLod;
 		}
-		
+
 		lastFilledMip = texture.mipTailStart - 1;
 
 		// Get sparse image requirements for the color aspect
@@ -429,7 +416,7 @@ public:
 		memoryTypeIndex = mVulkanDevice->getMemoryType(sparseImageMemoryReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 		// Get sparse bindings
-		uint32_t sparseBindsCount = static_cast<uint32_t>(sparseImageMemoryReqs.size / sparseImageMemoryReqs.alignment);		
+		uint32_t sparseBindsCount = static_cast<uint32_t>(sparseImageMemoryReqs.size / sparseImageMemoryReqs.alignment);
 		std::vector<VkSparseMemoryBind>	sparseMemoryBinds(sparseBindsCount);
 
 		// Check if the format has a single mip tail for all layers or one mip tail for each layer
@@ -655,9 +642,9 @@ public:
 		VulkanBase::prepareFrame();
 
 		// Sparse bindings
-//		vkQueueBindSparse(queue, 1, &bindSparseInfo, VK_NULL_HANDLE);
+		//		vkQueueBindSparse(queue, 1, &bindSparseInfo, VK_NULL_HANDLE);
 		//todo: use sparse bind semaphore
-//		vkQueueWaitIdle(queue);
+		//		vkQueueWaitIdle(queue);
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
@@ -691,8 +678,8 @@ public:
 		vertices.bindingDescriptions.resize(1);
 		vertices.bindingDescriptions[0] =
 			vkTools::initializers::vertexInputBindingDescription(
-				VERTEX_BUFFER_BIND_ID, 
-				sizeof(Vertex), 
+				VERTEX_BUFFER_BIND_ID,
+				sizeof(Vertex),
 				VK_VERTEX_INPUT_RATE_VERTEX);
 
 		// Attribute descriptions
@@ -704,7 +691,7 @@ public:
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
-				offsetof(Vertex, pos));			
+				offsetof(Vertex, pos));
 		// Location 1 : Vertex normal
 		vertices.attributeDescriptions[1] =
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -736,7 +723,7 @@ public:
 			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
 		};
 
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = 
+		VkDescriptorPoolCreateInfo descriptorPoolInfo =
 			vkTools::initializers::descriptorPoolCreateInfo(
 				static_cast<uint32_t>(poolSizes.size()),
 				poolSizes.data(),
@@ -747,21 +734,21 @@ public:
 
 	void setupDescriptorSetLayout()
 	{
-		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = 
+		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::descriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
-				VK_SHADER_STAGE_VERTEX_BIT, 
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Fragment shader image sampler
 			vkTools::initializers::descriptorSetLayoutBinding(
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				VK_SHADER_STAGE_FRAGMENT_BIT, 
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				VK_SHADER_STAGE_FRAGMENT_BIT,
 				1)
 		};
 
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = 
+		VkDescriptorSetLayoutCreateInfo descriptorLayout =
 			vkTools::initializers::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
@@ -778,7 +765,7 @@ public:
 
 	void setupDescriptorSet()
 	{
-		VkDescriptorSetAllocateInfo allocInfo = 
+		VkDescriptorSetAllocateInfo allocInfo =
 			vkTools::initializers::descriptorSetAllocateInfo(
 				descriptorPool,
 				&descriptorSetLayout,
@@ -790,15 +777,15 @@ public:
 		{
 			// Binding 0 : Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(
-				descriptorSet, 
-				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 
-				0, 
+				descriptorSet,
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				0,
 				&uniformBufferVS.descriptor),
 			// Binding 1 : Fragment shader texture sampler
 			vkTools::initializers::writeDescriptorSet(
-				descriptorSet, 
-				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-				1, 
+				descriptorSet,
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+				1,
 				&texture.descriptor)
 		};
 
@@ -827,7 +814,7 @@ public:
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
 			vkTools::initializers::pipelineColorBlendStateCreateInfo(
-				1, 
+				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
@@ -855,7 +842,7 @@ public:
 				0);
 
 		// Load shaders
-		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages;
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/texturesparseresidency/sparseresidency.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/texturesparseresidency/sparseresidency.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -1087,11 +1074,11 @@ public:
 	virtual void getOverlayText(VulkanTextOverlay *textOverlay)
 	{
 		uint32_t respages = 0;
-		std::for_each(texture.pages.begin(), texture.pages.end(), [&respages](VirtualTexturePage page) { respages += (page.imageMemoryBind.memory != VK_NULL_HANDLE) ? 1 :0; });
+		std::for_each(texture.pages.begin(), texture.pages.end(), [&respages](VirtualTexturePage page) { respages += (page.imageMemoryBind.memory != VK_NULL_HANDLE) ? 1 : 0; });
 		std::stringstream ss;
 		ss << std::setprecision(2) << std::fixed << uboVS.lodBias;
 #if defined(__ANDROID__)
-//		textOverlay->addText("LOD bias: " + ss.str() + " (Buttons L1/R1 to change)", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
+		//		textOverlay->addText("LOD bias: " + ss.str() + " (Buttons L1/R1 to change)", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
 #else
 		//textOverlay->addText("LOD bias: " + ss.str() + " (numpad +/- to change)", 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
 		textOverlay->addText("Resident pages: " + std::to_string(respages) + " / " + std::to_string(texture.pages.size()), 5.0f, 85.0f, VulkanTextOverlay::alignLeft);
@@ -1100,4 +1087,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

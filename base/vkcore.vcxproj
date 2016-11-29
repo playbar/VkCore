@@ -19,7 +19,10 @@
     <ClInclude Include="keycodes.hpp" />
     <ClInclude Include="threadpool.hpp" />
     <ClInclude Include="VDeleter.hpp" />
+    <ClInclude Include="VkBloom.hpp" />
     <ClInclude Include="VkCamera.hpp" />
+    <ClInclude Include="VkDebugMarker.hpp" />
+    <ClInclude Include="VkDistancefieldfonts.hpp" />
     <ClInclude Include="VkGears.hpp" />
     <ClInclude Include="VkGeometryShader.hpp" />
     <ClInclude Include="VkIndirectdraw.hpp" />
@@ -43,6 +46,8 @@
     <ClInclude Include="VkSsao.hpp" />
     <ClInclude Include="VkSubPasses.hpp" />
     <ClInclude Include="VkTextOverLay.hpp" />
+    <ClInclude Include="VkTexturemipmapgen.hpp" />
+    <ClInclude Include="VkTexturesparseresidency.hpp" />
     <ClInclude Include="VkTriangle.hpp" />
     <ClInclude Include="vulkanandroid.h" />
     <ClInclude Include="VulkanBase.h" />

@@ -1,12 +1,4 @@
-/*
-* Vulkan Example - Runtime mip map generation
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
-
-// todo: Fallback for sampler selection on devices that don't support shaderSampledImageArrayDynamicIndexing
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,14 +20,15 @@
 #define VERTEX_BUFFER_BIND_ID 0
 #define ENABLE_VALIDATION false
 
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+
+class VkTexturemipmapgen : public VulkanBase
 {
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL
-};
-class VulkanExample : public VulkanBase
-{
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL
+	};
 public:
 	struct Texture {
 		VkImage image;
@@ -79,7 +72,7 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkTexturemipmapgen() : VulkanBase(ENABLE_VALIDATION)
 	{
 		title = "Vulkan Example - Runtime mip map generation";
 		enableTextOverlay = true;
@@ -93,7 +86,7 @@ public:
 		paused = true;
 	}
 
-	~VulkanExample()
+	~VkTexturemipmapgen()
 	{
 		destroyTextureImage(texture);
 		vkDestroyPipeline(mDevice, pipelines.solid, nullptr);
@@ -156,7 +149,7 @@ public:
 		bufferCreateInfo.size = tex2D.size();
 		// This buffer is used as a transfer source for the buffer copy
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;		
+		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		VK_CHECK_RESULT(vkCreateBuffer(mDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 		vkGetBufferMemoryRequirements(mDevice, stagingBuffer, &memReqs);
 		memAllocInfo.allocationSize = memReqs.size;
@@ -237,12 +230,12 @@ public:
 		// Copy down mips from n-1 to n
 		for (int32_t i = 1; i < texture.mipLevels; i++)
 		{
-			VkImageBlit imageBlit{};				
+			VkImageBlit imageBlit{};
 
 			// Source
 			imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			imageBlit.srcSubresource.layerCount = 1;
-			imageBlit.srcSubresource.mipLevel = i-1;
+			imageBlit.srcSubresource.mipLevel = i - 1;
 			imageBlit.srcOffsets[1].x = int32_t(texture.width >> (i - 1));
 			imageBlit.srcOffsets[1].y = int32_t(texture.height >> (i - 1));
 			imageBlit.srcOffsets[1].z = 1;
@@ -431,7 +424,7 @@ public:
 		vertices.bindingDescriptions.resize(1);
 		vertices.bindingDescriptions[0] =
 			vkTools::initializers::vertexInputBindingDescription(
-				VERTEX_BUFFER_BIND_ID, 
+				VERTEX_BUFFER_BIND_ID,
 				vkMeshLoader::vertexSize(vertexLayout),
 				VK_VERTEX_INPUT_RATE_VERTEX);
 
@@ -444,7 +437,7 @@ public:
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
-				0);			
+				0);
 		// Location 1 : Texture coordinates
 		vertices.attributeDescriptions[1] =
 			vkTools::initializers::vertexInputAttributeDescription(
@@ -476,7 +469,7 @@ public:
 			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_SAMPLER, 3),			// 3 samplers (array)
 		};
 
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = 
+		VkDescriptorPoolCreateInfo descriptorPoolInfo =
 			vkTools::initializers::descriptorPoolCreateInfo(
 				static_cast<uint32_t>(poolSizes.size()),
 				poolSizes.data(),
@@ -508,7 +501,7 @@ public:
 			2,
 			3));
 
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = 
+		VkDescriptorSetLayoutCreateInfo descriptorLayout =
 			vkTools::initializers::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
@@ -525,7 +518,7 @@ public:
 
 	void setupDescriptorSet()
 	{
-		VkDescriptorSetAllocateInfo allocInfo = 
+		VkDescriptorSetAllocateInfo allocInfo =
 			vkTools::initializers::descriptorSetAllocateInfo(
 				descriptorPool,
 				&descriptorSetLayout,
@@ -591,7 +584,7 @@ public:
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
 			vkTools::initializers::pipelineColorBlendStateCreateInfo(
-				1, 
+				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
@@ -619,7 +612,7 @@ public:
 				0);
 
 		// Load shaders
-		std::array<VkPipelineShaderStageCreateInfo,2> shaderStages;
+		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/texturemipmapgen/texture.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/texturemipmapgen/texture.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -720,7 +713,7 @@ public:
 		updateUniformBuffers();
 		updateTextOverlay();
 	}
-	
+
 	virtual void keyPressed(uint32_t keyCode)
 	{
 		switch (keyCode)
@@ -754,4 +747,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()

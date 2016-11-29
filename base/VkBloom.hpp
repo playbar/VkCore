@@ -1,10 +1,4 @@
-/*
-* Vulkan Example - Implements a separable two-pass fullscreen blur (also known as bloom)
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,17 +21,18 @@
 #define FB_DIM 256
 #define FB_COLOR_FORMAT VK_FORMAT_R8G8B8A8_UNORM
 
-// Vertex layout for this example
-std::vector<vkMeshLoader::VertexLayout> vertexLayout =
-{
-	vkMeshLoader::VERTEX_LAYOUT_POSITION,
-	vkMeshLoader::VERTEX_LAYOUT_UV,
-	vkMeshLoader::VERTEX_LAYOUT_COLOR,
-	vkMeshLoader::VERTEX_LAYOUT_NORMAL
-};
 
-class VulkanExample : public VulkanBase
+class VkBloom : public VulkanBase
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_UV,
+		vkMeshLoader::VERTEX_LAYOUT_COLOR,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL
+	};
+
 public:
 	bool bloom = true;
 
@@ -124,7 +119,7 @@ public:
 		std::array<FrameBuffer, 2> framebuffers;
 	} offscreenPass;
 
-	VulkanExample() : VulkanBase(ENABLE_VALIDATION)
+	VkBloom() : VulkanBase(ENABLE_VALIDATION)
 	{
 		zoom = -10.25f;
 		rotation = { 7.5f, -343.0f, 0.0f };
@@ -133,7 +128,7 @@ public:
 		title = "Vulkan Example - Bloom";
 	}
 
-	~VulkanExample()
+	~VkBloom()
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
@@ -403,7 +398,7 @@ public:
 		VkViewport viewport = vkTools::initializers::viewport((float)offscreenPass.width, (float)offscreenPass.height, 0.0f, 1.0f);
 		vkCmdSetViewport(offscreenPass.commandBuffer, 0, 1, &viewport);
 
-		VkRect2D scissor = vkTools::initializers::rect2D(offscreenPass.width, offscreenPass.height,	0, 0);
+		VkRect2D scissor = vkTools::initializers::rect2D(offscreenPass.width, offscreenPass.height, 0, 0);
 		vkCmdSetScissor(offscreenPass.commandBuffer, 0, 1, &scissor);
 
 		vkCmdBeginRenderPass(offscreenPass.commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -477,7 +472,7 @@ public:
 			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-			VkRect2D scissor = vkTools::initializers::rect2D(width, height,	0, 0);
+			VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
 			vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 			VkDeviceSize offsets[1] = { 0 };
@@ -515,7 +510,7 @@ public:
 			VK_CHECK_RESULT(vkEndCommandBuffer(mDrawCmdBuffers[i]));
 		}
 
-		if (bloom) 
+		if (bloom)
 		{
 			buildOffscreenCommandBuffer();
 		}
@@ -664,7 +659,7 @@ public:
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
-		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = 
+		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
@@ -721,7 +716,7 @@ public:
 
 		// Skybox
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.skyBox));
-		writeDescriptorSets = 
+		writeDescriptorSets =
 		{
 			// Binding 0: Vertex shader uniform buffer
 			vkTools::initializers::writeDescriptorSet(descriptorSets.skyBox, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, &uniformData.vsSkyBox.descriptor),
@@ -1073,4 +1068,3 @@ public:
 	}
 };
 
-VULKAN_EXAMPLE_MAIN()
