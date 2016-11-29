@@ -94,11 +94,10 @@ public:
 
 	VkTriangle() : VulkanBase(ENABLE_VALIDATION)
 	{
-		width = 1280;
-		height = 720;
+		width = 800;
+		height = 600;
 		zoom = -2.5f;
-		title = "Vulkan triangle";
-		// Values not set here are initialized in the base class constructor
+		title = "VkCore";
 	}
 
 	~VkTriangle()

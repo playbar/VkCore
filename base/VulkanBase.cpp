@@ -12,7 +12,7 @@ std::vector<const char*> VulkanBase::args;
 
 VkResult VulkanBase::createInstance(bool enableValidation)
 {
-	this->enableValidation = enableValidation;
+	this->mEnableValidation = enableValidation;
 
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -768,7 +768,7 @@ VulkanBase::~VulkanBase()
 
 	delete mVulkanDevice;
 
-	if (enableValidation)
+	if (mEnableValidation)
 	{
 		vkDebug::freeDebugCallback(mInstance);
 	}
@@ -834,7 +834,7 @@ void VulkanBase::initVulkan(bool enableValidation)
 	// Vulkan device creation
 	// This is handled by a separate class that gets a logical device representation
 	// and encapsulates functions related to a device
-	mVulkanDevice = new vk::VulkanDevice(mPhysicalDevice);
+	mVulkanDevice = new VkCoreDevice(mPhysicalDevice);
 	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(enabledFeatures));
 	mDevice = mVulkanDevice->mLogicalDevice;
 

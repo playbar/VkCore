@@ -12,7 +12,7 @@
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
-#include "vulkandevice.hpp"
+#include "VkCoreDevice.hpp"
 #include "vulkanbuffer.hpp"
 
 #define ENABLE_VALIDATION false
@@ -66,7 +66,7 @@ struct SceneMesh
 class Scene
 {
 private:
-	vk::VulkanDevice *vulkanDevice;
+	VkCoreDevice *vulkanDevice;
 	VkQueue queue;
 
 	VkDescriptorPool descriptorPool;
@@ -397,7 +397,7 @@ public:
 	uint32_t scenePartIndex = 0;
 
 	// Default constructor
-	Scene(vk::VulkanDevice *vulkanDevice, VkQueue queue, vkTools::VulkanTextureLoader *textureloader)
+	Scene(VkCoreDevice *vulkanDevice, VkQueue queue, vkTools::VulkanTextureLoader *textureloader)
 	{
 		this->vulkanDevice = vulkanDevice;
 		this->queue = queue;

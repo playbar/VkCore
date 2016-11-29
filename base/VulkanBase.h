@@ -27,7 +27,7 @@
 #include "vulkantools.h"
 #include "vulkandebug.h"
 
-#include "vulkandevice.hpp"
+#include "VkCoreDevice.hpp"
 #include "vulkanswapchain.hpp"
 #include "vulkanTextureLoader.hpp"
 #include "vulkanMeshLoader.hpp"
@@ -41,7 +41,7 @@ class VulkanBase
 {
 private:	
 	// Set to true when example is created with enabled validation layers
-	bool enableValidation = false;
+	bool mEnableValidation = false;
 	// Set to true if v-sync will be forced for the swapchain
 	bool enableVSync = false;
 	// Device features enabled by the example
@@ -49,10 +49,7 @@ private:
 	VkPhysicalDeviceFeatures enabledFeatures = {};
 	// fps timer (one second interval)
 	float fpsTimer = 0.0f;
-	// Create application wide Vulkan instance
-	VkResult createInstance(bool enableValidation);
-	// Get window title with example name, device, et.
-	std::string getWindowTitle();
+
 	/** brief Indicates that the view (position, rotation) has changed and */
 	bool viewUpdated = false;
 	// Destination dimensions for resizing the window
@@ -61,6 +58,8 @@ private:
 	bool resizing = false;
 	// Called if the window is resized and some resources have to be recreatesd
 	void windowResize();
+	VkResult createInstance(bool enableValidation);
+	std::string getWindowTitle();
 protected:
 	// Last frame time, measured using a high performance timer (if available)
 	float frameTimer = 1.0f;
@@ -69,19 +68,14 @@ protected:
 	uint32_t lastFPS = 0;
 	// Vulkan instance, stores all per-application states
 	VkInstance mInstance;
-	// Physical device (GPU) that Vulkan will ise
+	VkCoreDevice *mVulkanDevice;
+
 	VkPhysicalDevice mPhysicalDevice;
-	// Stores physical device properties (for e.g. checking device limits)
-	VkPhysicalDeviceProperties mDeviceProperties;
-	// Stores phyiscal device features (for e.g. checking if a feature is available)
-	VkPhysicalDeviceFeatures mDeviceFeatures;
-	// Stores all available memory (type) properties for the physical device
-	VkPhysicalDeviceMemoryProperties mDeviceMemoryProperties;
-	/** @brief Logical device, application's view of the physical device (GPU) */
-	// todo: getter? should always point to VulkanDevice->device
 	VkDevice mDevice;
-	/** @brief Encapsulated physical and logical vulkan device */
-	vk::VulkanDevice *mVulkanDevice;
+	VkPhysicalDeviceProperties mDeviceProperties;
+	VkPhysicalDeviceFeatures mDeviceFeatures;
+	VkPhysicalDeviceMemoryProperties mDeviceMemoryProperties;
+	
 	// Handle to the device graphics queue that command buffers are submitted to
 	VkQueue mQueue;
 	// Color buffer format
@@ -114,7 +108,8 @@ protected:
 	// Wraps the swap chain to present images (framebuffers) to the windowing system
 	VulkanSwapChain mSwapChain;
 	// Synchronization semaphores
-	struct {
+	struct
+	{
 		// Swap chain image presentation
 		VkSemaphore presentComplete;
 		// Command buffer submission and execution

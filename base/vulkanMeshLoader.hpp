@@ -33,7 +33,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "vulkandevice.hpp"
+#include "VkCoreDevice.hpp"
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>
@@ -232,7 +232,7 @@ namespace vkMeshLoader
 class VulkanMeshLoader 
 {
 private:
-	vk::VulkanDevice *vulkanDevice;
+	VkCoreDevice *vulkanDevice;
 
 	static const int defaultFlags = aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals;
 
@@ -290,7 +290,7 @@ public:
 	*
 	* @param vulkanDevice Pointer to a valid VulkanDevice
 	*/
-	VulkanMeshLoader(vk::VulkanDevice *vulkanDevice)
+	VulkanMeshLoader(VkCoreDevice *vulkanDevice)
 	{
 		assert(vulkanDevice != nullptr);
 		this->vulkanDevice = vulkanDevice;

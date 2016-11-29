@@ -68,7 +68,7 @@
     <ClInclude Include="VulkanBase.h" />
     <ClInclude Include="vulkanbuffer.hpp" />
     <ClInclude Include="vulkandebug.h" />
-    <ClInclude Include="vulkandevice.hpp" />
+    <ClInclude Include="VkCoreDevice.hpp" />
     <ClInclude Include="vulkanframebuffer.hpp" />
     <ClInclude Include="vulkangear.h" />
     <ClInclude Include="vulkanheightmap.hpp" />

@@ -11,7 +11,7 @@
 #include <vulkan/vulkan.h>
 #include <gli/gli.hpp>
 
-#include "vulkandevice.hpp"
+#include "VkCoreDevice.hpp"
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>
@@ -41,7 +41,7 @@ namespace vkTools
 	class VulkanTextureLoader
 	{
 	private:
-		vk::VulkanDevice *vulkanDevice;
+		VkCoreDevice *vulkanDevice;
 		VkQueue queue;
 		VkCommandBuffer cmdBuffer;
 		VkCommandPool cmdPool;
@@ -57,7 +57,7 @@ namespace vkTools
 		* @param queue Queue for the copy commands when using staging (queue must support transfers)
 		* @param cmdPool Commandpool used to get command buffers for copies and layout transitions
 		*/
-		VulkanTextureLoader(vk::VulkanDevice *vulkanDevice, VkQueue queue, VkCommandPool cmdPool)
+		VulkanTextureLoader(VkCoreDevice *vulkanDevice, VkQueue queue, VkCommandPool cmdPool)
 		{
 			this->vulkanDevice = vulkanDevice;
 			this->queue = queue;

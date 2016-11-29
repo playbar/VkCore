@@ -16,7 +16,7 @@
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
-#include "vulkandevice.hpp"
+#include "VkCoreDevice.hpp"
 #include "vulkanbuffer.hpp"
 
 #define ENABLE_VALIDATION false

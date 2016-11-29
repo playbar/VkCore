@@ -30,9 +30,6 @@
     <ClInclude Include="vulkandebug.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="vulkandevice.hpp">
-      <Filter>source</Filter>
-    </ClInclude>
     <ClInclude Include="vulkanframebuffer.hpp">
       <Filter>source</Filter>
     </ClInclude>
@@ -190,6 +187,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="define.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="VkCoreDevice.hpp">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
