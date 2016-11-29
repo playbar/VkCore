@@ -86,10 +86,10 @@ public:
 
 		destroyTextureImage(mTexture);
 
-		vkDestroyPipeline(mDevice, mPipelines.solid, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, mPipelines.solid, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, mPipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
 
 		mVertexBuffer.destroy();
 		mIndexBuffer.destroy();
@@ -223,23 +223,23 @@ public:
 			bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 			bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-			VK_CHECK_RESULT(vkCreateBuffer(mDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+			VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
 			// Get memory requirements for the staging buffer (alignment, memory type bits)
-			vkGetBufferMemoryRequirements(mDevice, stagingBuffer, &memReqs);
+			vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, stagingBuffer, &memReqs);
 
 			memAllocInfo.allocationSize = memReqs.size;
 			// Get memory type index for a host visible buffer
 			memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-			VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &stagingMemory));
-			VK_CHECK_RESULT(vkBindBufferMemory(mDevice, stagingBuffer, stagingMemory, 0));
+			VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &stagingMemory));
+			VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, stagingBuffer, stagingMemory, 0));
 
 			// Copy texture data into staging buffer
 			uint8_t *data;
-			VK_CHECK_RESULT(vkMapMemory(mDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
+			VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
 			memcpy(data, tex2D.data(), tex2D.size());
-			vkUnmapMemory(mDevice, stagingMemory);
+			vkUnmapMemory(mVulkanDevice->mLogicalDevice, stagingMemory);
 
 			// Setup buffer copy regions for each mip level
 			std::vector<VkBufferImageCopy> bufferCopyRegions;
@@ -277,15 +277,15 @@ public:
 			imageCreateInfo.extent = { mTexture.width, mTexture.height, 1 };
 			imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-			VK_CHECK_RESULT(vkCreateImage(mDevice, &imageCreateInfo, nullptr, &mTexture.image));
+			VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &mTexture.image));
 
-			vkGetImageMemoryRequirements(mDevice, mTexture.image, &memReqs);
+			vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, mTexture.image, &memReqs);
 
 			memAllocInfo.allocationSize = memReqs.size;
 			memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-			VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &mTexture.deviceMemory));
-			VK_CHECK_RESULT(vkBindImageMemory(mDevice, mTexture.image, mTexture.deviceMemory, 0));
+			VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &mTexture.deviceMemory));
+			VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, mTexture.image, mTexture.deviceMemory, 0));
 
 			VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
@@ -334,8 +334,8 @@ public:
 			VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
 			// Clean up staging resources
-			vkFreeMemory(mDevice, stagingMemory, nullptr);
-			vkDestroyBuffer(mDevice, stagingBuffer, nullptr);
+			vkFreeMemory(mVulkanDevice->mLogicalDevice, stagingMemory, nullptr);
+			vkDestroyBuffer(mVulkanDevice->mLogicalDevice, stagingBuffer, nullptr);
 		}
 		else
 		{
@@ -358,11 +358,11 @@ public:
 			imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 			imageCreateInfo.extent = { mTexture.width, mTexture.height, 1 };
-			VK_CHECK_RESULT(vkCreateImage(mDevice, &imageCreateInfo, nullptr, &mappableImage));
+			VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &mappableImage));
 
 			// Get memory requirements for this image 
 			// like size and alignment
-			vkGetImageMemoryRequirements(mDevice, mappableImage, &memReqs);
+			vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, mappableImage, &memReqs);
 			// Set memory allocation size to required memory size
 			memAllocInfo.allocationSize = memReqs.size;
 
@@ -370,10 +370,10 @@ public:
 			memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 			// Allocate host memory
-			VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &mappableMemory));
+			VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &mappableMemory));
 
 			// Bind allocated image for use
-			VK_CHECK_RESULT(vkBindImageMemory(mDevice, mappableImage, mappableMemory, 0));
+			VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, mappableImage, mappableMemory, 0));
 
 			// Get sub resource layout
 			// Mip map count, array layer, etc.
@@ -385,15 +385,15 @@ public:
 
 			// Get sub resources layout 
 			// Includes row pitch, size offsets, etc.
-			vkGetImageSubresourceLayout(mDevice, mappableImage, &subRes, &subResLayout);
+			vkGetImageSubresourceLayout(mVulkanDevice->mLogicalDevice, mappableImage, &subRes, &subResLayout);
 
 			// Map image memory
-			VK_CHECK_RESULT(vkMapMemory(mDevice, mappableMemory, 0, memReqs.size, 0, &data));
+			VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mappableMemory, 0, memReqs.size, 0, &data));
 
 			// Copy image data into memory
 			memcpy(data, tex2D[subRes.mipLevel].data(), tex2D[subRes.mipLevel].size());
 
-			vkUnmapMemory(mDevice, mappableMemory);
+			vkUnmapMemory(mVulkanDevice->mLogicalDevice, mappableMemory);
 
 			// Linear tiled images don't need to be staged
 			// and can be directly used as textures
@@ -461,7 +461,7 @@ public:
 			samplerCreateInfo.anisotropyEnable = VK_FALSE;
 		}
 		samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		VK_CHECK_RESULT(vkCreateSampler(mDevice, &samplerCreateInfo, nullptr, &mTexture.sampler));
+		VK_CHECK_RESULT(vkCreateSampler(mVulkanDevice->mLogicalDevice, &samplerCreateInfo, nullptr, &mTexture.sampler));
 
 		// Create image view
 		// Textures are not directly accessed by the shaders and
@@ -482,7 +482,7 @@ public:
 		// Only set mip map count if optimal tiling is used
 		viewCreateInfo.subresourceRange.levelCount = (useStaging) ? mTexture.mipLevels : 1;
 		viewCreateInfo.image = mTexture.image;
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &viewCreateInfo, nullptr, &mTexture.imageView));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &viewCreateInfo, nullptr, &mTexture.imageView));
 
 		// Fill image descriptor image info that can be used during the descriptor set setup
 		mTexture.descriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -493,10 +493,10 @@ public:
 	// Free all Vulkan resources used a texture object
 	void destroyTextureImage(Texture texture)
 	{
-		vkDestroyImageView(mDevice, texture.imageView, nullptr);
-		vkDestroyImage(mDevice, texture.image, nullptr);
-		vkDestroySampler(mDevice, texture.sampler, nullptr);
-		vkFreeMemory(mDevice, texture.deviceMemory, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, texture.imageView, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, texture.image, nullptr);
+		vkDestroySampler(mVulkanDevice->mLogicalDevice, texture.sampler, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, texture.deviceMemory, nullptr);
 	}
 
 	void buildCommandBuffers()
@@ -650,7 +650,7 @@ public:
 				poolSizes.data(),
 				2);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -674,14 +674,14 @@ public:
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&mDescriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
 	}
 
 	void setupDescriptorSet()
@@ -692,7 +692,7 @@ public:
 				&mDescriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &mDescriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
@@ -710,7 +710,7 @@ public:
 				&mTexture.descriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -785,7 +785,7 @@ public:
 		pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipelines.solid));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipelines.solid));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms

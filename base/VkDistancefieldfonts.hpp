@@ -117,19 +117,19 @@ public:
 		textureLoader->destroyTexture(textures.fontSDF);
 		textureLoader->destroyTexture(textures.fontBitmap);
 
-		vkDestroyPipeline(mDevice, pipelines.sdf, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.sdf, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
-		vkDestroyBuffer(mDevice, vertices.buf, nullptr);
-		vkFreeMemory(mDevice, vertices.mem, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, vertices.buf, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, vertices.mem, nullptr);
 
-		vkDestroyBuffer(mDevice, indices.buf, nullptr);
-		vkFreeMemory(mDevice, indices.mem, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, indices.buf, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, indices.mem, nullptr);
 
-		vkDestroyBuffer(mDevice, uniformData.vs.buffer, nullptr);
-		vkFreeMemory(mDevice, uniformData.vs.memory, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, uniformData.vs.buffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, uniformData.vs.memory, nullptr);
 	}
 
 	// Basic parser fpr AngelCode bitmap font format files
@@ -392,7 +392,7 @@ public:
 				poolSizes.data(),
 				2);
 
-		VkResult vkRes = vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool);
+		VkResult vkRes = vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool);
 		assert(!vkRes);
 	}
 
@@ -422,14 +422,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSet()
@@ -441,7 +441,7 @@ public:
 				1);
 
 		// Signed distance front descriptor set
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.sdf));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.sdf));
 
 		// Image descriptor for the color map texture
 		VkDescriptorImageInfo texDescriptor =
@@ -472,10 +472,10 @@ public:
 				&uniformData.fs.descriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 
 		// Default font rendering descriptor set
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.bitmap));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.bitmap));
 
 		// Image descriptor for the color map texture
 		texDescriptor.sampler = textures.fontBitmap.sampler;
@@ -497,7 +497,7 @@ public:
 				&texDescriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -581,12 +581,12 @@ public:
 		pipelineCreateInfo.stageCount = shaderStages.size();
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.sdf));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.sdf));
 
 		// Default bitmap font rendering pipeline
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/distancefieldfonts/bitmap.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/distancefieldfonts/bitmap.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.bitmap));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.bitmap));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -631,18 +631,18 @@ public:
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vs.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vs.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.vs.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vs.memory);
 	}
 
 	void updateFontSettings()
 	{
 		// Fragment shader
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.fs.memory, 0, sizeof(uboFS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.fs.memory, 0, sizeof(uboFS), 0, (void **)&pData));
 		memcpy(pData, &uboFS, sizeof(uboFS));
-		vkUnmapMemory(mDevice, uniformData.fs.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.fs.memory);
 	}
 
 	void draw()
@@ -679,9 +679,9 @@ public:
 	{
 		if (!prepared)
 			return;
-		vkDeviceWaitIdle(mDevice);
+		vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 		draw();
-		vkDeviceWaitIdle(mDevice);
+		vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 	}
 
 	virtual void viewChanged()

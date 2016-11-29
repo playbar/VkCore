@@ -98,25 +98,25 @@ public:
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
-		vkDestroyPipeline(mDevice, pipelines.solid, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.occluder, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.simple, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.solid, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.occluder, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.simple, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
-		vkDestroyQueryPool(mDevice, queryPool, nullptr);
+		vkDestroyQueryPool(mVulkanDevice->mLogicalDevice, queryPool, nullptr);
 
-		vkDestroyBuffer(mDevice, queryResult.buffer, nullptr);
-		vkFreeMemory(mDevice, queryResult.memory, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, queryResult.buffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, queryResult.memory, nullptr);
 
-		vkTools::destroyUniformData(mDevice, &uniformData.vsScene);
-		vkTools::destroyUniformData(mDevice, &uniformData.sphere);
-		vkTools::destroyUniformData(mDevice, &uniformData.teapot);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsScene);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.sphere);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.teapot);
 
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.sphere);
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.plane);
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.teapot);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.sphere);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.plane);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.teapot);
 	}
 
 	// Create a buffer for storing the query result
@@ -133,12 +133,12 @@ public:
 				bufSize);
 
 		// Results are saved in a host visible buffer for easy access by the application
-		VK_CHECK_RESULT(vkCreateBuffer(mDevice, &bufferCreateInfo, nullptr, &queryResult.buffer));
-		vkGetBufferMemoryRequirements(mDevice, queryResult.buffer, &memReqs);
+		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, &queryResult.buffer));
+		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, queryResult.buffer, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &queryResult.memory));
-		VK_CHECK_RESULT(vkBindBufferMemory(mDevice, queryResult.buffer, queryResult.memory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &queryResult.memory));
+		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, queryResult.buffer, queryResult.memory, 0));
 
 		// Create query pool
 		VkQueryPoolCreateInfo queryPoolInfo = {};
@@ -147,7 +147,7 @@ public:
 		queryPoolInfo.queryType = VK_QUERY_TYPE_OCCLUSION;
 		queryPoolInfo.queryCount = 2;
 
-		VK_CHECK_RESULT(vkCreateQueryPool(mDevice, &queryPoolInfo, NULL, &queryPool));
+		VK_CHECK_RESULT(vkCreateQueryPool(mVulkanDevice->mLogicalDevice, &queryPoolInfo, NULL, &queryPool));
 	}
 
 	// Retrieves the results of the occlusion queries submitted to the command buffer
@@ -155,7 +155,7 @@ public:
 	{
 		// We use vkGetQueryResults to copy the results into a host visible buffer
 		vkGetQueryPoolResults(
-			mDevice,
+			mVulkanDevice->mLogicalDevice,
 			queryPool,
 			0,
 			2,
@@ -372,7 +372,7 @@ public:
 				poolSizes.data(),
 				3);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -391,14 +391,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSets()
@@ -410,7 +410,7 @@ public:
 				1);
 
 		// Occluder (plane)
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSet));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
@@ -422,19 +422,19 @@ public:
 				&uniformData.vsScene.descriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 
 		// Teapot
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.teapot));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.teapot));
 		writeDescriptorSets[0].dstSet = descriptorSets.teapot;
 		writeDescriptorSets[0].pBufferInfo = &uniformData.teapot.descriptor;
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 
 		// Sphere
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.sphere));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.sphere));
 		writeDescriptorSets[0].dstSet = descriptorSets.sphere;
 		writeDescriptorSets[0].pBufferInfo = &uniformData.sphere.descriptor;
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -510,14 +510,14 @@ public:
 		pipelineCreateInfo.stageCount = shaderStages.size();
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
 
 		// Basic pipeline for coloring occluded objects
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/occlusionquery/simple.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/occlusionquery/simple.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		rasterizationState.cullMode = VK_CULL_MODE_NONE;
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.simple));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.simple));
 
 		// Visual pipeline for the occluder
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/occlusionquery/occluder.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
@@ -529,7 +529,7 @@ public:
 		blendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
 		blendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.occluder));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.occluder));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -582,25 +582,25 @@ public:
 
 		// Occluder
 		uboVS.visible = 1.0f;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.vsScene.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory);
 
 		// Teapot
 		// Toggle color depending on visibility
 		uboVS.visible = (passedSamples[0] > 0) ? 1.0f : 0.0f;
 		uboVS.model = viewMatrix * rotMatrix * glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -10.0f));
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.teapot.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.teapot.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.teapot.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.teapot.memory);
 
 		// Sphere
 		// Toggle color depending on visibility
 		uboVS.visible = (passedSamples[1] > 0) ? 1.0f : 0.0f;
 		uboVS.model = viewMatrix * rotMatrix * glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 10.0f));
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.sphere.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.sphere.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.sphere.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.sphere.memory);
 	}
 
 	void prepare()
@@ -627,7 +627,7 @@ public:
 
 	virtual void viewChanged()
 	{
-		vkDeviceWaitIdle(mDevice);
+		vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 		updateUniformBuffers();
 		VulkanBase::updateTextOverlay();
 	}

@@ -93,14 +93,14 @@ public:
 
 	~VkTextOverLay()
 	{
-		vkDestroyPipeline(mDevice, pipelines.solid, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.background, nullptr);
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.cube);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.solid, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.background, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.cube);
 		textureLoader->destroyTexture(textures.background);
 		textureLoader->destroyTexture(textures.cube);
-		vkTools::destroyUniformData(mDevice, &uniformData.vsScene);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsScene);
 		delete(mTextOverlay);
 	}
 
@@ -284,7 +284,7 @@ public:
 				poolSizes.data(),
 				2);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -308,14 +308,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSet()
@@ -327,7 +327,7 @@ public:
 				1);
 
 		// Background
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.background));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.background));
 
 		VkDescriptorImageInfo texDescriptor =
 			vkTools::initializers::descriptorImageInfo(
@@ -353,15 +353,15 @@ public:
 				1,
 				&texDescriptor));
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 
 		// Cube
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.cube));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.cube));
 		texDescriptor.sampler = textures.cube.sampler;
 		texDescriptor.imageView = textures.cube.view;
 		writeDescriptorSets[0].dstSet = descriptorSets.cube;
 		writeDescriptorSets[1].dstSet = descriptorSets.cube;
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -436,7 +436,7 @@ public:
 		pipelineCreateInfo.stageCount = shaderStages.size();
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
 
 		// Background rendering pipeline
 		depthStencilState.depthTestEnable = VK_FALSE;
@@ -447,7 +447,7 @@ public:
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/textoverlay/background.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/textoverlay/background.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.background));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.background));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -478,9 +478,9 @@ public:
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.vsScene.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory);
 	}
 
 	void prepareTextOverlay()
@@ -545,14 +545,14 @@ public:
 		draw();
 		if (frameCounter == 0)
 		{
-			vkDeviceWaitIdle(mDevice);
+			vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 			updateTextOverlay();
 		}
 	}
 
 	virtual void viewChanged()
 	{
-		vkDeviceWaitIdle(mDevice);
+		vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 		updateUniformBuffers();
 		updateTextOverlay();
 	}

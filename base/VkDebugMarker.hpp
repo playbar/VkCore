@@ -236,43 +236,43 @@ public:
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
-		vkDestroyPipeline(mDevice, pipelines.toonshading, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.color, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.wireframe, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.postprocess, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.toonshading, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.color, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.wireframe, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.postprocess, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
 		// Destroy and free mesh resources 
-		vkDestroyBuffer(mDevice, scene.vertices.buf, nullptr);
-		vkFreeMemory(mDevice, scene.vertices.mem, nullptr);
-		vkDestroyBuffer(mDevice, scene.indices.buf, nullptr);
-		vkFreeMemory(mDevice, scene.indices.mem, nullptr);
-		vkDestroyBuffer(mDevice, sceneGlow.vertices.buf, nullptr);
-		vkFreeMemory(mDevice, sceneGlow.vertices.mem, nullptr);
-		vkDestroyBuffer(mDevice, sceneGlow.indices.buf, nullptr);
-		vkFreeMemory(mDevice, sceneGlow.indices.mem, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, scene.vertices.buf, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, scene.vertices.mem, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, scene.indices.buf, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, scene.indices.mem, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, sceneGlow.vertices.buf, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, sceneGlow.vertices.mem, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, sceneGlow.indices.buf, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, sceneGlow.indices.mem, nullptr);
 
-		vkTools::destroyUniformData(mDevice, &uniformData.vsScene);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsScene);
 
 		// Offscreen
 		// Color attachment
-		vkDestroyImageView(mDevice, offscreenPass.color.view, nullptr);
-		vkDestroyImage(mDevice, offscreenPass.color.image, nullptr);
-		vkFreeMemory(mDevice, offscreenPass.color.mem, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, offscreenPass.color.view, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, offscreenPass.color.image, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, offscreenPass.color.mem, nullptr);
 
 		// Depth attachment
-		vkDestroyImageView(mDevice, offscreenPass.depth.view, nullptr);
-		vkDestroyImage(mDevice, offscreenPass.depth.image, nullptr);
-		vkFreeMemory(mDevice, offscreenPass.depth.mem, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, offscreenPass.depth.view, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, offscreenPass.depth.image, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, offscreenPass.depth.mem, nullptr);
 
-		vkDestroyRenderPass(mDevice, offscreenPass.renderPass, nullptr);
-		vkDestroySampler(mDevice, offscreenPass.sampler, nullptr);
-		vkDestroyFramebuffer(mDevice, offscreenPass.frameBuffer, nullptr);
+		vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, offscreenPass.renderPass, nullptr);
+		vkDestroySampler(mVulkanDevice->mLogicalDevice, offscreenPass.sampler, nullptr);
+		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, offscreenPass.frameBuffer, nullptr);
 
-		vkFreeCommandBuffers(mDevice, cmdPool, 1, &offscreenPass.commandBuffer);
-		vkDestroySemaphore(mDevice, offscreenPass.semaphore, nullptr);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &offscreenPass.commandBuffer);
+		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenPass.semaphore, nullptr);
 	}
 
 	// Prepare a texture target and framebuffer for offscreen rendering
@@ -303,12 +303,12 @@ public:
 		VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
 		VkMemoryRequirements memReqs;
 
-		VK_CHECK_RESULT(vkCreateImage(mDevice, &image, nullptr, &offscreenPass.color.image));
-		vkGetImageMemoryRequirements(mDevice, offscreenPass.color.image, &memReqs);
+		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &image, nullptr, &offscreenPass.color.image));
+		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, offscreenPass.color.image, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &offscreenPass.color.mem));
-		VK_CHECK_RESULT(vkBindImageMemory(mDevice, offscreenPass.color.image, offscreenPass.color.mem, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &offscreenPass.color.mem));
+		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, offscreenPass.color.image, offscreenPass.color.mem, 0));
 
 		VkImageViewCreateInfo colorImageView = vkTools::initializers::imageViewCreateInfo();
 		colorImageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -320,7 +320,7 @@ public:
 		colorImageView.subresourceRange.baseArrayLayer = 0;
 		colorImageView.subresourceRange.layerCount = 1;
 		colorImageView.image = offscreenPass.color.image;
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &colorImageView, nullptr, &offscreenPass.color.view));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &colorImageView, nullptr, &offscreenPass.color.view));
 
 		// Create sampler to sample from the attachment in the fragment shader
 		VkSamplerCreateInfo samplerInfo = vkTools::initializers::samplerCreateInfo();
@@ -335,18 +335,18 @@ public:
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = 1.0f;
 		samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		VK_CHECK_RESULT(vkCreateSampler(mDevice, &samplerInfo, nullptr, &offscreenPass.sampler));
+		VK_CHECK_RESULT(vkCreateSampler(mVulkanDevice->mLogicalDevice, &samplerInfo, nullptr, &offscreenPass.sampler));
 
 		// Depth stencil attachment
 		image.format = fbDepthFormat;
 		image.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-		VK_CHECK_RESULT(vkCreateImage(mDevice, &image, nullptr, &offscreenPass.depth.image));
-		vkGetImageMemoryRequirements(mDevice, offscreenPass.depth.image, &memReqs);
+		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &image, nullptr, &offscreenPass.depth.image));
+		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, offscreenPass.depth.image, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &offscreenPass.depth.mem));
-		VK_CHECK_RESULT(vkBindImageMemory(mDevice, offscreenPass.depth.image, offscreenPass.depth.mem, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &offscreenPass.depth.mem));
+		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, offscreenPass.depth.image, offscreenPass.depth.mem, 0));
 
 		VkImageViewCreateInfo depthStencilView = vkTools::initializers::imageViewCreateInfo();
 		depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -359,7 +359,7 @@ public:
 		depthStencilView.subresourceRange.baseArrayLayer = 0;
 		depthStencilView.subresourceRange.layerCount = 1;
 		depthStencilView.image = offscreenPass.depth.image;
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &depthStencilView, nullptr, &offscreenPass.depth.view));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &offscreenPass.depth.view));
 
 		// Create a separate render pass for the offscreen rendering as it may differ from the one used for scene rendering
 
@@ -421,7 +421,7 @@ public:
 		renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 		renderPassInfo.pDependencies = dependencies.data();
 
-		VK_CHECK_RESULT(vkCreateRenderPass(mDevice, &renderPassInfo, nullptr, &offscreenPass.renderPass));
+		VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &offscreenPass.renderPass));
 
 		VkImageView attachments[2];
 		attachments[0] = offscreenPass.color.view;
@@ -435,7 +435,7 @@ public:
 		fbufCreateInfo.height = offscreenPass.height;
 		fbufCreateInfo.layers = 1;
 
-		VK_CHECK_RESULT(vkCreateFramebuffer(mDevice, &fbufCreateInfo, nullptr, &offscreenPass.frameBuffer));
+		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &fbufCreateInfo, nullptr, &offscreenPass.frameBuffer));
 
 		// Fill a descriptor for later use in a descriptor set 
 		offscreenPass.descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -443,9 +443,9 @@ public:
 		offscreenPass.descriptor.sampler = offscreenPass.sampler;
 
 		// Name some objects for debugging
-		DebugMarker::setObjectName(mDevice, (uint64_t)offscreenPass.color.image, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, "Off-screen color framebuffer");
-		DebugMarker::setObjectName(mDevice, (uint64_t)offscreenPass.depth.image, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, "Off-screen depth framebuffer");
-		DebugMarker::setObjectName(mDevice, (uint64_t)offscreenPass.sampler, VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT, "Off-screen framebuffer default sampler");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)offscreenPass.color.image, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, "Off-screen color framebuffer");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)offscreenPass.depth.image, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, "Off-screen depth framebuffer");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)offscreenPass.sampler, VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT, "Off-screen framebuffer default sampler");
 	}
 
 	// Command buffer for rendering color only scene for glow
@@ -459,7 +459,7 @@ public:
 		{
 			// Create a semaphore used to synchronize offscreen rendering and usage
 			VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
-			VK_CHECK_RESULT(vkCreateSemaphore(mDevice, &semaphoreCreateInfo, nullptr, &offscreenPass.semaphore));
+			VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &offscreenPass.semaphore));
 		}
 
 		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
@@ -618,10 +618,10 @@ public:
 
 			VulkanBase::flushCommandBuffer(copyCmd, mQueue, true);
 
-			vkDestroyBuffer(mDevice, vertexStaging.buffer, nullptr);
-			vkFreeMemory(mDevice, vertexStaging.memory, nullptr);
-			vkDestroyBuffer(mDevice, indexStaging.buffer, nullptr);
-			vkFreeMemory(mDevice, indexStaging.memory, nullptr);
+			vkDestroyBuffer(mVulkanDevice->mLogicalDevice, vertexStaging.buffer, nullptr);
+			vkFreeMemory(mVulkanDevice->mLogicalDevice, vertexStaging.memory, nullptr);
+			vkDestroyBuffer(mVulkanDevice->mLogicalDevice, indexStaging.buffer, nullptr);
+			vkFreeMemory(mVulkanDevice->mLogicalDevice, indexStaging.memory, nullptr);
 		}
 		else
 		{
@@ -665,11 +665,11 @@ public:
 
 		// Name the buffers for debugging
 		// Scene
-		DebugMarker::setObjectName(mDevice, (uint64_t)scene.vertices.buf, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Scene vertex buffer");
-		DebugMarker::setObjectName(mDevice, (uint64_t)scene.indices.buf, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Scene index buffer");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)scene.vertices.buf, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Scene vertex buffer");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)scene.indices.buf, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Scene index buffer");
 		// Glow
-		DebugMarker::setObjectName(mDevice, (uint64_t)sceneGlow.vertices.buf, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Glow vertex buffer");
-		DebugMarker::setObjectName(mDevice, (uint64_t)sceneGlow.indices.buf, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Glow index buffer");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)sceneGlow.vertices.buf, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Glow vertex buffer");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)sceneGlow.indices.buf, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Glow index buffer");
 	}
 
 	void reBuildCommandBuffers()
@@ -834,7 +834,7 @@ public:
 				poolSizes.data(),
 				1);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -858,18 +858,18 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 
 		// Name for debugging
-		DebugMarker::setObjectName(mDevice, (uint64_t)pipelineLayout, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT, "Shared pipeline layout");
-		DebugMarker::setObjectName(mDevice, (uint64_t)descriptorSetLayout, VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT, "Shared descriptor set layout");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)pipelineLayout, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT, "Shared pipeline layout");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)descriptorSetLayout, VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT, "Shared descriptor set layout");
 	}
 
 	void setupDescriptorSet()
@@ -880,7 +880,7 @@ public:
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.scene));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.scene));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
@@ -898,7 +898,7 @@ public:
 				&offscreenPass.descriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -974,19 +974,19 @@ public:
 		pipelineCreateInfo.stageCount = shaderStages.size();
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.toonshading));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.toonshading));
 
 		// Color only pipeline
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/debugmarker/colorpass.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/debugmarker/colorpass.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		pipelineCreateInfo.renderPass = offscreenPass.renderPass;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.color));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.color));
 
 		// Wire frame rendering pipeline
 		rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
 		rasterizationState.lineWidth = 1.0f;
 		pipelineCreateInfo.renderPass = mRenderPass;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.wireframe));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.wireframe));
 
 		// Post processing effect
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/debugmarker/postprocess.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
@@ -1003,23 +1003,23 @@ public:
 		blendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
 		blendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 		blendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_DST_ALPHA;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.postprocess));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.postprocess));
 
 		// Name shader moduels for debugging
 		// Shader module count starts at 2 when text overlay in base class is enabled
 		uint32_t moduleIndex = enableTextOverlay ? 2 : 0;
-		DebugMarker::setObjectName(mDevice, (uint64_t)shaderModules[moduleIndex + 0], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Toon shading vertex shader");
-		DebugMarker::setObjectName(mDevice, (uint64_t)shaderModules[moduleIndex + 1], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Toon shading fragment shader");
-		DebugMarker::setObjectName(mDevice, (uint64_t)shaderModules[moduleIndex + 2], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Color-only vertex shader");
-		DebugMarker::setObjectName(mDevice, (uint64_t)shaderModules[moduleIndex + 3], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Color-only fragment shader");
-		DebugMarker::setObjectName(mDevice, (uint64_t)shaderModules[moduleIndex + 4], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Postprocess vertex shader");
-		DebugMarker::setObjectName(mDevice, (uint64_t)shaderModules[moduleIndex + 5], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Postprocess fragment shader");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 0], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Toon shading vertex shader");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 1], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Toon shading fragment shader");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 2], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Color-only vertex shader");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 3], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Color-only fragment shader");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 4], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Postprocess vertex shader");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)shaderModules[moduleIndex + 5], VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT, "Postprocess fragment shader");
 
 		// Name pipelines for debugging
-		DebugMarker::setObjectName(mDevice, (uint64_t)pipelines.toonshading, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, "Toon shading pipeline");
-		DebugMarker::setObjectName(mDevice, (uint64_t)pipelines.color, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, "Color only pipeline");
-		DebugMarker::setObjectName(mDevice, (uint64_t)pipelines.wireframe, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, "Wireframe rendering pipeline");
-		DebugMarker::setObjectName(mDevice, (uint64_t)pipelines.postprocess, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, "Post processing pipeline");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)pipelines.toonshading, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, "Toon shading pipeline");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)pipelines.color, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, "Color only pipeline");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)pipelines.wireframe, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, "Wireframe rendering pipeline");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)pipelines.postprocess, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, "Post processing pipeline");
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -1036,9 +1036,9 @@ public:
 			&uniformData.vsScene.descriptor);
 
 		// Name uniform buffer for debugging
-		DebugMarker::setObjectName(mDevice, (uint64_t)uniformData.vsScene.buffer, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Scene uniform buffer block");
+		DebugMarker::setObjectName(mVulkanDevice->mLogicalDevice, (uint64_t)uniformData.vsScene.buffer, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, "Scene uniform buffer block");
 		// Add some random tag
-		DebugMarker::setObjectTag(mDevice, (uint64_t)uniformData.vsScene.buffer, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, 0, sizeof(demoTag), &demoTag);
+		DebugMarker::setObjectTag(mVulkanDevice->mLogicalDevice, (uint64_t)uniformData.vsScene.buffer, VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, 0, sizeof(demoTag), &demoTag);
 
 		updateUniformBuffers();
 	}
@@ -1054,9 +1054,9 @@ public:
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.vsScene.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory);
 	}
 
 	void draw()
@@ -1093,7 +1093,7 @@ public:
 	void prepare()
 	{
 		VulkanBase::prepare();
-		DebugMarker::setup(mDevice);
+		DebugMarker::setup(mVulkanDevice->mLogicalDevice);
 		loadScene();
 		prepareOffscreen();
 		setupVertexDescriptions();

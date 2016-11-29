@@ -77,20 +77,20 @@ public:
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
-		vkDestroyPipeline(mDevice, pipelines.phong, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.phong, nullptr);
 		if (mDeviceFeatures.fillModeNonSolid)
 		{
-			vkDestroyPipeline(mDevice, pipelines.wireframe, nullptr);
+			vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.wireframe, nullptr);
 		}
-		vkDestroyPipeline(mDevice, pipelines.toon, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.toon, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.cube);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.cube);
 
-		vkDestroyBuffer(mDevice, uniformDataVS.buffer, nullptr);
-		vkFreeMemory(mDevice, uniformDataVS.memory, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, uniformDataVS.buffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, uniformDataVS.memory, nullptr);
 	}
 
 	void buildCommandBuffers()
@@ -230,7 +230,7 @@ public:
 				poolSizes.data(),
 				2);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -249,14 +249,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSet()
@@ -267,7 +267,7 @@ public:
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSet));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
@@ -279,7 +279,7 @@ public:
 				&uniformDataVS.descriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -362,7 +362,7 @@ public:
 		pipelineCreateInfo.flags = VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT;
 
 		// Textured pipeline
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.phong));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.phong));
 
 		// All pipelines created after the base pipeline will be derivatives
 		pipelineCreateInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
@@ -376,7 +376,7 @@ public:
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/pipelines/toon.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/pipelines/toon.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.toon));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.toon));
 
 		// Non solid rendering is not a mandatory Vulkan feature
 		if (mDeviceFeatures.fillModeNonSolid)
@@ -385,7 +385,7 @@ public:
 			rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
 			shaderStages[0] = loadShader(getAssetPath() + "shaders/pipelines/wireframe.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 			shaderStages[1] = loadShader(getAssetPath() + "shaders/pipelines/wireframe.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-			VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.wireframe));
+			VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.wireframe));
 		}
 	}
 
@@ -417,9 +417,9 @@ public:
 		uboVS.modelView = glm::rotate(uboVS.modelView, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformDataVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformDataVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformDataVS.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformDataVS.memory);
 	}
 
 	void draw()

@@ -90,19 +90,19 @@ void VulkanBase::createCommandBuffers()
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mDrawCmdBuffers.size()));
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
 }
 
 void VulkanBase::destroyCommandBuffers()
 {
-	vkFreeCommandBuffers(mDevice, cmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
+	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
 }
 
 void VulkanBase::createSetupCommandBuffer()
 {
 	if (setupCmdBuffer != VK_NULL_HANDLE)
 	{
-		vkFreeCommandBuffers(mDevice, cmdPool, 1, &setupCmdBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &setupCmdBuffer);
 		setupCmdBuffer = VK_NULL_HANDLE; // todo : check if still necessary
 	}
 
@@ -112,7 +112,7 @@ void VulkanBase::createSetupCommandBuffer()
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			1);
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &cmdBufAllocateInfo, &setupCmdBuffer));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &setupCmdBuffer));
 
 	VkCommandBufferBeginInfo cmdBufInfo = {};
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -135,7 +135,7 @@ void VulkanBase::flushSetupCommandBuffer()
 	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, VK_NULL_HANDLE));
 	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
 
-	vkFreeCommandBuffers(mDevice, cmdPool, 1, &setupCmdBuffer);
+	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &setupCmdBuffer);
 	setupCmdBuffer = VK_NULL_HANDLE; 
 }
 
@@ -149,7 +149,7 @@ VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool
 			level,
 			1);
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &cmdBufAllocateInfo, &cmdBuffer));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 
 	// If requested, also start the new command buffer
 	if (begin)
@@ -180,7 +180,7 @@ void VulkanBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue
 
 	if (free)
 	{
-		vkFreeCommandBuffers(mDevice, cmdPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &commandBuffer);
 	}
 }
 
@@ -188,14 +188,14 @@ void VulkanBase::createPipelineCache()
 {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	VK_CHECK_RESULT(vkCreatePipelineCache(mDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+	VK_CHECK_RESULT(vkCreatePipelineCache(mVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 }
 
 void VulkanBase::prepare()
 {
 	if (mVulkanDevice->mEnableDebugMarkers)
 	{
-		vkDebug::DebugMarker::setup(mDevice);
+		vkDebug::DebugMarker::setup(mVulkanDevice->mLogicalDevice);
 	}
 	createCommandPool();
 	createSetupCommandBuffer();
@@ -239,9 +239,9 @@ VkPipelineShaderStageCreateInfo VulkanBase::loadShader(std::string fileName, VkS
 	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStage.stage = stage;
 #if defined(__ANDROID__)
-	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), mDevice, stage);
+	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
 #else
-	shaderStage.module = vkTools::loadShader(fileName.c_str(), mDevice, stage);
+	shaderStage.module = vkTools::loadShader(fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
 #endif
 	shaderStage.pName = "main"; // todo : make param
 	assert(shaderStage.module != NULL);
@@ -255,20 +255,20 @@ VkBool32 VulkanBase::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropert
 	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
 	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
 
-	VK_CHECK_RESULT(vkCreateBuffer(mDevice, &bufferCreateInfo, nullptr, buffer));
+	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
 
-	vkGetBufferMemoryRequirements(mDevice, *buffer, &memReqs);
+	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, *buffer, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-	VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, memory));
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
 	if (data != nullptr)
 	{
 		void *mapped;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, *memory, 0, size, 0, &mapped));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
 		memcpy(mapped, data, size);
-		vkUnmapMemory(mDevice, *memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, *memory);
 	}
-	VK_CHECK_RESULT(vkBindBufferMemory(mDevice, *buffer, *memory, 0));
+	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
 
 	return true;
 }
@@ -340,7 +340,7 @@ void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshB
 		copyCmd,
 		mQueue);
 
-	vkFreeCommandBuffers(mDevice, cmdPool, 1, &copyCmd);
+	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &copyCmd);
 
 	meshBuffer->dim = mesh->dim.size;
 
@@ -595,7 +595,7 @@ void VulkanBase::renderLoop()
 	}
 #endif
 	// Flush device to make sure all resources can be freed 
-	vkDeviceWaitIdle(mDevice);
+	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 }
 
 void VulkanBase::updateTextOverlay()
@@ -718,40 +718,40 @@ VulkanBase::~VulkanBase()
 	mSwapChain.cleanup();
 	if (descriptorPool != VK_NULL_HANDLE)
 	{
-		vkDestroyDescriptorPool(mDevice, descriptorPool, nullptr);
+		vkDestroyDescriptorPool(mVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
 	}
 	if (setupCmdBuffer != VK_NULL_HANDLE)
 	{
-		vkFreeCommandBuffers(mDevice, cmdPool, 1, &setupCmdBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &setupCmdBuffer);
 
 	}
 	destroyCommandBuffers();
-	vkDestroyRenderPass(mDevice, mRenderPass, nullptr);
+	vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
 	for (uint32_t i = 0; i < frameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mDevice, frameBuffers[i], nullptr);
+		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, frameBuffers[i], nullptr);
 	}
 
 	for (auto& shaderModule : shaderModules)
 	{
-		vkDestroyShaderModule(mDevice, shaderModule, nullptr);
+		vkDestroyShaderModule(mVulkanDevice->mLogicalDevice, shaderModule, nullptr);
 	}
-	vkDestroyImageView(mDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mDevice, depthStencil.mem, nullptr);
+	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
 
-	vkDestroyPipelineCache(mDevice, pipelineCache, nullptr);
+	vkDestroyPipelineCache(mVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
 
 	if (textureLoader)
 	{
 		delete textureLoader;
 	}
 
-	vkDestroyCommandPool(mDevice, cmdPool, nullptr);
+	vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, cmdPool, nullptr);
 
-	vkDestroySemaphore(mDevice, semaphores.presentComplete, nullptr);
-	vkDestroySemaphore(mDevice, semaphores.renderComplete, nullptr);
-	vkDestroySemaphore(mDevice, semaphores.textOverlayComplete, nullptr);
+	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
+	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
+	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
 
 	if (enableTextOverlay)
 	{
@@ -828,7 +828,7 @@ void VulkanBase::initVulkan(bool enableValidation)
 	// and encapsulates functions related to a device
 	mVulkanDevice = new VkCoreDevice(physicalDevices[0]);
 	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(enabledFeatures));
-	mDevice = mVulkanDevice->mLogicalDevice;
+	//mVulkanDevice->mLogicalDevice = mVulkanDevice->mLogicalDevice;
 
 	// todo: remove
 	// Store properties (including limits) and features of the phyiscal device
@@ -839,26 +839,26 @@ void VulkanBase::initVulkan(bool enableValidation)
 	vkGetPhysicalDeviceMemoryProperties(mVulkanDevice->mPhysicalDevice, &mDeviceMemoryProperties);
 
 	// Get a graphics queue from the device
-	vkGetDeviceQueue(mDevice, mVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
+	vkGetDeviceQueue(mVulkanDevice->mLogicalDevice, mVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
 
 	// Find a suitable depth format
 	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &depthFormat);
 	assert(validDepthFormat);
 
-	mSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mDevice);
+	mSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
 
 	// Create synchronization objects
 	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
 	// Create a semaphore used to synchronize image presentation
 	// Ensures that the image is displayed before we start submitting new commands to the queu
-	VK_CHECK_RESULT(vkCreateSemaphore(mDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
 	// Create a semaphore used to synchronize command submission
 	// Ensures that the image is not presented until all commands have been sumbitted and executed
-	VK_CHECK_RESULT(vkCreateSemaphore(mDevice, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
 	// Create a semaphore used to synchronize command submission
 	// Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
 	// Will be inserted after the render complete semaphore if the text overlay is enabled
-	VK_CHECK_RESULT(vkCreateSemaphore(mDevice, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
 
 	// Set up submit info structure
 	// Semaphores will stay the same during application lifetime
@@ -1475,7 +1475,7 @@ void VulkanBase::createCommandPool()
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK_RESULT(vkCreateCommandPool(mDevice, &cmdPoolInfo, nullptr, &cmdPool));
+	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &cmdPool));
 }
 
 void VulkanBase::setupDepthStencil()
@@ -1514,15 +1514,15 @@ void VulkanBase::setupDepthStencil()
 
 	VkMemoryRequirements memReqs;
 
-	VK_CHECK_RESULT(vkCreateImage(mDevice, &image, nullptr, &depthStencil.image));
-	vkGetImageMemoryRequirements(mDevice, depthStencil.image, &memReqs);
+	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &image, nullptr, &depthStencil.image));
+	vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
 	mem_alloc.allocationSize = memReqs.size;
 	mem_alloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mDevice, &mem_alloc, nullptr, &depthStencil.mem));
-	VK_CHECK_RESULT(vkBindImageMemory(mDevice, depthStencil.image, depthStencil.mem, 0));
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &mem_alloc, nullptr, &depthStencil.mem));
+	VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
 
 	depthStencilView.image = depthStencil.image;
-	VK_CHECK_RESULT(vkCreateImageView(mDevice, &depthStencilView, nullptr, &depthStencil.view));
+	VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
 }
 
 void VulkanBase::setupFrameBuffer()
@@ -1547,7 +1547,7 @@ void VulkanBase::setupFrameBuffer()
 	for (uint32_t i = 0; i < frameBuffers.size(); i++)
 	{
 		attachments[0] = mSwapChain.buffers[i].view;
-		VK_CHECK_RESULT(vkCreateFramebuffer(mDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
 	}
 }
 
@@ -1620,7 +1620,7 @@ void VulkanBase::setupRenderPass()
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	renderPassInfo.pDependencies = dependencies.data();
 
-	VK_CHECK_RESULT(vkCreateRenderPass(mDevice, &renderPassInfo, nullptr, &mRenderPass));
+	VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
 }
 
 void VulkanBase::windowResize()
@@ -1639,14 +1639,14 @@ void VulkanBase::windowResize()
 
 	// Recreate the frame buffers
 
-	vkDestroyImageView(mDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mDevice, depthStencil.mem, nullptr);
+	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
 	setupDepthStencil();
 	
 	for (uint32_t i = 0; i < frameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mDevice, frameBuffers[i], nullptr);
+		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, frameBuffers[i], nullptr);
 	}
 	setupFrameBuffer();
 
@@ -1659,7 +1659,7 @@ void VulkanBase::windowResize()
 	buildCommandBuffers();
 
 	vkQueueWaitIdle(mQueue);
-	vkDeviceWaitIdle(mDevice);
+	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 
 	if (enableTextOverlay)
 	{

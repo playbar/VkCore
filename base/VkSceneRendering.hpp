@@ -721,7 +721,7 @@ public:
 		pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &scene->pipelines.solid));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &scene->pipelines.solid));
 
 		// Alpha blended pipeline
 		rasterizationState.cullMode = VK_CULL_MODE_NONE;
@@ -730,14 +730,14 @@ public:
 		blendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
 		blendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &scene->pipelines.blending));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &scene->pipelines.blending));
 
 		// Wire frame rendering pipeline
 		rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;
 		blendAttachmentState.blendEnable = VK_FALSE;
 		rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
 		rasterizationState.lineWidth = 1.0f;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &scene->pipelines.wireframe));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &scene->pipelines.wireframe));
 	}
 
 	void updateUniformBuffers()
@@ -778,7 +778,7 @@ public:
 #endif
 		scene->assetPath = getAssetPath() + "models/sibenik/";
 		scene->load(getAssetPath() + "models/sibenik/sibenik.dae", copyCmd);
-		vkFreeCommandBuffers(mDevice, cmdPool, 1, &copyCmd);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &copyCmd);
 		updateUniformBuffers();
 	}
 

@@ -99,16 +99,16 @@ public:
 	~VkRaytracing()
 	{
 		// Graphics
-		vkDestroyPipeline(mDevice, graphics.pipeline, nullptr);
-		vkDestroyPipelineLayout(mDevice, graphics.pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, graphics.descriptorSetLayout, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, graphics.pipeline, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, graphics.pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, graphics.descriptorSetLayout, nullptr);
 
 		// Compute
-		vkDestroyPipeline(mDevice, compute.pipeline, nullptr);
-		vkDestroyPipelineLayout(mDevice, compute.pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, compute.descriptorSetLayout, nullptr);
-		vkDestroyFence(mDevice, compute.fence, nullptr);
-		vkDestroyCommandPool(mDevice, compute.commandPool, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, compute.pipeline, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, compute.pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, compute.descriptorSetLayout, nullptr);
+		vkDestroyFence(mVulkanDevice->mLogicalDevice, compute.fence, nullptr);
+		vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, compute.commandPool, nullptr);
 		compute.uniformBuffer.destroy();
 		compute.storageBuffers.spheres.destroy();
 		compute.storageBuffers.planes.destroy();
@@ -145,12 +145,12 @@ public:
 		VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
 		VkMemoryRequirements memReqs;
 
-		VK_CHECK_RESULT(vkCreateImage(mDevice, &imageCreateInfo, nullptr, &tex->image));
-		vkGetImageMemoryRequirements(mDevice, tex->image, &memReqs);
+		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &tex->image));
+		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, tex->image, &memReqs);
 		memAllocInfo.allocationSize = memReqs.size;
 		memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &tex->deviceMemory));
-		VK_CHECK_RESULT(vkBindImageMemory(mDevice, tex->image, tex->deviceMemory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &tex->deviceMemory));
+		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, tex->image, tex->deviceMemory, 0));
 
 		VkCommandBuffer layoutCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
@@ -178,7 +178,7 @@ public:
 		sampler.minLod = 0.0f;
 		sampler.maxLod = 0.0f;
 		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		VK_CHECK_RESULT(vkCreateSampler(mDevice, &sampler, nullptr, &tex->sampler));
+		VK_CHECK_RESULT(vkCreateSampler(mVulkanDevice->mLogicalDevice, &sampler, nullptr, &tex->sampler));
 
 		// Create image view
 		VkImageViewCreateInfo view = vkTools::initializers::imageViewCreateInfo();
@@ -187,7 +187,7 @@ public:
 		view.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
 		view.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 		view.image = tex->image;
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &view, nullptr, &tex->view));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &view, nullptr, &tex->view));
 
 		// Initialize a descriptor for later use
 		tex->descriptor.imageLayout = tex->imageLayout;
@@ -391,7 +391,7 @@ public:
 				poolSizes.data(),
 				3);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -410,14 +410,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &graphics.descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &graphics.descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&graphics.descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &graphics.pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &graphics.pipelineLayout));
 	}
 
 	void setupDescriptorSet()
@@ -428,7 +428,7 @@ public:
 				&graphics.descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &graphics.descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &graphics.descriptorSet));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
@@ -440,7 +440,7 @@ public:
 				&textureComputeTarget.descriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -523,7 +523,7 @@ public:
 		pipelineCreateInfo.pStages = shaderStages.data();
 		pipelineCreateInfo.renderPass = mRenderPass;
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &graphics.pipeline));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &graphics.pipeline));
 	}
 
 	// Prepare the compute pipeline that generates the ray traced image
@@ -538,7 +538,7 @@ public:
 		queueCreateInfo.pNext = NULL;
 		queueCreateInfo.queueFamilyIndex = mVulkanDevice->queueFamilyIndices.compute;
 		queueCreateInfo.queueCount = 1;
-		vkGetDeviceQueue(mDevice, mVulkanDevice->queueFamilyIndices.compute, 0, &compute.queue);
+		vkGetDeviceQueue(mVulkanDevice->mLogicalDevice, mVulkanDevice->queueFamilyIndices.compute, 0, &compute.queue);
 
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
 			// Binding 0: Storage image (raytraced output)
@@ -568,14 +568,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &compute.descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &compute.descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&compute.descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &compute.pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &compute.pipelineLayout));
 
 		VkDescriptorSetAllocateInfo allocInfo =
 			vkTools::initializers::descriptorSetAllocateInfo(
@@ -583,7 +583,7 @@ public:
 				&compute.descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &compute.descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &compute.descriptorSet));
 
 		std::vector<VkWriteDescriptorSet> computeWriteDescriptorSets =
 		{
@@ -613,7 +613,7 @@ public:
 				&compute.storageBuffers.planes.descriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, computeWriteDescriptorSets.size(), computeWriteDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, computeWriteDescriptorSets.size(), computeWriteDescriptorSets.data(), 0, NULL);
 
 		// Create compute shader pipelines
 		VkComputePipelineCreateInfo computePipelineCreateInfo =
@@ -622,14 +622,14 @@ public:
 				0);
 
 		computePipelineCreateInfo.stage = loadShader(getAssetPath() + "shaders/raytracing/raytracing.comp.spv", VK_SHADER_STAGE_COMPUTE_BIT);
-		VK_CHECK_RESULT(vkCreateComputePipelines(mDevice, pipelineCache, 1, &computePipelineCreateInfo, nullptr, &compute.pipeline));
+		VK_CHECK_RESULT(vkCreateComputePipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &computePipelineCreateInfo, nullptr, &compute.pipeline));
 
 		// Separate command pool as queue family for compute may be different than graphics
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolInfo.queueFamilyIndex = mVulkanDevice->queueFamilyIndices.compute;
 		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_CHECK_RESULT(vkCreateCommandPool(mDevice, &cmdPoolInfo, nullptr, &compute.commandPool));
+		VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &compute.commandPool));
 
 		// Create a command buffer for compute operations
 		VkCommandBufferAllocateInfo cmdBufAllocateInfo =
@@ -638,11 +638,11 @@ public:
 				VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &cmdBufAllocateInfo, &compute.commandBuffer));
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &compute.commandBuffer));
 
 		// Fence for compute CB sync
 		VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
-		VK_CHECK_RESULT(vkCreateFence(mDevice, &fenceCreateInfo, nullptr, &compute.fence));
+		VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &compute.fence));
 
 		// Build a single command buffer containing the compute dispatch commands
 		buildComputeCommandBuffer();
@@ -685,8 +685,8 @@ public:
 
 		// Submit compute commands
 		// Use a fence to ensure that compute command buffer has finished executing before using it again
-		vkWaitForFences(mDevice, 1, &compute.fence, VK_TRUE, UINT64_MAX);
-		vkResetFences(mDevice, 1, &compute.fence);
+		vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &compute.fence, VK_TRUE, UINT64_MAX);
+		vkResetFences(mVulkanDevice->mLogicalDevice, 1, &compute.fence);
 
 		VkSubmitInfo computeSubmitInfo = vkTools::initializers::submitInfo();
 		computeSubmitInfo.commandBufferCount = 1;

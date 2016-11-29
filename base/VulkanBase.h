@@ -71,7 +71,7 @@ protected:
 	VkCoreDevice *mVulkanDevice;
 
 	//VkPhysicalDevice mPhysicalDevice;
-	VkDevice mDevice;
+	//VkDevice mVulkanDevice->mLogicalDevice;
 	VkPhysicalDeviceProperties mDeviceProperties;
 	VkPhysicalDeviceFeatures mDeviceFeatures;
 	VkPhysicalDeviceMemoryProperties mDeviceMemoryProperties;

@@ -90,25 +90,25 @@ public:
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
-		vkDestroyPipeline(mDevice, pipelines.MSAA, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.MSAASampleShading, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.MSAA, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.MSAASampleShading, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.example);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.example);
 
 		// Destroy MSAA target
-		vkDestroyImage(mDevice, multisampleTarget.color.image, nullptr);
-		vkDestroyImageView(mDevice, multisampleTarget.color.view, nullptr);
-		vkFreeMemory(mDevice, multisampleTarget.color.memory, nullptr);
-		vkDestroyImage(mDevice, multisampleTarget.depth.image, nullptr);
-		vkDestroyImageView(mDevice, multisampleTarget.depth.view, nullptr);
-		vkFreeMemory(mDevice, multisampleTarget.depth.memory, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, multisampleTarget.color.image, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, multisampleTarget.color.view, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, multisampleTarget.color.memory, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, multisampleTarget.depth.image, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, multisampleTarget.depth.view, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, multisampleTarget.depth.memory, nullptr);
 
 		textureLoader->destroyTexture(textures.colorMap);
 
-		vkTools::destroyUniformData(mDevice, &uniformData.vsScene);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsScene);
 	}
 
 	// Creates a multi sample render target (image and view) that is used to resolve 
@@ -134,10 +134,10 @@ public:
 		info.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-		VK_CHECK_RESULT(vkCreateImage(mDevice, &info, nullptr, &multisampleTarget.color.image));
+		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &info, nullptr, &multisampleTarget.color.image));
 
 		VkMemoryRequirements memReqs;
-		vkGetImageMemoryRequirements(mDevice, multisampleTarget.color.image, &memReqs);
+		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, multisampleTarget.color.image, &memReqs);
 		VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
 		memAlloc.allocationSize = memReqs.size;
 		// We prefer a lazily allocated memory type
@@ -149,8 +149,8 @@ public:
 			// If this is not available, fall back to device local memory
 			memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		}
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &multisampleTarget.color.memory));
-		vkBindImageMemory(mDevice, multisampleTarget.color.image, multisampleTarget.color.memory, 0);
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &multisampleTarget.color.memory));
+		vkBindImageMemory(mVulkanDevice->mLogicalDevice, multisampleTarget.color.image, multisampleTarget.color.memory, 0);
 
 		// Create image view for the MSAA target
 		VkImageViewCreateInfo viewInfo = vkTools::initializers::imageViewCreateInfo();
@@ -165,7 +165,7 @@ public:
 		viewInfo.subresourceRange.levelCount = 1;
 		viewInfo.subresourceRange.layerCount = 1;
 
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &viewInfo, nullptr, &multisampleTarget.color.view));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &viewInfo, nullptr, &multisampleTarget.color.view));
 
 		// Depth target
 		info.imageType = VK_IMAGE_TYPE_2D;
@@ -182,9 +182,9 @@ public:
 		info.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-		VK_CHECK_RESULT(vkCreateImage(mDevice, &info, nullptr, &multisampleTarget.depth.image));
+		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &info, nullptr, &multisampleTarget.depth.image));
 
-		vkGetImageMemoryRequirements(mDevice, multisampleTarget.depth.image, &memReqs);
+		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, multisampleTarget.depth.image, &memReqs);
 		memAlloc = vkTools::initializers::memoryAllocateInfo();
 		memAlloc.allocationSize = memReqs.size;
 
@@ -194,8 +194,8 @@ public:
 			memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		}
 
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &multisampleTarget.depth.memory));
-		vkBindImageMemory(mDevice, multisampleTarget.depth.image, multisampleTarget.depth.memory, 0);
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &multisampleTarget.depth.memory));
+		vkBindImageMemory(mVulkanDevice->mLogicalDevice, multisampleTarget.depth.image, multisampleTarget.depth.memory, 0);
 
 		// Create image view for the MSAA target
 		viewInfo.image = multisampleTarget.depth.image;
@@ -209,7 +209,7 @@ public:
 		viewInfo.subresourceRange.levelCount = 1;
 		viewInfo.subresourceRange.layerCount = 1;
 
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &viewInfo, nullptr, &multisampleTarget.depth.view));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &viewInfo, nullptr, &multisampleTarget.depth.view));
 	}
 
 	// Setup a render pass for using a multi sampled attachment 
@@ -312,7 +312,7 @@ public:
 		renderPassInfo.dependencyCount = 2;
 		renderPassInfo.pDependencies = dependencies.data();
 
-		VK_CHECK_RESULT(vkCreateRenderPass(mDevice, &renderPassInfo, nullptr, &mRenderPass));
+		VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
 	}
 
 	// Frame buffer attachments must match with render pass setup, 
@@ -346,7 +346,7 @@ public:
 		for (uint32_t i = 0; i < frameBuffers.size(); i++)
 		{
 			attachments[1] = mSwapChain.buffers[i].view;
-			VK_CHECK_RESULT(vkCreateFramebuffer(mDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
 		}
 	}
 
@@ -475,7 +475,7 @@ public:
 				poolSizes.data(),
 				2);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -499,14 +499,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSet()
@@ -517,7 +517,7 @@ public:
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSet));
 
 		VkDescriptorImageInfo texDescriptor =
 			vkTools::initializers::descriptorImageInfo(
@@ -541,7 +541,7 @@ public:
 				&texDescriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -616,7 +616,7 @@ public:
 		// Setup multi sampling
 		multisampleState.rasterizationSamples = SAMPLE_COUNT;		// Number of samples to use for rasterization
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.MSAA));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.MSAA));
 
 		// MSAA with sample shading pipeline
 		// Sample shading enables per-sample shading to avoid shader aliasing and smooth out e.g. high frequency texture maps
@@ -624,7 +624,7 @@ public:
 		multisampleState.sampleShadingEnable = VK_TRUE;				// Enable per-sample shading (instead of per-fragment)
 		multisampleState.minSampleShading = 0.25f;					// Minimum fraction for sample shading
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.MSAASampleShading));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.MSAASampleShading));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -659,9 +659,9 @@ public:
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.vsScene.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory);
 	}
 
 	void draw()

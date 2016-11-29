@@ -86,19 +86,19 @@ public:
 		// Note : Inherited destructor cleans up resources stored in base class
 
 		// Clean up texture resources
-		vkDestroyImageView(mDevice, textureArray.view, nullptr);
-		vkDestroyImage(mDevice, textureArray.image, nullptr);
-		vkDestroySampler(mDevice, textureArray.sampler, nullptr);
-		vkFreeMemory(mDevice, textureArray.deviceMemory, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, textureArray.view, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, textureArray.image, nullptr);
+		vkDestroySampler(mVulkanDevice->mLogicalDevice, textureArray.sampler, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, textureArray.deviceMemory, nullptr);
 
-		vkDestroyPipeline(mDevice, pipelines.solid, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.solid, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.quad);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.quad);
 
-		vkTools::destroyUniformData(mDevice, &uniformData.vertexShader);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vertexShader);
 
 		delete[] uboVS.instance;
 	}
@@ -141,23 +141,23 @@ public:
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VK_CHECK_RESULT(vkCreateBuffer(mDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
 		// Get memory requirements for the staging buffer (alignment, memory type bits)
-		vkGetBufferMemoryRequirements(mDevice, stagingBuffer, &memReqs);
+		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, stagingBuffer, &memReqs);
 
 		memAllocInfo.allocationSize = memReqs.size;
 		// Get memory type index for a host visible buffer
 		memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &stagingMemory));
-		VK_CHECK_RESULT(vkBindBufferMemory(mDevice, stagingBuffer, stagingMemory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &stagingMemory));
+		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, stagingBuffer, stagingMemory, 0));
 
 		// Copy texture data into staging buffer
 		uint8_t *data;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
 		memcpy(data, tex2DArray.data(), tex2DArray.size());
-		vkUnmapMemory(mDevice, stagingMemory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, stagingMemory);
 
 		// Setup buffer copy regions for array layers
 		std::vector<VkBufferImageCopy> bufferCopyRegions;
@@ -224,15 +224,15 @@ public:
 		imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		imageCreateInfo.arrayLayers = layerCount;
 
-		VK_CHECK_RESULT(vkCreateImage(mDevice, &imageCreateInfo, nullptr, &textureArray.image));
+		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &textureArray.image));
 
-		vkGetImageMemoryRequirements(mDevice, textureArray.image, &memReqs);
+		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, textureArray.image, &memReqs);
 
 		memAllocInfo.allocationSize = memReqs.size;
 		memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &textureArray.deviceMemory));
-		VK_CHECK_RESULT(vkBindImageMemory(mDevice, textureArray.image, textureArray.deviceMemory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &textureArray.deviceMemory));
+		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, textureArray.image, textureArray.deviceMemory, 0));
 
 		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
@@ -288,7 +288,7 @@ public:
 		sampler.minLod = 0.0f;
 		sampler.maxLod = 0.0f;
 		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		VK_CHECK_RESULT(vkCreateSampler(mDevice, &sampler, nullptr, &textureArray.sampler));
+		VK_CHECK_RESULT(vkCreateSampler(mVulkanDevice->mLogicalDevice, &sampler, nullptr, &textureArray.sampler));
 
 		// Create image view
 		VkImageViewCreateInfo view = vkTools::initializers::imageViewCreateInfo();
@@ -298,11 +298,11 @@ public:
 		view.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 		view.subresourceRange.layerCount = layerCount;
 		view.image = textureArray.image;
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &view, nullptr, &textureArray.view));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &view, nullptr, &textureArray.view));
 
 		// Clean up staging resources
-		vkFreeMemory(mDevice, stagingMemory, nullptr);
-		vkDestroyBuffer(mDevice, stagingBuffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, stagingMemory, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, stagingBuffer, nullptr);
 	}
 
 	void loadTextures()
@@ -440,7 +440,7 @@ public:
 				poolSizes.data(),
 				2);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -464,14 +464,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSet()
@@ -482,7 +482,7 @@ public:
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSet));
 
 		// Image descriptor for the texture array
 		VkDescriptorImageInfo texArrayDescriptor =
@@ -507,7 +507,7 @@ public:
 				&texArrayDescriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -583,7 +583,7 @@ public:
 		pipelineCreateInfo.stageCount = shaderStages.size();
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
 	}
 
 	void prepareUniformBuffers()
@@ -619,9 +619,9 @@ public:
 		uint8_t *pData;
 		uint32_t dataOffset = sizeof(uboVS.matrices);
 		uint32_t dataSize = layerCount * sizeof(UboInstanceData);
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vertexShader.memory, dataOffset, dataSize, 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vertexShader.memory, dataOffset, dataSize, 0, (void **)&pData));
 		memcpy(pData, uboVS.instance, dataSize);
-		vkUnmapMemory(mDevice, uniformData.vertexShader.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vertexShader.memory);
 
 		updateUniformBufferMatrices();
 	}
@@ -641,9 +641,9 @@ public:
 
 		// Only update the matrices part of the uniform buffer
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vertexShader.memory, 0, sizeof(uboVS.matrices), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vertexShader.memory, 0, sizeof(uboVS.matrices), 0, (void **)&pData));
 		memcpy(pData, &uboVS.matrices, sizeof(uboVS.matrices));
-		vkUnmapMemory(mDevice, uniformData.vertexShader.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vertexShader.memory);
 	}
 
 	void draw()

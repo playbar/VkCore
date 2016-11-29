@@ -83,21 +83,21 @@ public:
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
-		vkDestroyPipeline(mDevice, pipelines.solid, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.wire, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.solidPassThrough, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.wirePassThrough, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.solid, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.wire, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.solidPassThrough, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.wirePassThrough, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.object);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.object);
 
-		vkDestroyBuffer(mDevice, uniformDataTC.buffer, nullptr);
-		vkFreeMemory(mDevice, uniformDataTC.memory, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, uniformDataTC.buffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, uniformDataTC.memory, nullptr);
 
-		vkDestroyBuffer(mDevice, uniformDataTE.buffer, nullptr);
-		vkFreeMemory(mDevice, uniformDataTE.memory, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, uniformDataTE.buffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, uniformDataTE.memory, nullptr);
 
 		textureLoader->destroyTexture(textures.colorMap);
 	}
@@ -243,7 +243,7 @@ public:
 				poolSizes.data(),
 				1);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -272,14 +272,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSet()
@@ -290,7 +290,7 @@ public:
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSet));
 
 		VkDescriptorImageInfo texDescriptor =
 			vkTools::initializers::descriptorImageInfo(
@@ -320,7 +320,7 @@ public:
 				&texDescriptor)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -406,10 +406,10 @@ public:
 
 		// Tessellation pipelines
 		// Solid
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solid));
 		// Wireframe
 		rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.wire));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.wire));
 
 		// Pass through pipelines
 		// Load pass through tessellation shaders (Vert and frag are reused)
@@ -418,10 +418,10 @@ public:
 
 		// Solid
 		rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solidPassThrough));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.solidPassThrough));
 		// Wireframe
 		rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.wirePassThrough));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.wirePassThrough));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -466,14 +466,14 @@ public:
 		uint8_t *pData;
 
 		// Tessellatione evaulation uniform block
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformDataTE.memory, 0, sizeof(uboTE), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformDataTE.memory, 0, sizeof(uboTE), 0, (void **)&pData));
 		memcpy(pData, &uboTE, sizeof(uboTE));
-		vkUnmapMemory(mDevice, uniformDataTE.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformDataTE.memory);
 
 		// Tessellation control uniform block
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformDataTC.memory, 0, sizeof(uboTC), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformDataTC.memory, 0, sizeof(uboTC), 0, (void **)&pData));
 		memcpy(pData, &uboTC, sizeof(uboTC));
-		vkUnmapMemory(mDevice, uniformDataTC.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformDataTC.memory);
 	}
 
 	void draw()
@@ -506,9 +506,9 @@ public:
 	{
 		if (!prepared)
 			return;
-		vkDeviceWaitIdle(mDevice);
+		vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 		draw();
-		vkDeviceWaitIdle(mDevice);
+		vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 	}
 
 	virtual void viewChanged()

@@ -200,28 +200,28 @@ public:
 			delete frameBuffers.shadow;
 		}
 
-		vkDestroyPipeline(mDevice, pipelines.deferred, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.offscreen, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.shadowpass, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.debug, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.deferred, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.offscreen, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.shadowpass, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.debug, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayouts.deferred, nullptr);
-		vkDestroyPipelineLayout(mDevice, pipelineLayouts.offscreen, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayouts.deferred, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayouts.offscreen, nullptr);
 
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
 		// Meshes
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.model);
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.background);
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.quad);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.model);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.background);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.quad);
 
 		// Uniform buffers
-		vkTools::destroyUniformData(mDevice, &uniformData.vsOffscreen);
-		vkTools::destroyUniformData(mDevice, &uniformData.vsFullScreen);
-		vkTools::destroyUniformData(mDevice, &uniformData.fsLights);
-		vkTools::destroyUniformData(mDevice, &uniformData.uboShadowGS);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsOffscreen);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.vsFullScreen);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.fsLights);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.uboShadowGS);
 
-		vkFreeCommandBuffers(mDevice, cmdPool, 1, &commandBuffers.deferred);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &commandBuffers.deferred);
 
 		// Textures
 		textureLoader->destroyTexture(textures.model.colorMap);
@@ -229,7 +229,7 @@ public:
 		textureLoader->destroyTexture(textures.background.colorMap);
 		textureLoader->destroyTexture(textures.background.normalMap);
 
-		vkDestroySemaphore(mDevice, offscreenSemaphore, nullptr);
+		vkDestroySemaphore(mVulkanDevice->mLogicalDevice, offscreenSemaphore, nullptr);
 	}
 
 	// Prepare a layered shadow map with each layer containing depth from a light's point of view
@@ -345,7 +345,7 @@ public:
 
 		// Create a semaphore used to synchronize offscreen rendering and usage
 		VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
-		VK_CHECK_RESULT(vkCreateSemaphore(mDevice, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
+		VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &offscreenSemaphore));
 
 		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
 
@@ -583,7 +583,7 @@ public:
 				poolSizes.data(),
 				4);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -629,17 +629,17 @@ public:
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.deferred));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.deferred));
 
 		// Offscreen (scene) rendering pipeline layout
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.offscreen));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.offscreen));
 	}
 
 	void setupDescriptorSet()
@@ -653,7 +653,7 @@ public:
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSet));
 
 		// Image descriptors for the offscreen color attachments
 		VkDescriptorImageInfo texDescriptorPosition =
@@ -719,12 +719,12 @@ public:
 				&texDescriptorShadowMap),
 		};
 
-		vkUpdateDescriptorSets(mDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 
 		// Offscreen (scene)
 
 		// Model
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.model));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.model));
 		writeDescriptorSets =
 		{
 			// Binding 0: Vertex shader uniform buffer
@@ -746,10 +746,10 @@ public:
 				2,
 				&textures.model.normalMap.descriptor)
 		};
-		vkUpdateDescriptorSets(mDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 
 		// Background
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.background));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.background));
 		writeDescriptorSets =
 		{
 			// Binding 0: Vertex shader uniform buffer
@@ -771,10 +771,10 @@ public:
 				2,
 				&textures.background.normalMap.descriptor)
 		};
-		vkUpdateDescriptorSets(mDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 
 		// Shadow mapping
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.shadow));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.shadow));
 		writeDescriptorSets =
 		{
 			// Binding 0: Vertex shader uniform buffer
@@ -784,7 +784,7 @@ public:
 				0,
 				&uniformData.uboShadowGS.descriptor),
 		};
-		vkUpdateDescriptorSets(mDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -859,12 +859,12 @@ public:
 		pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.deferred));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.deferred));
 
 		// Debug display pipeline
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredshadows/debug.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/deferredshadows/debug.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.debug));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.debug));
 
 		// Offscreen pipeline
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/deferredshadows/mrt.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
@@ -889,7 +889,7 @@ public:
 		colorBlendState.attachmentCount = static_cast<uint32_t>(blendAttachmentStates.size());
 		colorBlendState.pAttachments = blendAttachmentStates.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.offscreen));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.offscreen));
 
 		// Shadow mapping pipeline
 		// The shadow mapping pipeline uses geometry shader instancing (invoctations layout modifier) to output 
@@ -919,7 +919,7 @@ public:
 				0);
 		// Reset blend attachment state
 		pipelineCreateInfo.renderPass = frameBuffers.shadow->renderPass;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.shadowpass));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.shadowpass));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -986,9 +986,9 @@ public:
 		uboVS.model = glm::mat4();
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vsFullScreen.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsFullScreen.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.vsFullScreen.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsFullScreen.memory);
 	}
 
 	void updateUniformBufferDeferredMatrices()
@@ -998,9 +998,9 @@ public:
 		uboOffscreenVS.model = glm::mat4();
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.vsOffscreen.memory, 0, sizeof(uboOffscreenVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsOffscreen.memory, 0, sizeof(uboOffscreenVS), 0, (void **)&pData));
 		memcpy(pData, &uboOffscreenVS, sizeof(uboOffscreenVS));
-		vkUnmapMemory(mDevice, uniformData.vsOffscreen.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsOffscreen.memory);
 	}
 
 	Light initLight(glm::vec3 pos, glm::vec3 target, glm::vec3 color)
@@ -1050,15 +1050,15 @@ public:
 
 		memcpy(uboShadowGS.instancePos, uboOffscreenVS.instancePos, sizeof(uboOffscreenVS.instancePos));
 
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.uboShadowGS.memory, 0, sizeof(uboShadowGS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.uboShadowGS.memory, 0, sizeof(uboShadowGS), 0, (void **)&pData));
 		memcpy(pData, &uboShadowGS, sizeof(uboShadowGS));
-		vkUnmapMemory(mDevice, uniformData.uboShadowGS.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.uboShadowGS.memory);
 
 		uboFragmentLights.viewPos = glm::vec4(camera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);;
 
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.fsLights.memory, 0, sizeof(uboFragmentLights), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.fsLights.memory, 0, sizeof(uboFragmentLights), 0, (void **)&pData));
 		memcpy(pData, &uboFragmentLights, sizeof(uboFragmentLights));
-		vkUnmapMemory(mDevice, uniformData.fsLights.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.fsLights.memory);
 	}
 
 	void draw()

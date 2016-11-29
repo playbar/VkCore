@@ -82,25 +82,25 @@ public:
 		// Note : Inherited destructor cleans up resources stored in base class
 
 		// Clean up texture resources
-		vkDestroyImageView(mDevice, cubeMap.view, nullptr);
-		vkDestroyImage(mDevice, cubeMap.image, nullptr);
-		vkDestroySampler(mDevice, cubeMap.sampler, nullptr);
-		vkFreeMemory(mDevice, cubeMap.deviceMemory, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, cubeMap.view, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, cubeMap.image, nullptr);
+		vkDestroySampler(mVulkanDevice->mLogicalDevice, cubeMap.sampler, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, cubeMap.deviceMemory, nullptr);
 
-		vkDestroyPipeline(mDevice, pipelines.skybox, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.reflect, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.skybox, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.reflect, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
 		for (size_t i = 0; i < meshes.objects.size(); i++)
 		{
-			vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.objects[i]);
+			vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.objects[i]);
 		}
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.skybox);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.skybox);
 
-		vkTools::destroyUniformData(mDevice, &uniformData.objectVS);
-		vkTools::destroyUniformData(mDevice, &uniformData.skyboxVS);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.objectVS);
+		vkTools::destroyUniformData(mVulkanDevice->mLogicalDevice, &uniformData.skyboxVS);
 	}
 
 	void loadCubemap(std::string filename, VkFormat format, bool forceLinearTiling)
@@ -141,21 +141,21 @@ public:
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VK_CHECK_RESULT(vkCreateBuffer(mDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
 		// Get memory requirements for the staging buffer (alignment, memory type bits)
-		vkGetBufferMemoryRequirements(mDevice, stagingBuffer, &memReqs);
+		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, stagingBuffer, &memReqs);
 		memAllocInfo.allocationSize = memReqs.size;
 		// Get memory type index for a host visible buffer
 		memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &stagingMemory));
-		VK_CHECK_RESULT(vkBindBufferMemory(mDevice, stagingBuffer, stagingMemory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &stagingMemory));
+		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, stagingBuffer, stagingMemory, 0));
 
 		// Copy texture data into staging buffer
 		uint8_t *data;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
 		memcpy(data, texCube.data(), texCube.size());
-		vkUnmapMemory(mDevice, stagingMemory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, stagingMemory);
 
 		// Create optimal tiled target image
 		VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
@@ -174,15 +174,15 @@ public:
 		// This flag is required for cube map images
 		imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 
-		VK_CHECK_RESULT(vkCreateImage(mDevice, &imageCreateInfo, nullptr, &cubeMap.image));
+		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &cubeMap.image));
 
-		vkGetImageMemoryRequirements(mDevice, cubeMap.image, &memReqs);
+		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, cubeMap.image, &memReqs);
 
 		memAllocInfo.allocationSize = memReqs.size;
 		memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAllocInfo, nullptr, &cubeMap.deviceMemory));
-		VK_CHECK_RESULT(vkBindImageMemory(mDevice, cubeMap.image, cubeMap.deviceMemory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &cubeMap.deviceMemory));
+		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, cubeMap.image, cubeMap.deviceMemory, 0));
 
 		VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
@@ -268,7 +268,7 @@ public:
 			sampler.maxAnisotropy = mVulkanDevice->mProperties.limits.maxSamplerAnisotropy;
 			sampler.anisotropyEnable = VK_TRUE;
 		}
-		VK_CHECK_RESULT(vkCreateSampler(mDevice, &sampler, nullptr, &cubeMap.sampler));
+		VK_CHECK_RESULT(vkCreateSampler(mVulkanDevice->mLogicalDevice, &sampler, nullptr, &cubeMap.sampler));
 
 		// Create image view
 		VkImageViewCreateInfo view = vkTools::initializers::imageViewCreateInfo();
@@ -282,11 +282,11 @@ public:
 		// Set number of mip levels
 		view.subresourceRange.levelCount = cubeMap.mipLevels;
 		view.image = cubeMap.image;
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &view, nullptr, &cubeMap.view));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &view, nullptr, &cubeMap.view));
 
 		// Clean up staging resources
-		vkFreeMemory(mDevice, stagingMemory, nullptr);
-		vkDestroyBuffer(mDevice, stagingBuffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, stagingMemory, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, stagingBuffer, nullptr);
 	}
 
 	void reBuildCommandBuffers()
@@ -423,7 +423,7 @@ public:
 				poolSizes.data(),
 				2);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -447,14 +447,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSets()
@@ -473,7 +473,7 @@ public:
 				1);
 
 		// 3D object descriptor set
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.object));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.object));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
@@ -490,10 +490,10 @@ public:
 				1,
 				&cubeMapDescriptor)
 		};
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 
 		// Sky box descriptor set
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.skybox));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.skybox));
 
 		writeDescriptorSets =
 		{
@@ -510,7 +510,7 @@ public:
 				1,
 				&cubeMapDescriptor)
 		};
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -585,7 +585,7 @@ public:
 		pipelineCreateInfo.stageCount = shaderStages.size();
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.skybox));
 
 		// Cube map reflect pipeline
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/cubemap/reflect.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
@@ -595,7 +595,7 @@ public:
 		depthStencilState.depthTestEnable = VK_TRUE;
 		// Flip cull mode
 		rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.reflect));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.reflect));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms
@@ -638,9 +638,9 @@ public:
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.objectVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.objectVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.objectVS.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.objectVS.memory);
 
 		// Skybox
 		viewMatrix = glm::mat4();
@@ -652,9 +652,9 @@ public:
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.skyboxVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.skyboxVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.skyboxVS.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.skyboxVS.memory);
 	}
 
 	void draw()

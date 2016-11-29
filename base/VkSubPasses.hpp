@@ -111,28 +111,28 @@ public:
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
 
-		vkDestroyImageView(mDevice, attachments.position.view, nullptr);
-		vkDestroyImage(mDevice, attachments.position.image, nullptr);
-		vkFreeMemory(mDevice, attachments.position.mem, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, attachments.position.view, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, attachments.position.image, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, attachments.position.mem, nullptr);
 
-		vkDestroyImageView(mDevice, attachments.normal.view, nullptr);
-		vkDestroyImage(mDevice, attachments.normal.image, nullptr);
-		vkFreeMemory(mDevice, attachments.normal.mem, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, attachments.normal.view, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, attachments.normal.image, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, attachments.normal.mem, nullptr);
 
-		vkDestroyImageView(mDevice, attachments.albedo.view, nullptr);
-		vkDestroyImage(mDevice, attachments.albedo.image, nullptr);
-		vkFreeMemory(mDevice, attachments.albedo.mem, nullptr);
+		vkDestroyImageView(mVulkanDevice->mLogicalDevice, attachments.albedo.view, nullptr);
+		vkDestroyImage(mVulkanDevice->mLogicalDevice, attachments.albedo.image, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, attachments.albedo.mem, nullptr);
 
-		vkDestroyPipeline(mDevice, pipelines.offscreen, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.composition, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.offscreen, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.composition, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayouts.offscreen, nullptr);
-		vkDestroyPipelineLayout(mDevice, pipelineLayouts.composition, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayouts.offscreen, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayouts.composition, nullptr);
 
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayouts.scene, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayouts.composition, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayouts.scene, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayouts.composition, nullptr);
 
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.scene);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.scene);
 
 		uniformBuffers.GBuffer.destroy();
 		uniformBuffers.lights.destroy();
@@ -175,12 +175,12 @@ public:
 		VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
 		VkMemoryRequirements memReqs;
 
-		VK_CHECK_RESULT(vkCreateImage(mDevice, &image, nullptr, &attachment->image));
-		vkGetImageMemoryRequirements(mDevice, attachment->image, &memReqs);
+		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &image, nullptr, &attachment->image));
+		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, attachment->image, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mDevice, &memAlloc, nullptr, &attachment->mem));
-		VK_CHECK_RESULT(vkBindImageMemory(mDevice, attachment->image, attachment->mem, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &attachment->mem));
+		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, attachment->image, attachment->mem, 0));
 
 		VkImageViewCreateInfo imageView = vkTools::initializers::imageViewCreateInfo();
 		imageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -192,7 +192,7 @@ public:
 		imageView.subresourceRange.baseArrayLayer = 0;
 		imageView.subresourceRange.layerCount = 1;
 		imageView.image = attachment->image;
-		VK_CHECK_RESULT(vkCreateImageView(mDevice, &imageView, nullptr, &attachment->view));
+		VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &imageView, nullptr, &attachment->view));
 	}
 
 	// Create color attachments for the G-Buffer components
@@ -228,7 +228,7 @@ public:
 			attachments[2] = this->attachments.normal.view;
 			attachments[3] = this->attachments.albedo.view;
 			attachments[4] = depthStencil.view;
-			VK_CHECK_RESULT(vkCreateFramebuffer(mDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
 		}
 	}
 
@@ -355,7 +355,7 @@ public:
 		renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 		renderPassInfo.pDependencies = dependencies.data();
 
-		VK_CHECK_RESULT(vkCreateRenderPass(mDevice, &renderPassInfo, nullptr, &mRenderPass));
+		VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
 	}
 
 	void buildCommandBuffers()
@@ -481,7 +481,7 @@ public:
 				poolSizes.data(),
 				4);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -501,7 +501,7 @@ public:
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayouts.scene));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayouts.scene));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
@@ -509,7 +509,7 @@ public:
 				1);
 
 		// Offscreen (scene) rendering pipeline layout
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.offscreen));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.offscreen));
 	}
 
 	void setupDescriptorSet()
@@ -522,7 +522,7 @@ public:
 				&descriptorSetLayouts.scene,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.scene));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.scene));
 		writeDescriptorSets =
 		{
 			// Binding 0: Vertex shader uniform buffer
@@ -532,7 +532,7 @@ public:
 				0,
 				&uniformBuffers.GBuffer.descriptor)
 		};
-		vkUpdateDescriptorSets(mDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -619,7 +619,7 @@ public:
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/subpasses/gbuffer.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/subpasses/gbuffer.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.offscreen));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.offscreen));
 	}
 
 	// Create the Vulkan objects used in the composition pass (descriptor sets, pipelines, etc.)
@@ -655,19 +655,19 @@ public:
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayouts.composition));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayouts.composition));
 
 		// Pipeline layout
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(&descriptorSetLayouts.composition, 1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.composition));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayouts.composition));
 
 		// Descriptor sets
 		VkDescriptorSetAllocateInfo allocInfo =
 			vkTools::initializers::descriptorSetAllocateInfo(descriptorPool, &descriptorSetLayouts.composition, 1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSets.composition));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.composition));
 
 		// Image descriptors for the offscreen color attachments
 		VkDescriptorImageInfo texDescriptorPosition =
@@ -715,7 +715,7 @@ public:
 				&uniformBuffers.lights.descriptor),
 		};
 
-		vkUpdateDescriptorSets(mDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 
 		// Pipeline
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
@@ -783,7 +783,7 @@ public:
 		// Index of the subpass that this pipeline will be used in
 		pipelineCreateInfo.subpass = 1;
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.composition));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.composition));
 	}
 
 	// Prepare and initialize uniform buffer containing shader uniforms

@@ -135,22 +135,22 @@ public:
 		textureLoader->destroyTexture(textures.floor.colorMap);
 		textureLoader->destroyTexture(textures.floor.normalMap);
 
-		vkDestroyPipeline(mDevice, pipelines.particles, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.environment, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.particles, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.environment, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(mDevice, descriptorSetLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
+		vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, descriptorSetLayout, nullptr);
 
-		vkUnmapMemory(mDevice, particles.memory);
-		vkDestroyBuffer(mDevice, particles.buffer, nullptr);
-		vkFreeMemory(mDevice, particles.memory, nullptr);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, particles.memory);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, particles.buffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, particles.memory, nullptr);
 
-		vkDestroyBuffer(mDevice, uniformData.fire.buffer, nullptr);
-		vkFreeMemory(mDevice, uniformData.fire.memory, nullptr);
+		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, uniformData.fire.buffer, nullptr);
+		vkFreeMemory(mVulkanDevice->mLogicalDevice, uniformData.fire.memory, nullptr);
 
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.environment.mMeshBuffers);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.environment.mMeshBuffers);
 
-		vkDestroySampler(mDevice, textures.particles.sampler, nullptr);
+		vkDestroySampler(mVulkanDevice->mLogicalDevice, textures.particles.sampler, nullptr);
 	}
 
 	void buildCommandBuffers()
@@ -277,7 +277,7 @@ public:
 			&particles.memory);
 
 		// Map the memory and store the pointer for reuse
-		VK_CHECK_RESULT(vkMapMemory(mDevice, particles.memory, 0, particles.size, 0, &particles.mappedMemory));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, particles.memory, 0, particles.size, 0, &particles.mappedMemory));
 	}
 
 	void updateParticles()
@@ -352,7 +352,7 @@ public:
 		samplerCreateInfo.anisotropyEnable = VK_TRUE;
 		// Use a different border color (than the normal texture loader) for additive blending
 		samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-		VK_CHECK_RESULT(vkCreateSampler(mDevice, &samplerCreateInfo, nullptr, &textures.particles.sampler));
+		VK_CHECK_RESULT(vkCreateSampler(mVulkanDevice->mLogicalDevice, &samplerCreateInfo, nullptr, &textures.particles.sampler));
 	}
 
 	void loadMeshes()
@@ -438,7 +438,7 @@ public:
 				poolSizes.data(),
 				2);
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(mDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+		VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 	}
 
 	void setupDescriptorSetLayout()
@@ -467,14 +467,14 @@ public:
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 			vkTools::initializers::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void setupDescriptorSets()
@@ -485,7 +485,7 @@ public:
 				&descriptorSetLayout,
 				1);
 
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSet));
 
 		// Image descriptor for the color map texture
 		VkDescriptorImageInfo texDescriptorSmoke =
@@ -521,10 +521,10 @@ public:
 				&texDescriptorFire)
 		};
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 
 		// Environment
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(mDevice, &allocInfo, &meshes.environment.descriptorSet));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &meshes.environment.descriptorSet));
 
 		VkDescriptorImageInfo texDescriptorColorMap =
 			vkTools::initializers::descriptorImageInfo(
@@ -561,7 +561,7 @@ public:
 				2,
 				&texDescriptorNormalMap));
 
-		vkUpdateDescriptorSets(mDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
+		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, writeDescriptorSets.size(), writeDescriptorSets.data(), 0, NULL);
 	}
 
 	void preparePipelines()
@@ -648,7 +648,7 @@ public:
 		blendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
 		blendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.particles));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.particles));
 
 		// Environment rendering pipeline (normal mapped)
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/particlefire/normalmap.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
@@ -657,7 +657,7 @@ public:
 		blendAttachmentState.blendEnable = VK_FALSE;
 		depthStencilState.depthWriteEnable = VK_TRUE;
 		inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.environment));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.environment));
 
 		meshes.environment.pipeline = pipelines.environment;
 		meshes.environment.pipelineLayout = pipelineLayout;
@@ -696,9 +696,9 @@ public:
 		uboEnv.lightPos.y = 0.0f;
 		uboEnv.lightPos.z = cos(timer * 2 * M_PI) * 1.5f;
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.environment.memory, 0, sizeof(uboEnv), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.environment.memory, 0, sizeof(uboEnv), 0, (void **)&pData));
 		memcpy(pData, &uboEnv, sizeof(uboEnv));
-		vkUnmapMemory(mDevice, uniformData.environment.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.environment.memory);
 	}
 
 	void updateUniformBuffers()
@@ -717,18 +717,18 @@ public:
 		uboVS.viewportDim = glm::vec2((float)width, (float)height);
 
 		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.fire.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.fire.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
-		vkUnmapMemory(mDevice, uniformData.fire.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.fire.memory);
 
 		// Environment
 		uboEnv.projection = uboVS.projection;
 		uboEnv.model = uboVS.model;
 		uboEnv.normal = glm::inverseTranspose(uboEnv.model);
 		uboEnv.cameraPos = glm::vec4(0.0, 0.0, zoom, 0.0);
-		VK_CHECK_RESULT(vkMapMemory(mDevice, uniformData.environment.memory, 0, sizeof(uboEnv), 0, (void **)&pData));
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.environment.memory, 0, sizeof(uboEnv), 0, (void **)&pData));
 		memcpy(pData, &uboEnv, sizeof(uboEnv));
-		vkUnmapMemory(mDevice, uniformData.environment.memory);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.environment.memory);
 	}
 
 	void draw()

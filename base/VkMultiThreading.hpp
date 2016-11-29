@@ -136,24 +136,24 @@ public:
 	{
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
-		vkDestroyPipeline(mDevice, pipelines.phong, nullptr);
-		vkDestroyPipeline(mDevice, pipelines.starsphere, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.phong, nullptr);
+		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.starsphere, nullptr);
 
-		vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
+		vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, pipelineLayout, nullptr);
 
-		vkFreeCommandBuffers(mDevice, cmdPool, 1, &primaryCommandBuffer);
-		vkFreeCommandBuffers(mDevice, cmdPool, 1, &secondaryCommandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &primaryCommandBuffer);
+		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, cmdPool, 1, &secondaryCommandBuffer);
 
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.ufo);
-		vkMeshLoader::freeMeshBufferResources(mDevice, &meshes.skysphere);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.ufo);
+		vkMeshLoader::freeMeshBufferResources(mVulkanDevice->mLogicalDevice, &meshes.skysphere);
 
 		for (auto& thread : threadData)
 		{
-			vkFreeCommandBuffers(mDevice, thread.commandPool, thread.commandBuffer.size(), thread.commandBuffer.data());
-			vkDestroyCommandPool(mDevice, thread.commandPool, nullptr);
+			vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, thread.commandPool, thread.commandBuffer.size(), thread.commandBuffer.data());
+			vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, thread.commandPool, nullptr);
 		}
 
-		vkDestroyFence(mDevice, renderFence, nullptr);
+		vkDestroyFence(mVulkanDevice->mLogicalDevice, renderFence, nullptr);
 	}
 
 	float rnd(float range)
@@ -172,11 +172,11 @@ public:
 				cmdPool,
 				VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 				1);
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &cmdBufAllocateInfo, &primaryCommandBuffer));
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &primaryCommandBuffer));
 
 		// Create a secondary command buffer for rendering the star sphere
 		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &cmdBufAllocateInfo, &secondaryCommandBuffer));
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &secondaryCommandBuffer));
 
 		threadData.resize(numThreads);
 
@@ -197,7 +197,7 @@ public:
 			VkCommandPoolCreateInfo cmdPoolInfo = vkTools::initializers::commandPoolCreateInfo();
 			cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
 			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-			VK_CHECK_RESULT(vkCreateCommandPool(mDevice, &cmdPoolInfo, nullptr, &thread->commandPool));
+			VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &thread->commandPool));
 
 			// One secondary command buffer per object that is updated by this thread
 			thread->commandBuffer.resize(numObjectsPerThread);
@@ -207,7 +207,7 @@ public:
 					thread->commandPool,
 					VK_COMMAND_BUFFER_LEVEL_SECONDARY,
 					thread->commandBuffer.size());
-			VK_CHECK_RESULT(vkAllocateCommandBuffers(mDevice, &secondaryCmdBufAllocateInfo, thread->commandBuffer.data()));
+			VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &secondaryCmdBufAllocateInfo, thread->commandBuffer.data()));
 
 			thread->pushConstBlock.resize(numObjectsPerThread);
 			thread->objectData.resize(numObjectsPerThread);
@@ -476,7 +476,7 @@ public:
 		pPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
 		pPipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(mDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
+		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 	}
 
 	void preparePipelines()
@@ -552,14 +552,14 @@ public:
 		pipelineCreateInfo.stageCount = shaderStages.size();
 		pipelineCreateInfo.pStages = shaderStages.data();
 
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.phong));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.phong));
 
 		// Star sphere rendering pipeline
 		rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
 		depthStencilState.depthWriteEnable = VK_FALSE;
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/multithreading/starsphere.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/multithreading/starsphere.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.starsphere));
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.starsphere));
 	}
 
 	void updateMatrices()
@@ -588,10 +588,10 @@ public:
 		VkResult fenceRes;
 		do
 		{
-			fenceRes = vkWaitForFences(mDevice, 1, &renderFence, VK_TRUE, 1000);
+			fenceRes = vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &renderFence, VK_TRUE, 1000);
 		} while (fenceRes == VK_TIMEOUT);
 		VK_CHECK_RESULT(fenceRes);
-		vkResetFences(mDevice, 1, &renderFence);
+		vkResetFences(mVulkanDevice->mLogicalDevice, 1, &renderFence);
 
 		VulkanBase::submitFrame();
 	}
@@ -601,7 +601,7 @@ public:
 		VulkanBase::prepare();
 		// Create a fence for synchronization
 		VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FLAGS_NONE);
-		vkCreateFence(mDevice, &fenceCreateInfo, NULL, &renderFence);
+		vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, NULL, &renderFence);
 		loadMeshes();
 		setupVertexDescriptions();
 		setupPipelineLayout();
