@@ -220,15 +220,15 @@ public:
 		frameBufferCreateInfo.layers = 1;
 
 		// Create frame buffers for every swap chain image
-		frameBuffers.resize(mSwapChain.mImageCount);
-		for (uint32_t i = 0; i < frameBuffers.size(); i++)
+		mFrameBuffers.resize(mSwapChain.mImageCount);
+		for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 		{
 			attachments[0] = mSwapChain.buffers[i].view;
 			attachments[1] = this->attachments.position.view;
 			attachments[2] = this->attachments.normal.view;
 			attachments[3] = this->attachments.albedo.view;
 			attachments[4] = depthStencil.view;
-			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
 		}
 	}
 
@@ -381,7 +381,7 @@ public:
 		for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
 		{
 			// Set target frame buffer
-			renderPassBeginInfo.framebuffer = frameBuffers[i];
+			renderPassBeginInfo.framebuffer = mFrameBuffers[i];
 
 			VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
 

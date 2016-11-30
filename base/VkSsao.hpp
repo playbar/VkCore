@@ -134,7 +134,7 @@ public:
 		struct SSAO : public FrameBuffer {
 			FrameBufferAttachment color;
 		} ssao, ssaoBlur;
-	} frameBuffers;
+	} mFrameBuffers;
 
 	// One sampler for the frame buffer color attachments
 	VkSampler colorSampler;
@@ -165,17 +165,17 @@ public:
 		vkDestroySampler(mVulkanDevice->mLogicalDevice, colorSampler, nullptr);
 
 		// Attachments
-		frameBuffers.offscreen.position.destroy(mVulkanDevice->mLogicalDevice);
-		frameBuffers.offscreen.normal.destroy(mVulkanDevice->mLogicalDevice);
-		frameBuffers.offscreen.albedo.destroy(mVulkanDevice->mLogicalDevice);
-		frameBuffers.offscreen.depth.destroy(mVulkanDevice->mLogicalDevice);
-		frameBuffers.ssao.color.destroy(mVulkanDevice->mLogicalDevice);
-		frameBuffers.ssaoBlur.color.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.offscreen.position.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.offscreen.normal.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.offscreen.albedo.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.offscreen.depth.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.ssao.color.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.ssaoBlur.color.destroy(mVulkanDevice->mLogicalDevice);
 
 		// Framebuffers
-		frameBuffers.offscreen.destroy(mVulkanDevice->mLogicalDevice);
-		frameBuffers.ssao.destroy(mVulkanDevice->mLogicalDevice);
-		frameBuffers.ssaoBlur.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.offscreen.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.ssao.destroy(mVulkanDevice->mLogicalDevice);
+		mFrameBuffers.ssaoBlur.destroy(mVulkanDevice->mLogicalDevice);
 
 		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.offscreen, nullptr);
 		vkDestroyPipeline(mVulkanDevice->mLogicalDevice, pipelines.composition, nullptr);
@@ -280,9 +280,9 @@ public:
 		const uint32_t ssaoHeight = height;
 #endif
 
-		frameBuffers.offscreen.setSize(width, height);
-		frameBuffers.ssao.setSize(ssaoWidth, ssaoHeight);
-		frameBuffers.ssaoBlur.setSize(width, height);
+		mFrameBuffers.offscreen.setSize(width, height);
+		mFrameBuffers.ssao.setSize(ssaoWidth, ssaoHeight);
+		mFrameBuffers.ssaoBlur.setSize(width, height);
 
 		// Find a suitable depth format
 		VkFormat attDepthFormat;
@@ -290,16 +290,16 @@ public:
 		assert(validDepthFormat);
 
 		// G-Buffer 
-		createAttachment(VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.offscreen.position, width, height);	// Position + Depth
-		createAttachment(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.offscreen.normal, width, height);			// Normals
-		createAttachment(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.offscreen.albedo, width, height);			// Albedo (color)
-		createAttachment(attDepthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, &frameBuffers.offscreen.depth, width, height);			// Depth
+		createAttachment(VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &mFrameBuffers.offscreen.position, width, height);	// Position + Depth
+		createAttachment(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &mFrameBuffers.offscreen.normal, width, height);			// Normals
+		createAttachment(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &mFrameBuffers.offscreen.albedo, width, height);			// Albedo (color)
+		createAttachment(attDepthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, &mFrameBuffers.offscreen.depth, width, height);			// Depth
 
 																																				// SSAO
-		createAttachment(VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.ssao.color, ssaoWidth, ssaoHeight);				// Color
+		createAttachment(VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &mFrameBuffers.ssao.color, ssaoWidth, ssaoHeight);				// Color
 
 																																				// SSAO blur
-		createAttachment(VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &frameBuffers.ssaoBlur.color, width, height);					// Color
+		createAttachment(VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, &mFrameBuffers.ssaoBlur.color, width, height);					// Color
 
 		VulkanBase::flushCommandBuffer(layoutCmd, mQueue, true);
 
@@ -321,10 +321,10 @@ public:
 			}
 
 			// Formats
-			attachmentDescs[0].format = frameBuffers.offscreen.position.format;
-			attachmentDescs[1].format = frameBuffers.offscreen.normal.format;
-			attachmentDescs[2].format = frameBuffers.offscreen.albedo.format;
-			attachmentDescs[3].format = frameBuffers.offscreen.depth.format;
+			attachmentDescs[0].format = mFrameBuffers.offscreen.position.format;
+			attachmentDescs[1].format = mFrameBuffers.offscreen.normal.format;
+			attachmentDescs[2].format = mFrameBuffers.offscreen.albedo.format;
+			attachmentDescs[3].format = mFrameBuffers.offscreen.depth.format;
 
 			std::vector<VkAttachmentReference> colorReferences;
 			colorReferences.push_back({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
@@ -368,28 +368,28 @@ public:
 			renderPassInfo.pSubpasses = &subpass;
 			renderPassInfo.dependencyCount = 2;
 			renderPassInfo.pDependencies = dependencies.data();
-			VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &frameBuffers.offscreen.renderPass));
+			VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mFrameBuffers.offscreen.renderPass));
 
 			std::array<VkImageView, 4> attachments;
-			attachments[0] = frameBuffers.offscreen.position.view;
-			attachments[1] = frameBuffers.offscreen.normal.view;
-			attachments[2] = frameBuffers.offscreen.albedo.view;
-			attachments[3] = frameBuffers.offscreen.depth.view;
+			attachments[0] = mFrameBuffers.offscreen.position.view;
+			attachments[1] = mFrameBuffers.offscreen.normal.view;
+			attachments[2] = mFrameBuffers.offscreen.albedo.view;
+			attachments[3] = mFrameBuffers.offscreen.depth.view;
 
 			VkFramebufferCreateInfo fbufCreateInfo = vkTools::initializers::framebufferCreateInfo();
-			fbufCreateInfo.renderPass = frameBuffers.offscreen.renderPass;
+			fbufCreateInfo.renderPass = mFrameBuffers.offscreen.renderPass;
 			fbufCreateInfo.pAttachments = attachments.data();
 			fbufCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-			fbufCreateInfo.width = frameBuffers.offscreen.width;
-			fbufCreateInfo.height = frameBuffers.offscreen.height;
+			fbufCreateInfo.width = mFrameBuffers.offscreen.width;
+			fbufCreateInfo.height = mFrameBuffers.offscreen.height;
 			fbufCreateInfo.layers = 1;
-			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &fbufCreateInfo, nullptr, &frameBuffers.offscreen.frameBuffer));
+			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &fbufCreateInfo, nullptr, &mFrameBuffers.offscreen.frameBuffer));
 		}
 
 		// SSAO 
 		{
 			VkAttachmentDescription attachmentDescription{};
-			attachmentDescription.format = frameBuffers.ssao.color.format;
+			attachmentDescription.format = mFrameBuffers.ssao.color.format;
 			attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
 			attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -431,22 +431,22 @@ public:
 			renderPassInfo.pSubpasses = &subpass;
 			renderPassInfo.dependencyCount = 2;
 			renderPassInfo.pDependencies = dependencies.data();
-			VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &frameBuffers.ssao.renderPass));
+			VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mFrameBuffers.ssao.renderPass));
 
 			VkFramebufferCreateInfo fbufCreateInfo = vkTools::initializers::framebufferCreateInfo();
-			fbufCreateInfo.renderPass = frameBuffers.ssao.renderPass;
-			fbufCreateInfo.pAttachments = &frameBuffers.ssao.color.view;
+			fbufCreateInfo.renderPass = mFrameBuffers.ssao.renderPass;
+			fbufCreateInfo.pAttachments = &mFrameBuffers.ssao.color.view;
 			fbufCreateInfo.attachmentCount = 1;
-			fbufCreateInfo.width = frameBuffers.ssao.width;
-			fbufCreateInfo.height = frameBuffers.ssao.height;
+			fbufCreateInfo.width = mFrameBuffers.ssao.width;
+			fbufCreateInfo.height = mFrameBuffers.ssao.height;
 			fbufCreateInfo.layers = 1;
-			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &fbufCreateInfo, nullptr, &frameBuffers.ssao.frameBuffer));
+			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &fbufCreateInfo, nullptr, &mFrameBuffers.ssao.frameBuffer));
 		}
 
 		// SSAO Blur 
 		{
 			VkAttachmentDescription attachmentDescription{};
-			attachmentDescription.format = frameBuffers.ssao.color.format;
+			attachmentDescription.format = mFrameBuffers.ssao.color.format;
 			attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
 			attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -488,16 +488,16 @@ public:
 			renderPassInfo.pSubpasses = &subpass;
 			renderPassInfo.dependencyCount = 2;
 			renderPassInfo.pDependencies = dependencies.data();
-			VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &frameBuffers.ssaoBlur.renderPass));
+			VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mFrameBuffers.ssaoBlur.renderPass));
 
 			VkFramebufferCreateInfo fbufCreateInfo = vkTools::initializers::framebufferCreateInfo();
-			fbufCreateInfo.renderPass = frameBuffers.ssaoBlur.renderPass;
-			fbufCreateInfo.pAttachments = &frameBuffers.ssaoBlur.color.view;
+			fbufCreateInfo.renderPass = mFrameBuffers.ssaoBlur.renderPass;
+			fbufCreateInfo.pAttachments = &mFrameBuffers.ssaoBlur.color.view;
 			fbufCreateInfo.attachmentCount = 1;
-			fbufCreateInfo.width = frameBuffers.ssaoBlur.width;
-			fbufCreateInfo.height = frameBuffers.ssaoBlur.height;
+			fbufCreateInfo.width = mFrameBuffers.ssaoBlur.width;
+			fbufCreateInfo.height = mFrameBuffers.ssaoBlur.height;
 			fbufCreateInfo.layers = 1;
-			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &fbufCreateInfo, nullptr, &frameBuffers.ssaoBlur.frameBuffer));
+			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &fbufCreateInfo, nullptr, &mFrameBuffers.ssaoBlur.frameBuffer));
 		}
 
 		// Shared sampler used for all color attachments
@@ -540,10 +540,10 @@ public:
 		clearValues[3].depthStencil = { 1.0f, 0 };
 
 		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
-		renderPassBeginInfo.renderPass = frameBuffers.offscreen.renderPass;
-		renderPassBeginInfo.framebuffer = frameBuffers.offscreen.frameBuffer;
-		renderPassBeginInfo.renderArea.extent.width = frameBuffers.offscreen.width;
-		renderPassBeginInfo.renderArea.extent.height = frameBuffers.offscreen.height;
+		renderPassBeginInfo.renderPass = mFrameBuffers.offscreen.renderPass;
+		renderPassBeginInfo.framebuffer = mFrameBuffers.offscreen.frameBuffer;
+		renderPassBeginInfo.renderArea.extent.width = mFrameBuffers.offscreen.width;
+		renderPassBeginInfo.renderArea.extent.height = mFrameBuffers.offscreen.height;
 		renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassBeginInfo.pClearValues = clearValues.data();
 
@@ -554,10 +554,10 @@ public:
 
 		vkCmdBeginRenderPass(offScreenCmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		VkViewport viewport = vkTools::initializers::viewport((float)frameBuffers.offscreen.width, (float)frameBuffers.offscreen.height, 0.0f, 1.0f);
+		VkViewport viewport = vkTools::initializers::viewport((float)mFrameBuffers.offscreen.width, (float)mFrameBuffers.offscreen.height, 0.0f, 1.0f);
 		vkCmdSetViewport(offScreenCmdBuffer, 0, 1, &viewport);
 
-		VkRect2D scissor = vkTools::initializers::rect2D(frameBuffers.offscreen.width, frameBuffers.offscreen.height, 0, 0);
+		VkRect2D scissor = vkTools::initializers::rect2D(mFrameBuffers.offscreen.width, mFrameBuffers.offscreen.height, 0, 0);
 		vkCmdSetScissor(offScreenCmdBuffer, 0, 1, &scissor);
 
 		vkCmdBindPipeline(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.offscreen);
@@ -575,18 +575,18 @@ public:
 		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 1.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
-		renderPassBeginInfo.framebuffer = frameBuffers.ssao.frameBuffer;
-		renderPassBeginInfo.renderPass = frameBuffers.ssao.renderPass;
-		renderPassBeginInfo.renderArea.extent.width = frameBuffers.ssao.width;
-		renderPassBeginInfo.renderArea.extent.height = frameBuffers.ssao.height;
+		renderPassBeginInfo.framebuffer = mFrameBuffers.ssao.frameBuffer;
+		renderPassBeginInfo.renderPass = mFrameBuffers.ssao.renderPass;
+		renderPassBeginInfo.renderArea.extent.width = mFrameBuffers.ssao.width;
+		renderPassBeginInfo.renderArea.extent.height = mFrameBuffers.ssao.height;
 		renderPassBeginInfo.clearValueCount = 2;
 		renderPassBeginInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(offScreenCmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		viewport = vkTools::initializers::viewport((float)frameBuffers.ssao.width, (float)frameBuffers.ssao.height, 0.0f, 1.0f);
+		viewport = vkTools::initializers::viewport((float)mFrameBuffers.ssao.width, (float)mFrameBuffers.ssao.height, 0.0f, 1.0f);
 		vkCmdSetViewport(offScreenCmdBuffer, 0, 1, &viewport);
-		scissor = vkTools::initializers::rect2D(frameBuffers.ssao.width, frameBuffers.ssao.height, 0, 0);
+		scissor = vkTools::initializers::rect2D(mFrameBuffers.ssao.width, mFrameBuffers.ssao.height, 0, 0);
 		vkCmdSetScissor(offScreenCmdBuffer, 0, 1, &scissor);
 
 		vkCmdBindDescriptorSets(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.ssao, 0, 1, &descriptorSets.ssao, 0, NULL);
@@ -598,16 +598,16 @@ public:
 		// Third pass: SSAO blur
 		// -------------------------------------------------------------------------------------------------------
 
-		renderPassBeginInfo.framebuffer = frameBuffers.ssaoBlur.frameBuffer;
-		renderPassBeginInfo.renderPass = frameBuffers.ssaoBlur.renderPass;
-		renderPassBeginInfo.renderArea.extent.width = frameBuffers.ssaoBlur.width;
-		renderPassBeginInfo.renderArea.extent.height = frameBuffers.ssaoBlur.height;
+		renderPassBeginInfo.framebuffer = mFrameBuffers.ssaoBlur.frameBuffer;
+		renderPassBeginInfo.renderPass = mFrameBuffers.ssaoBlur.renderPass;
+		renderPassBeginInfo.renderArea.extent.width = mFrameBuffers.ssaoBlur.width;
+		renderPassBeginInfo.renderArea.extent.height = mFrameBuffers.ssaoBlur.height;
 
 		vkCmdBeginRenderPass(offScreenCmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		viewport = vkTools::initializers::viewport((float)frameBuffers.ssaoBlur.width, (float)frameBuffers.ssaoBlur.height, 0.0f, 1.0f);
+		viewport = vkTools::initializers::viewport((float)mFrameBuffers.ssaoBlur.width, (float)mFrameBuffers.ssaoBlur.height, 0.0f, 1.0f);
 		vkCmdSetViewport(offScreenCmdBuffer, 0, 1, &viewport);
-		scissor = vkTools::initializers::rect2D(frameBuffers.ssaoBlur.width, frameBuffers.ssaoBlur.height, 0, 0);
+		scissor = vkTools::initializers::rect2D(mFrameBuffers.ssaoBlur.width, mFrameBuffers.ssaoBlur.height, 0, 0);
 		vkCmdSetScissor(offScreenCmdBuffer, 0, 1, &scissor);
 
 		vkCmdBindDescriptorSets(offScreenCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayouts.ssaoBlur, 0, 1, &descriptorSets.ssaoBlur, 0, NULL);
@@ -658,7 +658,7 @@ public:
 		for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
 		{
 			// Set target frame buffer
-			renderPassBeginInfo.framebuffer = VulkanBase::frameBuffers[i];
+			renderPassBeginInfo.framebuffer = VulkanBase::mFrameBuffers[i];
 
 			VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
 
@@ -788,8 +788,8 @@ public:
 		descriptorAllocInfo.pSetLayouts = &descriptorSetLayouts.ssao;
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &descriptorAllocInfo, &descriptorSets.ssao));
 		imageDescriptors = {
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.offscreen.position.view, VK_IMAGE_LAYOUT_GENERAL),
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.offscreen.normal.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, mFrameBuffers.offscreen.position.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, mFrameBuffers.offscreen.normal.view, VK_IMAGE_LAYOUT_GENERAL),
 		};
 		writeDescriptorSets = {
 			vkTools::initializers::writeDescriptorSet(descriptorSets.ssao, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageDescriptors[0]),					// FS Position+Depth
@@ -812,7 +812,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &descriptorAllocInfo, &descriptorSets.ssaoBlur));
 		// todo
 		imageDescriptors = {
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.ssao.color.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, mFrameBuffers.ssao.color.view, VK_IMAGE_LAYOUT_GENERAL),
 		};
 		writeDescriptorSets = {
 			vkTools::initializers::writeDescriptorSet(descriptorSets.ssaoBlur, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageDescriptors[0]),
@@ -835,11 +835,11 @@ public:
 		descriptorAllocInfo.pSetLayouts = &descriptorSetLayouts.composition;
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &descriptorAllocInfo, &descriptorSets.composition));
 		imageDescriptors = {
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.offscreen.position.view, VK_IMAGE_LAYOUT_GENERAL),
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.offscreen.normal.view, VK_IMAGE_LAYOUT_GENERAL),
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.offscreen.albedo.view, VK_IMAGE_LAYOUT_GENERAL),
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.ssao.color.view, VK_IMAGE_LAYOUT_GENERAL),
-			vkTools::initializers::descriptorImageInfo(colorSampler, frameBuffers.ssaoBlur.color.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, mFrameBuffers.offscreen.position.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, mFrameBuffers.offscreen.normal.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, mFrameBuffers.offscreen.albedo.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, mFrameBuffers.ssao.color.view, VK_IMAGE_LAYOUT_GENERAL),
+			vkTools::initializers::descriptorImageInfo(colorSampler, mFrameBuffers.ssaoBlur.color.view, VK_IMAGE_LAYOUT_GENERAL),
 		};
 		writeDescriptorSets = {
 			vkTools::initializers::writeDescriptorSet(descriptorSets.composition, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &imageDescriptors[0]),			// FS Sampler Position+Depth
@@ -950,7 +950,7 @@ public:
 			} specializationData;
 			VkSpecializationInfo specializationInfo = vkTools::initializers::specializationInfo(2, specializationMapEntries.data(), sizeof(specializationData), &specializationData);
 			shaderStages[1].pSpecializationInfo = &specializationInfo;
-			pipelineCreateInfo.renderPass = frameBuffers.ssao.renderPass;
+			pipelineCreateInfo.renderPass = mFrameBuffers.ssao.renderPass;
 			pipelineCreateInfo.layout = pipelineLayouts.ssao;
 			VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.ssao));
 		}
@@ -959,7 +959,7 @@ public:
 		// SSAO blur pass
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/ssao/fullscreen.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/ssao/blur.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-		pipelineCreateInfo.renderPass = frameBuffers.ssaoBlur.renderPass;
+		pipelineCreateInfo.renderPass = mFrameBuffers.ssaoBlur.renderPass;
 		pipelineCreateInfo.layout = pipelineLayouts.ssaoBlur;
 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipelines.ssaoBlur));
 
@@ -967,7 +967,7 @@ public:
 		shaderStages[0] = loadShader(getAssetPath() + "shaders/ssao/gbuffer.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/ssao/gbuffer.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 		pipelineCreateInfo.pVertexInputState = &vertices.inputState;
-		pipelineCreateInfo.renderPass = frameBuffers.offscreen.renderPass;
+		pipelineCreateInfo.renderPass = mFrameBuffers.offscreen.renderPass;
 		pipelineCreateInfo.layout = pipelineLayouts.gBuffer;
 		// Blend attachment states required for all color attachments
 		// This is important, as color write mask will otherwise be 0x0 and you

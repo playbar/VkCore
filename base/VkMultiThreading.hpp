@@ -577,7 +577,7 @@ public:
 	{
 		VulkanBase::prepareFrame();
 
-		updateCommandBuffers(frameBuffers[mCurrentBuffer]);
+		updateCommandBuffers(mFrameBuffers[mCurrentBuffer]);
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &primaryCommandBuffer;

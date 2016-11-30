@@ -222,7 +222,7 @@ void VulkanBase::prepare()
 		mTextOverlay = new VulkanTextOverlay(
 			mVulkanDevice,
 			mQueue,
-			frameBuffers,
+			mFrameBuffers,
 			mColorformat,
 			mDepthFormat,
 			&width,
@@ -727,9 +727,9 @@ VulkanBase::~VulkanBase()
 	}
 	destroyCommandBuffers();
 	vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
-	for (uint32_t i = 0; i < frameBuffers.size(); i++)
+	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, frameBuffers[i], nullptr);
+		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
 	}
 
 	for (auto& shaderModule : shaderModules)
@@ -1534,11 +1534,11 @@ void VulkanBase::setupFrameBuffer()
 	frameBufferCreateInfo.layers = 1;
 
 	// Create frame buffers for every swap chain image
-	frameBuffers.resize(mSwapChain.mImageCount);
-	for (uint32_t i = 0; i < frameBuffers.size(); i++)
+	mFrameBuffers.resize(mSwapChain.mImageCount);
+	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
 		attachments[0] = mSwapChain.buffers[i].view;
-		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
 	}
 }
 
@@ -1635,9 +1635,9 @@ void VulkanBase::windowResize()
 	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
 	setupDepthStencil();
 	
-	for (uint32_t i = 0; i < frameBuffers.size(); i++)
+	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, frameBuffers[i], nullptr);
+		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
 	}
 	setupFrameBuffer();
 

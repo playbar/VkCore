@@ -15,6 +15,12 @@
 
 class VkTriangle : public VulkanBase
 {
+	struct Vertex
+	{
+		float position[3];
+		float color[3];
+	};
+
 public:
 	// Vertex buffer and attributes
 	struct
@@ -257,7 +263,7 @@ public:
 		for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
 		{
 			// Set target frame buffer
-			renderPassBeginInfo.framebuffer = frameBuffers[i];
+			renderPassBeginInfo.framebuffer = mFrameBuffers[i];
 
 			VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
 
@@ -267,8 +273,10 @@ public:
 
 			// Update dynamic viewport state
 			VkViewport viewport = {};
-			viewport.height = (float)height;
+			viewport.x = 0;
+			viewport.y = 0;
 			viewport.width = (float)width;
+			viewport.height = (float)height;	
 			viewport.minDepth = (float) 0.0f;
 			viewport.maxDepth = (float) 1.0f;
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
@@ -338,6 +346,26 @@ public:
 		VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, renderCompleteSemaphore));
 	}
 
+	void updateUniformBuffers()
+	{
+		// Update matrices
+		mUboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+
+		mUboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+
+		mUboVS.modelMatrix = glm::mat4();
+		mUboVS.modelMatrix = glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, 0.0));
+		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//mUboVS.modelMatrix = glm::scale(mUboVS.modelMatrix, glm::vec3(800, 600, 0));
+
+		uint8_t *pData;
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
+		memcpy(pData, &mUboVS, sizeof(mUboVS));
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
+	}
+
 	// Prepare vertex and index buffers for an indexed triangle
 	// Also uploads them to device local memory using staging and initializes vertex input and attribute binding to match the vertex shader
 	void prepareVertices(bool useStagingBuffers)
@@ -345,12 +373,6 @@ public:
 		// A note on memory management in Vulkan in general:
 		//	This is a very complex topic and while it's fine for an example application to to small individual memory allocations that is not
 		//	what should be done a real-world application, where you should allocate large chunkgs of memory at once isntead.
-
-		struct Vertex
-		{
-			float position[3];
-			float color[3];
-		};
 
 		// Setup vertices
 		std::vector<Vertex> vertexBuffer =
@@ -683,8 +705,8 @@ public:
 	void setupFrameBuffer()
 	{
 		// Create a frame buffer for every image in the swapchain
-		frameBuffers.resize(mSwapChain.mImageCount);
-		for (size_t i = 0; i < frameBuffers.size(); i++)
+		mFrameBuffers.resize(mSwapChain.mImageCount);
+		for (size_t i = 0; i < mFrameBuffers.size(); i++)
 		{
 			std::array<VkImageView, 2> attachments;
 			attachments[0] = mSwapChain.buffers[i].view;									// Color attachment is the view of the swapchain image			
@@ -700,7 +722,7 @@ public:
 			frameBufferCreateInfo.height = height;
 			frameBufferCreateInfo.layers = 1;
 			// Create the framebuffer
-			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+			VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
 		}
 	}
 
@@ -945,27 +967,6 @@ public:
 		mUniformDataVS.descriptor.range = sizeof(mUboVS);
 
 		updateUniformBuffers();
-	}
-
-	void updateUniformBuffers()
-	{
-		// Update matrices
-		mUboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-
-		mUboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
-
-		mUboVS.modelMatrix = glm::mat4();
-		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		// Map uniform buffer and update it
-		uint8_t *pData;
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
-		memcpy(pData, &mUboVS, sizeof(mUboVS));
-		// Unmap after data has been copied
-		// Note: Since we requested a host coherent memory type for the uniform buffer, the write is instantly visible to the GPU
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
 	}
 
 	void prepare()

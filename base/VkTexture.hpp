@@ -63,7 +63,8 @@ public:
 		float lodBias = 0.0f;
 	} mUboVS;
 
-	struct {
+	struct 
+	{
 		VkPipeline solid;
 	} mPipelines;
 
@@ -75,7 +76,7 @@ public:
 	{
 		zoom = -2.5f;
 		rotation = { 0.0f, 15.0f, 0.0f };
-		title = "Vulkan Example - Texturing";
+		title = "VkCoreTexturing";
 		mEnableTextOverlay = true;
 	}
 
@@ -519,7 +520,7 @@ public:
 		for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
 		{
 			// Set target frame buffer
-			renderPassBeginInfo.framebuffer = frameBuffers[i];
+			renderPassBeginInfo.framebuffer = mFrameBuffers[i];
 
 			VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
 

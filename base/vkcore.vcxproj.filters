@@ -212,5 +212,8 @@
     <ClCompile Include="VkCoreDevice.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="vulkantextoverlay.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -84,6 +84,7 @@
     <ClCompile Include="VulkanBase.cpp" />
     <ClCompile Include="vulkandebug.cpp" />
     <ClCompile Include="vulkangear.cpp" />
+    <ClCompile Include="vulkantextoverlay.cpp" />
     <ClCompile Include="vulkantools.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
