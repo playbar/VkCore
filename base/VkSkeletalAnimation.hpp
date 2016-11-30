@@ -390,7 +390,7 @@ public:
 
 	VkSkeletalAnimation() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -150.0f;
+		mZoom = -150.0f;
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
 		rotation = { -182.5f, -38.5f, 180.0f };
@@ -928,7 +928,7 @@ public:
 		{
 			uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 1024.0f);
 
-			glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+			glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 			viewMatrix = glm::rotate(viewMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 			viewMatrix = glm::scale(viewMatrix, glm::vec3(0.025f));
 
@@ -937,7 +937,7 @@ public:
 			uboVS.view = glm::rotate(uboVS.view, glm::radians(rotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
 			uboVS.view = glm::rotate(uboVS.view, glm::radians(-rotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
 
-			uboVS.viewPos = glm::vec4(0.0f, 0.0f, -zoom, 0.0f);
+			uboVS.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
 
 			uboFloor.projection = uboVS.projection;
 			uboFloor.view = viewMatrix;
@@ -946,7 +946,7 @@ public:
 			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(rotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
 			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(-rotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
 			uboFloor.model = glm::translate(uboFloor.model, glm::vec3(0.0f, 0.0f, -1800.0f));
-			uboFloor.viewPos = glm::vec4(0.0f, 0.0f, -zoom, 0.0f);
+			uboFloor.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
 		}
 
 		// Update bones

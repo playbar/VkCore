@@ -116,7 +116,7 @@ public:
 
 	VkParticlefire() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -75.0f;
+		mZoom = -75.0f;
 		rotation = { -15.0f, 45.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Particle system";
@@ -706,7 +706,7 @@ public:
 		// Vertex shader
 		glm::mat4 viewMatrix = glm::mat4();
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, zoom));
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
 
 		uboVS.model = glm::mat4();
 		uboVS.model = viewMatrix * glm::translate(uboVS.model, glm::vec3(0.0f, 15.0f, 0.0f));
@@ -725,7 +725,7 @@ public:
 		uboEnv.projection = uboVS.projection;
 		uboEnv.model = uboVS.model;
 		uboEnv.normal = glm::inverseTranspose(uboEnv.model);
-		uboEnv.cameraPos = glm::vec4(0.0, 0.0, zoom, 0.0);
+		uboEnv.cameraPos = glm::vec4(0.0, 0.0, mZoom, 0.0);
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.environment.memory, 0, sizeof(uboEnv), 0, (void **)&pData));
 		memcpy(pData, &uboEnv, sizeof(uboEnv));
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.environment.memory);

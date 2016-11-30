@@ -13,6 +13,9 @@
 #include "VulkanBase.h"
 #include "VDeleter.hpp"
 
+#include <iostream> 
+#include <iomanip>
+
 class VkTriangle : public VulkanBase
 {
 	struct Vertex
@@ -31,6 +34,7 @@ public:
 		VkVertexInputBindingDescription inputBinding;
 		std::vector<VkVertexInputAttributeDescription> inputAttributes;
 	} mVertices;
+
 
 	// Index buffer
 	struct
@@ -102,7 +106,7 @@ public:
 	{
 		width = 800;
 		height = 600;
-		zoom = -2.5f;
+		mZoom = -10.0f;
 		title = "VkCore";
 	}
 
@@ -349,16 +353,27 @@ public:
 	void updateUniformBuffers()
 	{
 		// Update matrices
-		mUboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		float aspect = (float)width / (float)height;
+		mUboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 256.0f);
+		//mUboVS.projectionMatrix = glm::mat4();
+		mUboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//mUboVS.viewMatrix = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+		//mUboVS.viewMatrix = glm::translate(mUboVS.viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
+		//mUboVS.viewMatrix = glm::mat4();
+		//std::cout.precision(4);
+		//std::cout << mZoom << std::endl;
 
-		mUboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
-
+		//char szTmp[256] = {};
+		//sprintf(szTmp, "zoom=%f", mZoom);
+		//OutputDebugString(szTmp);
 		mUboVS.modelMatrix = glm::mat4();
-		mUboVS.modelMatrix = glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, 0.0));
+		//mUboVS.modelMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -1.7));
+		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-		//mUboVS.modelMatrix = glm::scale(mUboVS.modelMatrix, glm::vec3(800, 600, 0));
+		//mUboVS.modelMatrix = glm::scale(glm::mat4(), glm::vec3(1.0f / 400.0f, 1/300.0f, 0.0f));
+		//mUboVS.modelMatrix = glm::mat4();
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
@@ -377,11 +392,19 @@ public:
 		// Setup vertices
 		std::vector<Vertex> vertexBuffer =
 		{
-			{ { 1.0f,  1.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
+			{ { 0.9f,  1.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
 			{ { -1.0f,  1.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
 			{ { -1.0f, -1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
-			{ { 1.0f, -1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
+			{ { 0.9f, -1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
 		};
+		//std::vector<Vertex> vertexBuffer =
+		//{
+		//	{ { -200.0f, -200.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
+		//	{ { -100.0f, -200.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
+		//	{ { -100.0f, -100.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+		//	{ { -200.0f, -100.0f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
+		//};
+
 		uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(Vertex);
 
 		// Setup indices

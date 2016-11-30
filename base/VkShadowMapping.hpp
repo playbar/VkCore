@@ -134,7 +134,7 @@ public:
 
 	VkShadowMapping() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -20.0f;
+		mZoom = -20.0f;
 		rotation = { -15.0f, -390.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Projected shadow mapping";
@@ -810,7 +810,7 @@ public:
 		// 3D scene
 		uboVSscene.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, zNear, zFar);
 
-		uboVSscene.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		uboVSscene.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 		uboVSscene.view = glm::rotate(uboVSscene.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		uboVSscene.view = glm::rotate(uboVSscene.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		uboVSscene.view = glm::rotate(uboVSscene.view, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));

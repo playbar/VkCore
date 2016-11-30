@@ -111,7 +111,7 @@ public:
 
 	VkMultiThreading() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -32.5f;
+		mZoom = -32.5f;
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
 		rotation = { 0.0f, 37.5f, 0.0f };
@@ -565,7 +565,7 @@ public:
 	void updateMatrices()
 	{
 		matrices.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		matrices.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		matrices.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 		matrices.view = glm::rotate(matrices.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		matrices.view = glm::rotate(matrices.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		matrices.view = glm::rotate(matrices.view, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));

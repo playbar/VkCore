@@ -119,7 +119,7 @@ public:
 
 	VkBloom() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -10.25f;
+		mZoom = -10.25f;
 		rotation = { 7.5f, -343.0f, 0.0f };
 		timerSpeed *= 0.5f;
 		mEnableTextOverlay = true;
@@ -899,7 +899,7 @@ public:
 	{
 		// UFO
 		ubos.fullscreen.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, -1.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, -1.0f, mZoom));
 
 		ubos.fullscreen.model = viewMatrix *
 			glm::translate(glm::mat4(), glm::vec3(sin(glm::radians(timer * 360.0f)) * 0.25f, 0.0f, cos(glm::radians(timer * 360.0f)) * 0.25f) + cameraPos);

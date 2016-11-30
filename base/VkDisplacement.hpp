@@ -70,7 +70,7 @@ public:
 
 	VkDisplacement() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -1.25f;
+		mZoom = -1.25f;
 		rotation = glm::vec3(-20.0f, 45.0f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Tessellation shader displacement mapping";
@@ -443,7 +443,7 @@ public:
 		// Tessellation eval
 		glm::mat4 viewMatrix = glm::mat4();
 		uboTE.projection = glm::perspective(glm::radians(45.0f), (float)(width) / (float)height, 0.1f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, zoom));
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
 
 		float offset = 0.5f;
 		int uboIndex = 1;

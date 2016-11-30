@@ -79,7 +79,7 @@ public:
 
 	VkMultisampling() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -7.5f;
+		mZoom = -7.5f;
 		zoomSpeed = 2.5f;
 		rotation = { 0.0f, -90.0f, 0.0f };
 		cameraPos = glm::vec3(2.5f, 2.5f, 0.0f);
@@ -648,7 +648,7 @@ public:
 		// Vertex shader
 		glm::mat4 viewMatrix = glm::mat4();
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, zoom));
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
 
 		float offset = 0.5f;
 		int uboIndex = 1;

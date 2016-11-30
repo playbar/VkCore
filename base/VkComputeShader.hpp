@@ -75,7 +75,7 @@ public:
 
 	VkComputeShader() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -2.0f;
+		mZoom = -2.0f;
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Compute shader image processing";
 	}
@@ -722,7 +722,7 @@ public:
 	{
 		// Vertex shader uniform buffer block
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width*0.5f / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

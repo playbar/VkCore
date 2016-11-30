@@ -88,7 +88,7 @@ public:
 
 	VkParallaxMapping() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -2.7f;
+		mZoom = -2.7f;
 		rotation = glm::vec3(56.0f, 0.0f, 0.0f);
 		rotationSpeed = 0.25f;
 		mEnableTextOverlay = true;
@@ -480,7 +480,7 @@ public:
 		// Vertex shader
 		glm::mat4 viewMatrix = glm::mat4();
 		ubos.vertexShader.projection = glm::perspective(glm::radians(45.0f), (float)(width* ((splitScreen) ? 0.5f : 1.0f)) / (float)height, 0.001f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, zoom));
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
 
 		ubos.vertexShader.model = glm::mat4();
 		ubos.vertexShader.model = viewMatrix * glm::translate(ubos.vertexShader.model, cameraPos);
@@ -496,7 +496,7 @@ public:
 			ubos.vertexShader.lightPos.y = cos(glm::radians(timer * 360.0f)) * 0.5f;
 		}
 
-		ubos.vertexShader.cameraPos = glm::vec4(0.0, 0.0, zoom, 0.0);
+		ubos.vertexShader.cameraPos = glm::vec4(0.0, 0.0, mZoom, 0.0);
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vertexShader.memory, 0, sizeof(ubos.vertexShader), 0, (void **)&pData));

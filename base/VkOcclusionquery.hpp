@@ -86,7 +86,7 @@ public:
 	{
 		width = 1280;
 		height = 720;
-		zoom = -35.0f;
+		mZoom = -35.0f;
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
 		rotation = { 0.0, -123.75, 0.0 };
@@ -569,7 +569,7 @@ public:
 	{
 		// Vertex shader
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		glm::mat4 rotMatrix = glm::mat4();
 		rotMatrix = glm::rotate(rotMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

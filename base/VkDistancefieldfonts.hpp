@@ -103,7 +103,7 @@ public:
 
 	VkDistancefieldfonts() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -2.0f;
+		mZoom = -2.0f;
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Distance field fonts";
 	}
@@ -622,7 +622,7 @@ public:
 		// Vertex shader
 		glm::mat4 viewMatrix = glm::mat4();
 		uboVS.projection = glm::perspective(glm::radians(splitScreen ? 30.0f : 45.0f), (float)width / (float)(height * ((splitScreen) ? 0.5f : 1.0f)), 0.001f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, splitScreen ? zoom : zoom - 2.0f));
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, splitScreen ? mZoom : mZoom - 2.0f));
 
 		uboVS.model = glm::mat4();
 		uboVS.model = viewMatrix * glm::translate(uboVS.model, cameraPos);

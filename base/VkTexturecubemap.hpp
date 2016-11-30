@@ -69,7 +69,7 @@ public:
 
 	VkTexturecubemap() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -4.0f;
+		mZoom = -4.0f;
 		rotationSpeed = 0.25f;
 		rotation = { -7.25f, -120.0f, 0.0f };
 		mEnableTextOverlay = true;
@@ -629,7 +629,7 @@ public:
 		// 3D object
 		glm::mat4 viewMatrix = glm::mat4();
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, zoom));
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
 
 		uboVS.model = glm::mat4();
 		uboVS.model = viewMatrix * glm::translate(uboVS.model, cameraPos);

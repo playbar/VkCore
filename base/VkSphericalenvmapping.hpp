@@ -65,7 +65,7 @@ public:
 
 	VkSphericalenvmapping() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -0.9f;
+		mZoom = -0.9f;
 		rotationSpeed = 0.75f;
 		zoomSpeed = 0.25f;
 		rotation = glm::vec3(-25.0f, 23.75f, 0.0f);
@@ -381,7 +381,7 @@ public:
 		uboVS.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
 
 		uboVS.view = glm::lookAt(
-			glm::vec3(0, 0, -zoom),
+			glm::vec3(0, 0, -mZoom),
 			glm::vec3(0, 0, 0),
 			glm::vec3(0, 1, 0)
 		);

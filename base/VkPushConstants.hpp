@@ -63,7 +63,7 @@ public:
 	{
 		width = 1280;
 		height = 720;
-		zoom = -30.0;
+		mZoom = -30.0;
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
 		timerSpeed *= 0.5f;
@@ -410,7 +410,7 @@ public:
 		// Vertex shader
 		glm::mat4 viewMatrix = glm::mat4();
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 2.0f, zoom));
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 2.0f, mZoom));
 
 		float offset = 0.5f;
 		int uboIndex = 1;

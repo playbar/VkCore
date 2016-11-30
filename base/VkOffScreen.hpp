@@ -114,7 +114,7 @@ public:
 
 	VkOffScreen() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -6.0f;
+		mZoom = -6.0f;
 		rotation = { -2.5f, 0.0f, 0.0f };
 		cameraPos = { 0.0f, 1.0f, 0.0f };
 		timerSpeed *= 0.25f;
@@ -855,7 +855,7 @@ public:
 	{
 		// Mesh
 		ubos.vsShared.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		ubos.vsShared.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
 		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -891,7 +891,7 @@ public:
 	void updateUniformBufferOffscreen()
 	{
 		ubos.vsShared.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		ubos.vsShared.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
 		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

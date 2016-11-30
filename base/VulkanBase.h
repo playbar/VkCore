@@ -122,7 +122,7 @@ public:
 
 	VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 
-	float zoom = 0;
+	float mZoom = 0;
 
 	static std::vector<const char*> args;
 

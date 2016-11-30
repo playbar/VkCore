@@ -129,7 +129,7 @@ public:
 
 	VkDeferred() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -8.0f;
+		mZoom = -8.0f;
 		rotation = { 0.0f, 0.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading (2016 by Sascha Willems)";
@@ -1038,7 +1038,7 @@ public:
 	void updateUniformBufferDeferredMatrices()
 	{
 		uboOffscreenVS.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
-		uboOffscreenVS.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		uboOffscreenVS.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		uboOffscreenVS.model = glm::mat4();
 		uboOffscreenVS.model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.25f, 0.0f) + cameraPos);

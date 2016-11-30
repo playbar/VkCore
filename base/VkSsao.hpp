@@ -146,7 +146,7 @@ public:
 
 	VkSsao() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -8.0f;
+		mZoom = -8.0f;
 		rotation = { 0.0f, 0.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Screen space ambient occlusion";

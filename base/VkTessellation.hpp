@@ -67,7 +67,7 @@ public:
 
 	VkTessellation() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -6.5f;
+		mZoom = -6.5f;
 		rotation = glm::vec3(-350.0f, 60.0f, 0.0f);
 		cameraPos = glm::vec3(-3.0f, 2.3f, 0.0f);
 		title = "Vulkan Example - Tessellation shader (PN Triangles)";
@@ -455,7 +455,7 @@ public:
 		// Tessellation eval
 		glm::mat4 viewMatrix = glm::mat4();
 		uboTE.projection = glm::perspective(glm::radians(45.0f), (float)(width* ((splitScreen) ? 0.5f : 1.0f)) / (float)height, 0.1f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, zoom));
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
 
 		uboTE.model = glm::mat4();
 		uboTE.model = viewMatrix * glm::translate(uboTE.model, cameraPos);

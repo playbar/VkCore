@@ -107,7 +107,7 @@ public:
 
 	VkRadialBlur() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -10.0f;
+		mZoom = -10.0f;
 		rotation = { -16.25f, -28.75f, 0.0f };
 		timerSpeed *= 0.5f;
 		mEnableTextOverlay = true;
@@ -749,7 +749,7 @@ public:
 	void updateUniformBuffersScene()
 	{
 		uboScene.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 1.0f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		uboScene.model = glm::mat4();
 		uboScene.model = viewMatrix * glm::translate(uboScene.model, cameraPos);

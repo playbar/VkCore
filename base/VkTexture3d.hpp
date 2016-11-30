@@ -186,7 +186,7 @@ public:
 
 	VkTexture3d() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -2.5f;
+		mZoom = -2.5f;
 		rotation = { 0.0f, 15.0f, 0.0f };
 		title = "Vulkan Example - 3D textures";
 		mEnableTextOverlay = true;
@@ -756,14 +756,14 @@ public:
 		if (viewchanged)
 		{
 			uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-			glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+			glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 			uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
 			uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 			uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 			uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-			uboVS.viewPos = glm::vec4(0.0f, 0.0f, -zoom, 0.0f);
+			uboVS.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
 		}
 		else
 		{

@@ -487,7 +487,7 @@ void VulkanBase::renderLoop()
 				// Zoom
 				if (std::abs(gamePadState.axisRight.y) > deadZone)
 				{
-					zoom -= gamePadState.axisRight.y * 0.01f * zoomSpeed;
+					mZoom -= gamePadState.axisRight.y * 0.01f * zoomSpeed;
 					updateView = true;
 				}
 				if (updateView)
@@ -1076,7 +1076,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	case WM_MOUSEWHEEL:
 	{
 		short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-		zoom += (float)wheelDelta * 0.005f * zoomSpeed;
+		mZoom += (float)wheelDelta * 0.005f * zoomSpeed;
 		camera.translate(glm::vec3(0.0f, 0.0f, (float)wheelDelta * 0.005f * zoomSpeed));
 		viewUpdated = true;
 		break;
@@ -1086,7 +1086,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		{
 			int32_t posx = LOWORD(lParam);
 			int32_t posy = HIWORD(lParam);
-			zoom += (mousePos.y - (float)posy) * .005f * zoomSpeed;
+			mZoom += (mousePos.y - (float)posy) * .005f * zoomSpeed;
 			camera.translate(glm::vec3(-0.0f, 0.0f, (mousePos.y - (float)posy) * .005f * zoomSpeed));
 			mousePos = glm::vec2((float)posx, (float)posy);
 			viewUpdated = true;
@@ -1331,7 +1331,7 @@ void VulkanBase::handleEvent(const xcb_generic_event_t *event)
 		}
 		if (mouseButtons.right)
 		{
-			zoom += (mousePos.y - (float)motion->event_y) * .005f;
+			mZoom += (mousePos.y - (float)motion->event_y) * .005f;
 			camera.translate(glm::vec3(-0.0f, 0.0f, (mousePos.y - (float)motion->event_y) * .005f * zoomSpeed));
 			viewUpdated = true;
 		}

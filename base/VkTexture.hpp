@@ -74,7 +74,7 @@ public:
 
 	VkTexture() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -2.5f;
+		mZoom = -2.5f;
 		rotation = { 0.0f, 15.0f, 0.0f };
 		title = "VkCoreTexturing";
 		mEnableTextOverlay = true;
@@ -807,14 +807,14 @@ public:
 	{
 		// Vertex shader
 		mUboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		mUboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
 		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		mUboVS.viewPos = glm::vec4(0.0f, 0.0f, -zoom, 0.0f);
+		mUboVS.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
 
 		VK_CHECK_RESULT(mUniformBufferVS.map());
 		memcpy(mUniformBufferVS.mapped, &mUboVS, sizeof(mUboVS));
@@ -828,6 +828,7 @@ public:
 		setupVertexDescriptions();
 		prepareUniformBuffers();
 		loadTexture(
+			//getAssetPath() + "textures/test.jpg",
 			getAssetPath() + "textures/pattern_02_bc2.ktx",
 			VK_FORMAT_BC2_UNORM_BLOCK,
 			false);

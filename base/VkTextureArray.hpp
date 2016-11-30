@@ -73,7 +73,7 @@ public:
 
 	VkTextureArray() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -15.0f;
+		mZoom = -15.0f;
 		rotationSpeed = 0.25f;
 		rotation = { -15.0f, 35.0f, 0.0f };
 		mEnableTextOverlay = true;
@@ -634,7 +634,7 @@ public:
 		uboVS.matrices.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
 
 		// View
-		uboVS.matrices.view = glm::translate(glm::mat4(), glm::vec3(0.0f, -1.0f, zoom));
+		uboVS.matrices.view = glm::translate(glm::mat4(), glm::vec3(0.0f, -1.0f, mZoom));
 		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));

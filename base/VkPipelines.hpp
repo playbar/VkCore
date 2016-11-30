@@ -67,7 +67,7 @@ public:
 
 	VkPipelines() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
 	{
-		zoom = -10.5f;
+		mZoom = -10.5f;
 		rotation = glm::vec3(-25.0f, 15.0f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Pipeline state objects";
@@ -409,7 +409,7 @@ public:
 	{
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)(width / 3.0f) / (float)height, 0.1f, 256.0f);
 
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		uboVS.modelView = viewMatrix * glm::translate(glm::mat4(), cameraPos);
 		uboVS.modelView = glm::rotate(uboVS.modelView, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

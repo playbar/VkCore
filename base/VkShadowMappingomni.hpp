@@ -119,7 +119,7 @@ public:
 
 	VkShadowMappingomni() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -175.0f;
+		mZoom = -175.0f;
 		zoomSpeed = 10.0f;
 		timerSpeed *= 0.25f;
 		rotation = { -20.5f, -673.0f, 0.0f };
@@ -955,7 +955,7 @@ public:
 	{
 		// 3D scene
 		uboVSscene.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, zNear, zFar);
-		uboVSscene.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, displayCubeMap ? 0.0f : zoom));
+		uboVSscene.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, displayCubeMap ? 0.0f : mZoom));
 
 		uboVSscene.model = glm::mat4();
 		uboVSscene.model = glm::rotate(uboVSscene.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

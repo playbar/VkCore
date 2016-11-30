@@ -76,7 +76,7 @@ public:
 	{
 		width = 1280;
 		height = 720;
-		zoom = -3.75f;
+		mZoom = -3.75f;
 		rotationSpeed = 0.5f;
 		rotation = glm::vec3(15.0f, 0.f, 0.0f);
 		mEnableTextOverlay = true;
@@ -504,7 +504,7 @@ public:
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
 
 		uboVS.view = glm::lookAt(
-			glm::vec3(0, 0, -zoom),
+			glm::vec3(0, 0, -mZoom),
 			cameraPos,
 			glm::vec3(0, 1, 0)
 		);

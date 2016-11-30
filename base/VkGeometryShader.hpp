@@ -63,7 +63,7 @@ public:
 
 	VkGeometryShader() : VulkanBase(ENABLE_VALIDATION)
 	{
-		zoom = -8.0f;
+		mZoom = -8.0f;
 		rotation = glm::vec3(0.0f, -25.0f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Geometry shader";
@@ -398,7 +398,7 @@ public:
 	{
 		// Vertex shader
 		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, zoom));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
