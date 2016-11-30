@@ -121,7 +121,7 @@ public:
 		// Color target
 		VkImageCreateInfo info = vkTools::initializers::imageCreateInfo();
 		info.imageType = VK_IMAGE_TYPE_2D;
-		info.format = colorformat;
+		info.format = mColorformat;
 		info.extent.width = width;
 		info.extent.height = height;
 		info.extent.depth = 1;
@@ -156,7 +156,7 @@ public:
 		VkImageViewCreateInfo viewInfo = vkTools::initializers::imageViewCreateInfo();
 		viewInfo.image = multisampleTarget.color.image;
 		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = colorformat;
+		viewInfo.format = mColorformat;
 		viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
 		viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
 		viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
@@ -169,7 +169,7 @@ public:
 
 		// Depth target
 		info.imageType = VK_IMAGE_TYPE_2D;
-		info.format = depthFormat;
+		info.format = mDepthFormat;
 		info.extent.width = width;
 		info.extent.height = height;
 		info.extent.depth = 1;
@@ -200,7 +200,7 @@ public:
 		// Create image view for the MSAA target
 		viewInfo.image = multisampleTarget.depth.image;
 		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		viewInfo.format = depthFormat;
+		viewInfo.format = mDepthFormat;
 		viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
 		viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
 		viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
@@ -222,7 +222,7 @@ public:
 		std::array<VkAttachmentDescription, 4> attachments = {};
 
 		// Multisampled attachment that we render to
-		attachments[0].format = colorformat;
+		attachments[0].format = mColorformat;
 		attachments[0].samples = SAMPLE_COUNT;
 		attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		// No longer required after resolve, this may save some bandwidth on certain GPUs
@@ -234,7 +234,7 @@ public:
 
 		// This is the frame buffer attachment to where the multisampled image
 		// will be resolved to and which will be presented to the swapchain
-		attachments[1].format = colorformat;
+		attachments[1].format = mColorformat;
 		attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
 		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -244,7 +244,7 @@ public:
 		attachments[1].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		// Multisampled depth attachment we render to
-		attachments[2].format = depthFormat;
+		attachments[2].format = mDepthFormat;
 		attachments[2].samples = SAMPLE_COUNT;
 		attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -254,7 +254,7 @@ public:
 		attachments[2].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		// Depth resolve attachment
-		attachments[3].format = depthFormat;
+		attachments[3].format = mDepthFormat;
 		attachments[3].samples = VK_SAMPLE_COUNT_1_BIT;
 		attachments[3].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[3].storeOp = VK_ATTACHMENT_STORE_OP_STORE;

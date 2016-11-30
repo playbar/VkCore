@@ -494,8 +494,8 @@ public:
 			mVulkanDevice,
 			mQueue,
 			frameBuffers,
-			colorformat,
-			depthFormat,
+			mColorformat,
+			mDepthFormat,
 			&width,
 			&height,
 			shaderStages

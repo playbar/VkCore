@@ -73,10 +73,10 @@ protected:
 	// Handle to the device graphics queue that command buffers are submitted to
 	VkQueue mQueue;
 	// Color buffer format
-	VkFormat colorformat = VK_FORMAT_B8G8R8A8_UNORM;
+	VkFormat mColorformat = VK_FORMAT_B8G8R8A8_UNORM;
 	// Depth buffer format
 	// Depth format is selected during Vulkan initialization
-	VkFormat depthFormat;
+	VkFormat mDepthFormat;
 	// Command buffer pool
 	VkCommandPool mCmdPool;
 	// Command buffer used for setup
@@ -167,8 +167,8 @@ public:
 
 	// OS specific 
 #if defined(_WIN32)
-	HWND window;
-	HINSTANCE windowInstance;
+	HWND mHwndWinow;
+	HINSTANCE mWindowInstance;
 #elif defined(__ANDROID__)
 	android_app* androidApp;
 	// true if application has focused, false if moved to background
@@ -182,7 +182,7 @@ public:
 	bool quit = false;
 	xcb_connection_t *connection;
 	xcb_screen_t *screen;
-	xcb_window_t window;
+	xcb_window_t mHwndWinow;
 	xcb_intern_atom_reply_t *atom_wm_delete_window;
 #endif
 

@@ -223,8 +223,8 @@ void VulkanBase::prepare()
 			mVulkanDevice,
 			mQueue,
 			frameBuffers,
-			colorformat,
-			depthFormat,
+			mColorformat,
+			mDepthFormat,
 			&width,
 			&height,
 			shaderStages
@@ -398,7 +398,7 @@ void VulkanBase::renderLoop()
 			if (!mEnableTextOverlay)
 			{
 				std::string windowTitle = getWindowTitle();
-				SetWindowText(window, windowTitle.c_str());
+				SetWindowText(mHwndWinow, windowTitle.c_str());
 			}
 			lastFPS = roundf(1.0f / frameTimer);
 			updateTextOverlay();
@@ -584,7 +584,7 @@ void VulkanBase::renderLoop()
 			{
 				std::string windowTitle = getWindowTitle();
 				xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-					window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+					mHwndWinow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
 					windowTitle.size(), windowTitle.c_str());
 			}
 			lastFPS = frameCounter;
@@ -773,7 +773,7 @@ VulkanBase::~VulkanBase()
 #if defined(__ANDROID__)
 	// todo : android cleanup (if required)
 #else
-	xcb_destroy_window(connection, window);
+	xcb_destroy_window(connection, mHwndWinow);
 	xcb_disconnect(connection);
 #endif
 #endif
@@ -833,7 +833,7 @@ void VulkanBase::initVulkan(bool enableValidation)
 	vkGetDeviceQueue(mVulkanDevice->mLogicalDevice, mVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
 
 	// Find a suitable depth format
-	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &depthFormat);
+	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &mDepthFormat);
 	assert(validDepthFormat);
 
 	mSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
@@ -875,7 +875,7 @@ void VulkanBase::setupConsole(std::string title)
 
 HWND VulkanBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 {
-	this->windowInstance = hinstance;
+	this->mWindowInstance = hinstance;
 
 	bool fullscreen = false;
 	for (auto arg : args)
@@ -961,7 +961,7 @@ HWND VulkanBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 	AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
 
 	std::string windowTitle = getWindowTitle();
-	window = CreateWindowEx(0,
+	mHwndWinow = CreateWindowEx(0,
 		name.c_str(),
 		windowTitle.c_str(),
 		dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
@@ -979,10 +979,10 @@ HWND VulkanBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 		// Center on screen
 		uint32_t x = (GetSystemMetrics(SM_CXSCREEN) - windowRect.right) / 2;
 		uint32_t y = (GetSystemMetrics(SM_CYSCREEN) - windowRect.bottom) / 2;
-		SetWindowPos(window, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		SetWindowPos(mHwndWinow, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 	}
 
-	if (!window)
+	if (!mHwndWinow)
 	{
 		printf("Could not create window!\n");
 		fflush(stdout);
@@ -990,11 +990,11 @@ HWND VulkanBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 		exit(1);
 	}
 
-	ShowWindow(window, SW_SHOW);
-	SetForegroundWindow(window);
-	SetFocus(window);
+	ShowWindow(mHwndWinow, SW_SHOW);
+	SetForegroundWindow(mHwndWinow);
+	SetFocus(mHwndWinow);
 
-	return window;
+	return mHwndWinow;
 }
 
 void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1007,7 +1007,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		PostQuitMessage(0);
 		break;
 	case WM_PAINT:
-		ValidateRect(window, NULL);
+		ValidateRect(mHwndWinow, NULL);
 		break;
 	case WM_KEYDOWN:
 		switch (wParam)
@@ -1244,7 +1244,7 @@ xcb_window_t VulkanBase::setupWindow()
 {
 	uint32_t value_mask, value_list[32];
 
-	window = xcb_generate_id(connection);
+	mHwndWinow = xcb_generate_id(connection);
 
 	value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 	value_list[0] = screen->black_pixel;
@@ -1259,7 +1259,7 @@ xcb_window_t VulkanBase::setupWindow()
 
 	xcb_create_window(connection,
 		XCB_COPY_FROM_PARENT,
-		window, screen->root,
+		mHwndWinow, screen->root,
 		0, 0, width, height, 0,
 		XCB_WINDOW_CLASS_INPUT_OUTPUT,
 		screen->root_visual,
@@ -1273,19 +1273,19 @@ xcb_window_t VulkanBase::setupWindow()
 	atom_wm_delete_window = xcb_intern_atom_reply(connection, cookie2, 0);
 
 	xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-		window, (*reply).atom, 4, 32, 1,
+		mHwndWinow, (*reply).atom, 4, 32, 1,
 		&(*atom_wm_delete_window).atom);
 
 	std::string windowTitle = getWindowTitle();
 	xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-		window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+		mHwndWinow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
 		title.size(), windowTitle.c_str());
 
 	free(reply);
 
-	xcb_map_window(connection, window);
+	xcb_map_window(connection, mHwndWinow);
 
-	return(window);
+	return(mHwndWinow);
 }
 
 // Initialize XCB connection
@@ -1471,30 +1471,30 @@ void VulkanBase::createCommandPool()
 
 void VulkanBase::setupDepthStencil()
 {
-	VkImageCreateInfo image = {};
-	image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	image.pNext = NULL;
-	image.imageType = VK_IMAGE_TYPE_2D;
-	image.format = depthFormat;
-	image.extent = { width, height, 1 };
-	image.mipLevels = 1;
-	image.arrayLayers = 1;
-	image.samples = VK_SAMPLE_COUNT_1_BIT;
-	image.tiling = VK_IMAGE_TILING_OPTIMAL;
-	image.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	image.flags = 0;
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = mDepthFormat;
+	imageCreateInfo.extent = { width, height, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	imageCreateInfo.flags = 0;
 
-	VkMemoryAllocateInfo mem_alloc = {};
-	mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	mem_alloc.pNext = NULL;
-	mem_alloc.allocationSize = 0;
-	mem_alloc.memoryTypeIndex = 0;
+	VkMemoryAllocateInfo memAllocateInfo = {};
+	memAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memAllocateInfo.pNext = NULL;
+	memAllocateInfo.allocationSize = 0;
+	memAllocateInfo.memoryTypeIndex = 0;
 
 	VkImageViewCreateInfo depthStencilView = {};
 	depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	depthStencilView.pNext = NULL;
 	depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	depthStencilView.format = depthFormat;
+	depthStencilView.format = mDepthFormat;
 	depthStencilView.flags = 0;
 	depthStencilView.subresourceRange = {};
 	depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
@@ -1505,11 +1505,11 @@ void VulkanBase::setupDepthStencil()
 
 	VkMemoryRequirements memReqs;
 
-	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &image, nullptr, &depthStencil.image));
+	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &depthStencil.image));
 	vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
-	mem_alloc.allocationSize = memReqs.size;
-	mem_alloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &mem_alloc, nullptr, &depthStencil.mem));
+	memAllocateInfo.allocationSize = memReqs.size;
+	memAllocateInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocateInfo, nullptr, &depthStencil.mem));
 	VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
 
 	depthStencilView.image = depthStencil.image;
@@ -1546,7 +1546,7 @@ void VulkanBase::setupRenderPass()
 {
 	std::array<VkAttachmentDescription, 2> attachments = {};
 	// Color attachment
-	attachments[0].format = colorformat;
+	attachments[0].format = mColorformat;
 	attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
 	attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -1555,7 +1555,7 @@ void VulkanBase::setupRenderPass()
 	attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 	// Depth attachment
-	attachments[1].format = depthFormat;
+	attachments[1].format = mDepthFormat;
 	attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
 	attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -1675,13 +1675,13 @@ void VulkanBase::windowResized()
 void VulkanBase::initSwapchain()
 {
 #if defined(_WIN32)
-	mSwapChain.initSurface(windowInstance, window);
+	mSwapChain.initSurface(mWindowInstance, mHwndWinow);
 #elif defined(__ANDROID__)	
 	mSwapChain.initSurface(androidApp->window);
 #elif defined(_DIRECT2DISPLAY)
 	mSwapChain.initSurface(width, height);
 #elif defined(__linux__)
-	mSwapChain.initSurface(connection, window);
+	mSwapChain.initSurface(connection, mHwndWinow);
 #endif
 }
 

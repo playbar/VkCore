@@ -34,16 +34,8 @@ public:
 		uint32_t count;
 	} mIndices;
 
-	// Uniform block object
-	struct
-	{
-		VkDeviceMemory memory;
-		VkBuffer buffer;
-		VkDescriptorBufferInfo descriptor;
-	}  mUniformDataVS;
 
 	// For simplicity we use the same uniform block layout as in the shader:
-	//
 	//	layout(set = 0, binding = 0) uniform UBO
 	//	{
 	//		mat4 projectionMatrix;
@@ -59,6 +51,14 @@ public:
 		glm::mat4 modelMatrix;
 		glm::mat4 viewMatrix;
 	} mUboVS;
+
+	// Uniform block object
+	struct
+	{
+		VkDeviceMemory memory;
+		VkBuffer buffer;
+		VkDescriptorBufferInfo descriptor;
+	}  mUniformDataVS;
 
 	// The pipeline layout is used by a pipline to access the descriptor sets 
 	// It defines interface (without binding any actual data) between the shader stages used by the pipeline and the shader resources
@@ -640,7 +640,7 @@ public:
 		VkImageCreateInfo image = {};
 		image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		image.imageType = VK_IMAGE_TYPE_2D;
-		image.format = depthFormat;
+		image.format = mDepthFormat;
 		// Use example's height and width
 		image.extent = { width, height, 1 };
 		image.mipLevels = 1;
@@ -667,7 +667,7 @@ public:
 		VkImageViewCreateInfo depthStencilView = {};
 		depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		depthStencilView.format = depthFormat;
+		depthStencilView.format = mDepthFormat;
 		depthStencilView.subresourceRange = {};
 		depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 		depthStencilView.subresourceRange.baseMipLevel = 0;
@@ -717,7 +717,7 @@ public:
 		std::array<VkAttachmentDescription, 2> attachments = {};
 
 		// Color attachment
-		attachments[0].format = colorformat;
+		attachments[0].format = mColorformat;
 		attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;									// We don't use multi sampling in this example
 		attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;							// Clear this attachment at the start of the render pass
 		attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;							// Keep it's contents after the render pass is finished (for displaying it)
@@ -727,7 +727,7 @@ public:
 		attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;					// Layout to which the attachment is transitioned when the render pass is finished
 																						// As we want to present the color buffer to the swapchain, we transition to PRESENT_KHR	
 																						// Depth attachment
-		attachments[1].format = depthFormat;
+		attachments[1].format = mDepthFormat;
 		attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
 		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;							// Clear depth at start of first subpass
 		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;						// We don't need depth after render pass has finished (DONT_CARE may result in better performance)
