@@ -4,7 +4,7 @@
 
 
 #define ENABLE_VALIDATION true
-#define USE_STAGING false
+#define USE_STAGING true
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -802,12 +802,6 @@ public:
 		subpassDescription.pPreserveAttachments = nullptr;								// (Preserve attachments not used by this example)
 		subpassDescription.pResolveAttachments = nullptr;								// Resolve attachments are resolved at the end of a sub pass and can be used for e.g. multi sampling
 
-																						// Setup subpass dependencies
-																						// These will add the implicit ttachment layout transitionss specified by the attachment descriptions
-																						// The actual usage layout is preserved through the layout specified in the attachment reference		
-																						// Each subpass dependency will introduce a memory and execution dependency between the source and dest subpass described by
-																						// srcStageMask, dstStageMask, srcAccessMask, dstAccessMask (and dependencyFlags is set)
-																						// Note: VK_SUBPASS_EXTERNAL is a special constant that refers to all commands executed outside of the actual renderpass)
 		std::array<VkSubpassDependency, 2> dependencies;
 
 		// First dependency at the start of the renderpass

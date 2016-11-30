@@ -5,9 +5,9 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mytest", "mytest\mytest.vcxproj", "{7CAA1FD5-62CB-4069-A627-3803A906B045}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vkcore", "base\vkcore.vcxproj", "{1032BA4B-57EB-4348-9E03-29DD63E80E4A}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Example", "example\Example.vcxproj", "{3E6755A8-7370-4449-A8B7-4FCDCABD242C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vkcore", "vkcore\vkcore.vcxproj", "{1032BA4B-57EB-4348-9E03-29DD63E80E4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,18 +22,18 @@ Global
 		{7CAA1FD5-62CB-4069-A627-3803A906B045}.DebugMem|x64.Build.0 = Debug|x64
 		{7CAA1FD5-62CB-4069-A627-3803A906B045}.Release|x64.ActiveCfg = Release|x64
 		{7CAA1FD5-62CB-4069-A627-3803A906B045}.Release|x64.Build.0 = Release|x64
-		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.Debug|x64.ActiveCfg = Debug|x64
-		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.Debug|x64.Build.0 = Debug|x64
-		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.DebugMem|x64.ActiveCfg = DebugMem|x64
-		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.DebugMem|x64.Build.0 = DebugMem|x64
-		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.Release|x64.ActiveCfg = Release|x64
-		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.Release|x64.Build.0 = Release|x64
 		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.Debug|x64.ActiveCfg = Debug|x64
 		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.Debug|x64.Build.0 = Debug|x64
 		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.DebugMem|x64.ActiveCfg = Debug|x64
 		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.DebugMem|x64.Build.0 = Debug|x64
 		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.Release|x64.ActiveCfg = Release|x64
 		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.Release|x64.Build.0 = Release|x64
+		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.Debug|x64.ActiveCfg = Debug|x64
+		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.Debug|x64.Build.0 = Debug|x64
+		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.DebugMem|x64.ActiveCfg = DebugMem|x64
+		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.DebugMem|x64.Build.0 = DebugMem|x64
+		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.Release|x64.ActiveCfg = Release|x64
+		{1032BA4B-57EB-4348-9E03-29DD63E80E4A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
