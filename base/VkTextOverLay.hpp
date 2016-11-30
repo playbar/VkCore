@@ -568,7 +568,7 @@ public:
 		{
 		case KEY_KPADD:
 		case KEY_SPACE:
-			mTextOverlay->visible = !mTextOverlay->visible;
+			mTextOverlay->mVisible = !mTextOverlay->mVisible;
 		}
 	}
 };

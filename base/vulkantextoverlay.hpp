@@ -38,42 +38,42 @@ private:
 
 	VkQueue mQueue;
 	VkFormat mColorFormat;
-	VkFormat depthFormat;
+	VkFormat mDepthFormat;
 
-	uint32_t *frameBufferWidth;
-	uint32_t *frameBufferHeight;
+	uint32_t *mFrameBufferWidth;
+	uint32_t *mFrameBufferHeight;
 
-	VkSampler sampler;
-	VkImage image;
-	VkImageView view;
-	vk::Buffer vertexBuffer;
-	VkDeviceMemory imageMemory;
-	VkDescriptorPool descriptorPool;
-	VkDescriptorSetLayout descriptorSetLayout;
-	VkDescriptorSet descriptorSet;
-	VkPipelineLayout pipelineLayout;
-	VkPipelineCache pipelineCache;
-	VkPipeline pipeline;
-	VkRenderPass renderPass;
-	VkCommandPool commandPool;
-	std::vector<VkFramebuffer*> frameBuffers;
-	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-	VkFence fence;
+	VkSampler mSampler;
+	VkImage mImage;
+	VkImageView mImageView;
+	vk::Buffer mVertexBuffer;
+	VkDeviceMemory mImageMemory;
+	VkDescriptorPool mDescriptorPool;
+	VkDescriptorSetLayout mDescriptorSetLayout;
+	VkDescriptorSet mDescriptorSet;
+	VkPipelineLayout mPipelineLayout;
+	VkPipelineCache mPipelineCache;
+	VkPipeline mPipeline;
+	VkRenderPass mRenderPass;
+	VkCommandPool mCommandPool;
+	std::vector<VkFramebuffer*> mFrameBuffers;
+	std::vector<VkPipelineShaderStageCreateInfo> mShaderStages;
+	VkFence mFence;
 
 	// Used during text updates
-	glm::vec4 *mappedLocal = nullptr;
+	glm::vec4 *mMappedLocal = nullptr;
 
-	stb_fontchar stbFontData[STB_NUM_CHARS];
-	uint32_t numLetters;
+	stb_fontchar mStbFontData[STB_NUM_CHARS];
+	uint32_t mNumLetters;
 
 public:
 
 	enum TextAlign { alignLeft, alignCenter, alignRight };
 
-	bool visible = true;
-	bool invalidated = false;
+	bool mVisible = true;
+	bool mInvalidated = false;
 
-	std::vector<VkCommandBuffer> cmdBuffers;
+	std::vector<VkCommandBuffer> mCmdBuffers;
 
 	/**
 	* Default constructor

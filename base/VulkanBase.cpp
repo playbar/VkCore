@@ -631,7 +631,7 @@ void VulkanBase::prepareFrame()
 
 void VulkanBase::submitFrame()
 {
-	bool submitTextOverlay = mEnableTextOverlay && mTextOverlay->visible;
+	bool submitTextOverlay = mEnableTextOverlay && mTextOverlay->mVisible;
 
 	if (submitTextOverlay)
 	{
@@ -649,7 +649,7 @@ void VulkanBase::submitFrame()
 
 		// Submit current text overlay command buffer
 		mSubmitInfo.commandBufferCount = 1;
-		mSubmitInfo.pCommandBuffers = &mTextOverlay->cmdBuffers[mCurrentBuffer];
+		mSubmitInfo.pCommandBuffers = &mTextOverlay->mCmdBuffers[mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
 		// Reset stage mask
@@ -1018,7 +1018,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case KEY_F1:
 			if (mEnableTextOverlay)
 			{
-				mTextOverlay->visible = !mTextOverlay->visible;
+				mTextOverlay->mVisible = !mTextOverlay->mVisible;
 			}
 			break;
 		case KEY_ESCAPE:
@@ -1392,7 +1392,7 @@ void VulkanBase::handleEvent(const xcb_generic_event_t *event)
 			case KEY_F1:
 				if (mEnableTextOverlay)
 				{
-					mTextOverlay->visible = !mTextOverlay->visible;
+					mTextOverlay->mVisible = !mTextOverlay->mVisible;
 				}
 				break;				
 		}
