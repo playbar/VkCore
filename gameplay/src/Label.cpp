@@ -1,7 +1,7 @@
 #include "Base.h"
 #include "Label.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Label::Label() : _text(""), _font(NULL)

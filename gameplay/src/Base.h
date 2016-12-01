@@ -56,7 +56,7 @@ using std::atoi;
 #define NULL     0
 #endif
 
-namespace gameplay
+namespace vkcore
 {
 /**
  * Print logging (implemented per platform).
@@ -94,9 +94,9 @@ extern int strcmpnocase(const char* s1, const char* s2);
 #else
 #define GP_ERROR(...) do \
     { \
-        gameplay::Logger::log(gameplay::Logger::LEVEL_ERROR, "%s -- ", __current__func__); \
-        gameplay::Logger::log(gameplay::Logger::LEVEL_ERROR, __VA_ARGS__); \
-        gameplay::Logger::log(gameplay::Logger::LEVEL_ERROR, "\n"); \
+        vkcore::Logger::log(vkcore::Logger::LEVEL_ERROR, "%s -- ", __current__func__); \
+        vkcore::Logger::log(vkcore::Logger::LEVEL_ERROR, __VA_ARGS__); \
+        vkcore::Logger::log(vkcore::Logger::LEVEL_ERROR, "\n"); \
         DEBUG_BREAK(); \
         assert(0); \
         std::exit(-1); \
@@ -106,9 +106,9 @@ extern int strcmpnocase(const char* s1, const char* s2);
 // Warning macro.
 #define GP_WARN(...) do \
     { \
-        gameplay::Logger::log(gameplay::Logger::LEVEL_WARN, "%s -- ", __current__func__); \
-        gameplay::Logger::log(gameplay::Logger::LEVEL_WARN, __VA_ARGS__); \
-        gameplay::Logger::log(gameplay::Logger::LEVEL_WARN, "\n"); \
+        vkcore::Logger::log(vkcore::Logger::LEVEL_WARN, "%s -- ", __current__func__); \
+        vkcore::Logger::log(vkcore::Logger::LEVEL_WARN, __VA_ARGS__); \
+        vkcore::Logger::log(vkcore::Logger::LEVEL_WARN, "\n"); \
     } while (0)
 
 #if defined(WIN32)
@@ -274,7 +274,7 @@ using std::va_list;
 #define VERTEX_ATTRIBUTE_TEXCOORD_PREFIX_NAME       "a_texCoord"
 
 // Hardware buffer
-namespace gameplay
+namespace vkcore
 {
 /** Vertex attribute. */
 typedef GLint VertexAttribute;

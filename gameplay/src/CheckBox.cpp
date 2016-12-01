@@ -2,7 +2,7 @@
 #include "CheckBox.h"
 #include "Game.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 CheckBox::CheckBox() : _checked(false), _image(NULL)

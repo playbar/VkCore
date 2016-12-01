@@ -2,7 +2,7 @@
 #include "Button.h"
 #include "Gamepad.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Button::Button() : _dataBinding(0)

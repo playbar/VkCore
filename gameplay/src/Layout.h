@@ -5,7 +5,7 @@
 #include "Touch.h"
 #include "Vector2.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class Container;

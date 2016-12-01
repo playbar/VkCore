@@ -3,7 +3,7 @@
 
 #include "Animation.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 /**

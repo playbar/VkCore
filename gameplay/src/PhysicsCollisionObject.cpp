@@ -10,7 +10,7 @@
 #include "PhysicsVehicle.h"
 #include "PhysicsVehicleWheel.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 extern void splitURL(const std::string& url, std::string* file, std::string* id);

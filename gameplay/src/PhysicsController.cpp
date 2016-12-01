@@ -19,7 +19,7 @@
 // The initial capacity of the Bullet debug drawer's vertex batch.
 #define INITIAL_CAPACITY 280
 
-namespace gameplay
+namespace vkcore
 {
 
 const int PhysicsController::DIRTY         = 0x01;

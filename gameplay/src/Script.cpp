@@ -1,7 +1,7 @@
 #include "Script.h"
 #include "ScriptController.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Script::Script() : _scope(GLOBAL), _env(0)

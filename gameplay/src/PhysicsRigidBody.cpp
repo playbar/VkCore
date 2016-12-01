@@ -7,7 +7,7 @@
 #include "Node.h"
 #include "Terrain.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 PhysicsRigidBody::PhysicsRigidBody(Node* node, const PhysicsCollisionShape::Definition& shape, const Parameters& parameters, int group, int mask)

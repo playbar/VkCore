@@ -4,7 +4,7 @@
 #include "AIMessage.h"
 #include "Game.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 AIStateMachine::AIStateMachine(AIAgent* agent)

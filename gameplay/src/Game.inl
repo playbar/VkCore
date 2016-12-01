@@ -1,7 +1,7 @@
 #include "Game.h"
 #include "Platform.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 inline Game::State Game::getState() const

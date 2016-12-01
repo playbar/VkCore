@@ -7,7 +7,7 @@
 #include "Rectangle.h"
 #include "Properties.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class Node;

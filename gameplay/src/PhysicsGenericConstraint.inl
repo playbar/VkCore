@@ -1,6 +1,6 @@
 #include "PhysicsGenericConstraint.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 inline const Quaternion& PhysicsGenericConstraint::getRotationOffsetA() const

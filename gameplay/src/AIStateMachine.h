@@ -3,7 +3,7 @@
 
 #include "AIState.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class AIAgent;

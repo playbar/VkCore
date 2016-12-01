@@ -1,7 +1,7 @@
 #include "Base.h"
 #include "Vector2.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Vector2::Vector2()

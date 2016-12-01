@@ -1,6 +1,6 @@
 #include "Plane.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 inline Plane& Plane::operator*=(const Matrix& matrix)

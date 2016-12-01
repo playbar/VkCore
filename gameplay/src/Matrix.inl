@@ -1,6 +1,6 @@
 #include "Matrix.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 inline const Matrix Matrix::operator+(const Matrix& m) const

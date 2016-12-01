@@ -7,7 +7,7 @@
 #include "HeightField.h"
 #include "Terrain.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 PhysicsCollisionShape::PhysicsCollisionShape(Type type, btCollisionShape* shape, btStridingMeshInterface* meshInterface)

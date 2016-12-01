@@ -6,7 +6,7 @@
 #include "Material.h"
 #include "Drawable.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class Bundle;

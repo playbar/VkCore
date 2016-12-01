@@ -1,7 +1,7 @@
 #include "Base.h"
 #include "VertexFormat.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 VertexFormat::VertexFormat(const Element* elements, unsigned int elementCount)

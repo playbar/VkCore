@@ -1,6 +1,6 @@
 #include "BoundingSphere.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 inline BoundingSphere& BoundingSphere::operator*=(const Matrix& matrix)

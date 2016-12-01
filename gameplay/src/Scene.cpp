@@ -7,7 +7,7 @@
 #include "Terrain.h"
 #include "Bundle.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 // Global list of active scenes

@@ -3,7 +3,7 @@
 #include "MeshSkin.h"
 #include "Model.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Joint::Joint(const char* id)

@@ -6,7 +6,7 @@
 #include "Form.h"
 #include "JoystickControl.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 static std::vector<Gamepad*> __gamepads;

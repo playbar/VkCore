@@ -1,6 +1,6 @@
 #include "Image.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 inline unsigned char* Image::getData() const

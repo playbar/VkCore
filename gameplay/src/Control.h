@@ -12,7 +12,7 @@
 #include "ScriptTarget.h"
 #include "Gamepad.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class Container;

@@ -7,7 +7,7 @@
 #include "BoundingBox.h"
 #include "BoundingSphere.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class MeshPart;

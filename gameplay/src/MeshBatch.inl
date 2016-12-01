@@ -1,6 +1,6 @@
 #include "MeshBatch.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Material* MeshBatch::getMaterial() const

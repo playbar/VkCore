@@ -3,7 +3,7 @@
 #include "Matrix.h"
 #include "Scene.h"
 
-namespace gameplay
+namespace vkcore
 {
   
 TileSet::TileSet() : Drawable(),

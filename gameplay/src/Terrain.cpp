@@ -4,7 +4,7 @@
 #include "Node.h"
 #include "FileSystem.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 // Default terrain material path

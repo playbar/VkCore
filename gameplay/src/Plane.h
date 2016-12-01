@@ -3,7 +3,7 @@
 
 #include "Matrix.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class BoundingSphere;

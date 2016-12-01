@@ -1,7 +1,7 @@
 #include "Base.h"
 #include "AnimationValue.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 AnimationValue::AnimationValue(unsigned int componentCount)

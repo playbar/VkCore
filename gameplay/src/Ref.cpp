@@ -2,7 +2,7 @@
 #include "Ref.h"
 #include "Game.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 #ifdef GP_USE_MEM_LEAK_DETECTION

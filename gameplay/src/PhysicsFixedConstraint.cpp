@@ -1,7 +1,7 @@
 #include "Base.h"
 #include "PhysicsFixedConstraint.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 PhysicsFixedConstraint::PhysicsFixedConstraint(PhysicsRigidBody* a, PhysicsRigidBody* b)

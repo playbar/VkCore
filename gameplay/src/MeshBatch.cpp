@@ -2,7 +2,7 @@
 #include "MeshBatch.h"
 #include "Material.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 MeshBatch::MeshBatch(const VertexFormat& vertexFormat, Mesh::PrimitiveType primitiveType, Material* material, bool indexed, unsigned int initialCapacity, unsigned int growSize)

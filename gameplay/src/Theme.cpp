@@ -4,7 +4,7 @@
 #include "Game.h"
 #include "FileSystem.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 static std::vector<Theme*> __themeCache;

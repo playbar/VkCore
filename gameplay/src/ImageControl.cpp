@@ -1,7 +1,7 @@
 #include "Base.h"
 #include "ImageControl.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 ImageControl::ImageControl() :

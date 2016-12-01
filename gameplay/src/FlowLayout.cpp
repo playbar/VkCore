@@ -3,7 +3,7 @@
 #include "FlowLayout.h"
 #include "Container.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 static FlowLayout* __instance;

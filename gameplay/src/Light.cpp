@@ -2,7 +2,7 @@
 #include "Light.h"
 #include "Node.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Light::Light(Light::Type type, const Vector3& color) :

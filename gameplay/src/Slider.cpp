@@ -1,7 +1,7 @@
 #include "Slider.h"
 #include "Game.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 // Fraction of slider to scroll when mouse scrollwheel is used.

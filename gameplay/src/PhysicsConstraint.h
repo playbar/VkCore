@@ -4,7 +4,7 @@
 #include "Base.h"
 #include "Vector3.h"
 
-namespace gameplay
+namespace vkcore
 {
     class PhysicsRigidBody;
     class Node;

@@ -5,7 +5,7 @@
 #include "Mesh.h"
 #include "HeightField.h"
 
-namespace gameplay
+namespace vkcore
 {
     class Node;
     class Properties;

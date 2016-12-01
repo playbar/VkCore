@@ -4,7 +4,7 @@
 #include "Material.h"
 #include "Node.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Pass::Pass(const char* id, Technique* technique) :

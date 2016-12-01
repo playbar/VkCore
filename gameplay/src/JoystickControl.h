@@ -3,7 +3,7 @@
 
 #include "Control.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 /**

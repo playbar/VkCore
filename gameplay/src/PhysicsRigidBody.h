@@ -7,7 +7,7 @@
 #include "Vector3.h"
 #include "PhysicsCollisionObject.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class Node;

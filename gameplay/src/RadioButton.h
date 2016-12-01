@@ -5,7 +5,7 @@
 #include "Theme.h"
 #include "Properties.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 /**
@@ -14,8 +14,6 @@ namespace gameplay
  * Radio buttons can be toggled between two states.
  * A radio button can belong to a group, and only one radio button
  * from a group can be selected at one time.
- *
- * @see http://gameplay3d.github.io/GamePlay/docs/file-formats.html#wiki-UI_Forms
  */
 class RadioButton : public Button
 {

@@ -10,7 +10,7 @@
 #include "JoystickControl.h"
 #include "ImageControl.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 static ControlFactory* __controlFactory = NULL;

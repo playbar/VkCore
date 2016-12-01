@@ -1,7 +1,7 @@
 #include "Vector3.h"
 #include "Matrix.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 inline const Vector3 Vector3::operator+(const Vector3& v) const

@@ -1,7 +1,7 @@
 #include "Base.h"
 #include "MeshPart.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 MeshPart::MeshPart() :

@@ -5,7 +5,7 @@
 #include "Scene.h"
 #include "Game.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 /**

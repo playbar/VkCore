@@ -6,7 +6,7 @@
 #include "Pass.h"
 #include "Node.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Model::Model() : Drawable(),

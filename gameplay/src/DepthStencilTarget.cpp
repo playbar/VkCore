@@ -8,7 +8,7 @@
 #define GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24_OES
 #endif
 
-namespace gameplay
+namespace vkcore
 {
 
 static std::vector<DepthStencilTarget*> __depthStencilTargets;

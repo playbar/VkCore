@@ -12,7 +12,7 @@
 #include "HeightField.h"
 #include "ScriptTarget.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class ScriptListener;

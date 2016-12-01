@@ -8,7 +8,7 @@
 #include "Matrix.h"
 #include "Texture.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 class Uniform;

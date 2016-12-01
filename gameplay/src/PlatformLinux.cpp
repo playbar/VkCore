@@ -75,7 +75,7 @@ struct GamepadInfoEntry
 struct ConnectedGamepadDevInfo
 {
     dev_t deviceId;
-    gameplay::GamepadHandle fd;
+    vkcore::GamepadHandle fd;
     const GamepadInfoEntry& gamepadInfo;
 };
 
@@ -95,438 +95,438 @@ static GLXContext __context;
 static Atom __atomWmDeleteWindow;
 static list<ConnectedGamepadDevInfo> __connectedGamepads;
 
-// Gets the gameplay::Keyboard::Key enumeration constant that corresponds to the given X11 key symbol.
-static gameplay::Keyboard::Key getKey(KeySym sym)
+// Gets the vkcore::Keyboard::Key enumeration constant that corresponds to the given X11 key symbol.
+static vkcore::Keyboard::Key getKey(KeySym sym)
 {
     switch (sym)
     {
         case XK_Sys_Req:
-            return gameplay::Keyboard::KEY_SYSREQ;
+            return vkcore::Keyboard::KEY_SYSREQ;
         case XK_Break:
-            return gameplay::Keyboard::KEY_BREAK;
+            return vkcore::Keyboard::KEY_BREAK;
         case XK_Menu :
-            return gameplay::Keyboard::KEY_MENU;
+            return vkcore::Keyboard::KEY_MENU;
         case XK_KP_Enter:
-            return gameplay::Keyboard::KEY_KP_ENTER;
+            return vkcore::Keyboard::KEY_KP_ENTER;
         case XK_Pause:
-            return gameplay::Keyboard::KEY_PAUSE;
+            return vkcore::Keyboard::KEY_PAUSE;
         case XK_Scroll_Lock:
-            return gameplay::Keyboard::KEY_SCROLL_LOCK;
+            return vkcore::Keyboard::KEY_SCROLL_LOCK;
         case XK_Print:
-            return gameplay::Keyboard::KEY_PRINT;
+            return vkcore::Keyboard::KEY_PRINT;
         case XK_Escape:
-            return gameplay::Keyboard::KEY_ESCAPE;
+            return vkcore::Keyboard::KEY_ESCAPE;
         case XK_BackSpace:
-            return gameplay::Keyboard::KEY_BACKSPACE;
+            return vkcore::Keyboard::KEY_BACKSPACE;
         case XK_Tab:
-            return gameplay::Keyboard::KEY_TAB;
+            return vkcore::Keyboard::KEY_TAB;
         case XK_Return:
-            return gameplay::Keyboard::KEY_RETURN;
+            return vkcore::Keyboard::KEY_RETURN;
         case XK_Caps_Lock:
-            return gameplay::Keyboard::KEY_CAPS_LOCK;
+            return vkcore::Keyboard::KEY_CAPS_LOCK;
         case XK_Shift_L:
         case XK_Shift_R:
-            return gameplay::Keyboard::KEY_SHIFT;
+            return vkcore::Keyboard::KEY_SHIFT;
         case XK_Control_L:
         case XK_Control_R:
-            return gameplay::Keyboard::KEY_CTRL;
+            return vkcore::Keyboard::KEY_CTRL;
         case XK_Alt_L:
         case XK_Alt_R:
-            return gameplay::Keyboard::KEY_ALT;
+            return vkcore::Keyboard::KEY_ALT;
         case XK_Hyper_L:
         case XK_Hyper_R:
-            return gameplay::Keyboard::KEY_HYPER;
+            return vkcore::Keyboard::KEY_HYPER;
         case XK_Insert:
-            return gameplay::Keyboard::KEY_INSERT;
+            return vkcore::Keyboard::KEY_INSERT;
         case XK_Home:
-            return gameplay::Keyboard::KEY_HOME;
+            return vkcore::Keyboard::KEY_HOME;
         case XK_Page_Up:
-            return gameplay::Keyboard::KEY_PG_UP;
+            return vkcore::Keyboard::KEY_PG_UP;
         case XK_Delete:
-            return gameplay::Keyboard::KEY_DELETE;
+            return vkcore::Keyboard::KEY_DELETE;
         case XK_End:
-            return gameplay::Keyboard::KEY_END;
+            return vkcore::Keyboard::KEY_END;
         case XK_Page_Down:
-            return gameplay::Keyboard::KEY_PG_DOWN;
+            return vkcore::Keyboard::KEY_PG_DOWN;
         case XK_Left:
-            return gameplay::Keyboard::KEY_LEFT_ARROW;
+            return vkcore::Keyboard::KEY_LEFT_ARROW;
         case XK_Right:
-            return gameplay::Keyboard::KEY_RIGHT_ARROW;
+            return vkcore::Keyboard::KEY_RIGHT_ARROW;
         case XK_Up:
-            return gameplay::Keyboard::KEY_UP_ARROW;
+            return vkcore::Keyboard::KEY_UP_ARROW;
         case XK_Down:
-            return gameplay::Keyboard::KEY_DOWN_ARROW;
+            return vkcore::Keyboard::KEY_DOWN_ARROW;
         case XK_Num_Lock:
-            return gameplay::Keyboard::KEY_NUM_LOCK;
+            return vkcore::Keyboard::KEY_NUM_LOCK;
         case XK_KP_Add:
-            return gameplay::Keyboard::KEY_KP_PLUS;
+            return vkcore::Keyboard::KEY_KP_PLUS;
         case XK_KP_Subtract:
-            return gameplay::Keyboard::KEY_KP_MINUS;
+            return vkcore::Keyboard::KEY_KP_MINUS;
         case XK_KP_Multiply:
-            return gameplay::Keyboard::KEY_KP_MULTIPLY;
+            return vkcore::Keyboard::KEY_KP_MULTIPLY;
         case XK_KP_Divide:
-            return gameplay::Keyboard::KEY_KP_DIVIDE;
+            return vkcore::Keyboard::KEY_KP_DIVIDE;
         case XK_KP_Home:
-            return gameplay::Keyboard::KEY_KP_HOME;
+            return vkcore::Keyboard::KEY_KP_HOME;
         case XK_KP_Up:
-            return gameplay::Keyboard::KEY_KP_UP;
+            return vkcore::Keyboard::KEY_KP_UP;
         case XK_KP_Page_Up:
-            return gameplay::Keyboard::KEY_KP_PG_UP;
+            return vkcore::Keyboard::KEY_KP_PG_UP;
         case XK_KP_Left:
-            return gameplay::Keyboard::KEY_KP_LEFT;
+            return vkcore::Keyboard::KEY_KP_LEFT;
         case XK_KP_5:
-            return gameplay::Keyboard::KEY_KP_FIVE;
+            return vkcore::Keyboard::KEY_KP_FIVE;
         case XK_KP_Right:
-            return gameplay::Keyboard::KEY_KP_RIGHT;
+            return vkcore::Keyboard::KEY_KP_RIGHT;
         case XK_KP_End:
-            return gameplay::Keyboard::KEY_KP_END;
+            return vkcore::Keyboard::KEY_KP_END;
         case XK_KP_Down:
-            return gameplay::Keyboard::KEY_KP_DOWN;
+            return vkcore::Keyboard::KEY_KP_DOWN;
         case XK_KP_Page_Down:
-            return gameplay::Keyboard::KEY_KP_PG_DOWN;
+            return vkcore::Keyboard::KEY_KP_PG_DOWN;
         case XK_KP_Insert:
-            return gameplay::Keyboard::KEY_KP_INSERT;
+            return vkcore::Keyboard::KEY_KP_INSERT;
         case XK_KP_Delete:
-            return gameplay::Keyboard::KEY_KP_DELETE;
+            return vkcore::Keyboard::KEY_KP_DELETE;
         case XK_F1:
-            return gameplay::Keyboard::KEY_F1;
+            return vkcore::Keyboard::KEY_F1;
         case XK_F2:
-            return gameplay::Keyboard::KEY_F2;
+            return vkcore::Keyboard::KEY_F2;
         case XK_F3:
-            return gameplay::Keyboard::KEY_F3;
+            return vkcore::Keyboard::KEY_F3;
         case XK_F4:
-            return gameplay::Keyboard::KEY_F4;
+            return vkcore::Keyboard::KEY_F4;
         case XK_F5:
-            return gameplay::Keyboard::KEY_F5;
+            return vkcore::Keyboard::KEY_F5;
         case XK_F6:
-            return gameplay::Keyboard::KEY_F6;
+            return vkcore::Keyboard::KEY_F6;
         case XK_F7:
-            return gameplay::Keyboard::KEY_F7;
+            return vkcore::Keyboard::KEY_F7;
         case XK_F8:
-            return gameplay::Keyboard::KEY_F8;
+            return vkcore::Keyboard::KEY_F8;
         case XK_F9:
-            return gameplay::Keyboard::KEY_F9;
+            return vkcore::Keyboard::KEY_F9;
         case XK_F10:
-            return gameplay::Keyboard::KEY_F10;
+            return vkcore::Keyboard::KEY_F10;
         case XK_F11:
-            return gameplay::Keyboard::KEY_F11;
+            return vkcore::Keyboard::KEY_F11;
         case XK_F12:
-            return gameplay::Keyboard::KEY_F12;
+            return vkcore::Keyboard::KEY_F12;
         case XK_KP_Space:
         case XK_space:
-            return gameplay::Keyboard::KEY_SPACE;
+            return vkcore::Keyboard::KEY_SPACE;
         case XK_parenright:
-            return gameplay::Keyboard::KEY_RIGHT_PARENTHESIS;
+            return vkcore::Keyboard::KEY_RIGHT_PARENTHESIS;
         case XK_0:
-            return gameplay::Keyboard::KEY_ZERO;
+            return vkcore::Keyboard::KEY_ZERO;
         case XK_exclam:
-            return gameplay::Keyboard::KEY_EXCLAM;
+            return vkcore::Keyboard::KEY_EXCLAM;
         case XK_1:
-            return gameplay::Keyboard::KEY_ONE;
+            return vkcore::Keyboard::KEY_ONE;
         case XK_at:
-            return gameplay::Keyboard::KEY_AT;
+            return vkcore::Keyboard::KEY_AT;
         case XK_2:
-            return gameplay::Keyboard::KEY_TWO;
+            return vkcore::Keyboard::KEY_TWO;
         case XK_numbersign:
-            return gameplay::Keyboard::KEY_NUMBER;
+            return vkcore::Keyboard::KEY_NUMBER;
         case XK_3:
-            return gameplay::Keyboard::KEY_THREE;
+            return vkcore::Keyboard::KEY_THREE;
         case XK_dollar:
-            return gameplay::Keyboard::KEY_DOLLAR;
+            return vkcore::Keyboard::KEY_DOLLAR;
         case XK_4:
-            return gameplay::Keyboard::KEY_FOUR;
+            return vkcore::Keyboard::KEY_FOUR;
         case XK_percent:
         case XK_asciicircum :
-            return gameplay::Keyboard::KEY_CIRCUMFLEX;
-            return gameplay::Keyboard::KEY_PERCENT;
+            return vkcore::Keyboard::KEY_CIRCUMFLEX;
+            return vkcore::Keyboard::KEY_PERCENT;
         case XK_5:
-            return gameplay::Keyboard::KEY_FIVE;
+            return vkcore::Keyboard::KEY_FIVE;
         case XK_6:
-            return gameplay::Keyboard::KEY_SIX;
+            return vkcore::Keyboard::KEY_SIX;
         case XK_ampersand:
-            return gameplay::Keyboard::KEY_AMPERSAND;
+            return vkcore::Keyboard::KEY_AMPERSAND;
         case XK_7:
-            return gameplay::Keyboard::KEY_SEVEN;
+            return vkcore::Keyboard::KEY_SEVEN;
         case XK_asterisk:
-            return gameplay::Keyboard::KEY_ASTERISK;
+            return vkcore::Keyboard::KEY_ASTERISK;
         case XK_8:
-            return gameplay::Keyboard::KEY_EIGHT;
+            return vkcore::Keyboard::KEY_EIGHT;
         case XK_parenleft:
-            return gameplay::Keyboard::KEY_LEFT_PARENTHESIS;
+            return vkcore::Keyboard::KEY_LEFT_PARENTHESIS;
         case XK_9:
-            return gameplay::Keyboard::KEY_NINE;
+            return vkcore::Keyboard::KEY_NINE;
         case XK_equal:
-            return gameplay::Keyboard::KEY_EQUAL;
+            return vkcore::Keyboard::KEY_EQUAL;
         case XK_plus:
-            return gameplay::Keyboard::KEY_PLUS;
+            return vkcore::Keyboard::KEY_PLUS;
         case XK_less:
-            return gameplay::Keyboard::KEY_LESS_THAN;
+            return vkcore::Keyboard::KEY_LESS_THAN;
         case XK_comma:
-            return gameplay::Keyboard::KEY_COMMA;
+            return vkcore::Keyboard::KEY_COMMA;
         case XK_underscore:
-            return gameplay::Keyboard::KEY_UNDERSCORE;
+            return vkcore::Keyboard::KEY_UNDERSCORE;
         case XK_minus:
-            return gameplay::Keyboard::KEY_MINUS;
+            return vkcore::Keyboard::KEY_MINUS;
         case XK_greater:
-            return gameplay::Keyboard::KEY_GREATER_THAN;
+            return vkcore::Keyboard::KEY_GREATER_THAN;
         case XK_period:
-            return gameplay::Keyboard::KEY_PERIOD;
+            return vkcore::Keyboard::KEY_PERIOD;
         case XK_colon:
-            return gameplay::Keyboard::KEY_COLON;
+            return vkcore::Keyboard::KEY_COLON;
         case XK_semicolon:
-            return gameplay::Keyboard::KEY_SEMICOLON;
+            return vkcore::Keyboard::KEY_SEMICOLON;
         case XK_question:
-            return gameplay::Keyboard::KEY_QUESTION;
+            return vkcore::Keyboard::KEY_QUESTION;
         case XK_slash:
-            return gameplay::Keyboard::KEY_SLASH;
+            return vkcore::Keyboard::KEY_SLASH;
         case XK_grave:
-            return gameplay::Keyboard::KEY_GRAVE;
+            return vkcore::Keyboard::KEY_GRAVE;
         case XK_asciitilde:
-            return gameplay::Keyboard::KEY_TILDE;
+            return vkcore::Keyboard::KEY_TILDE;
         case XK_braceleft:
-            return gameplay::Keyboard::KEY_LEFT_BRACE;
+            return vkcore::Keyboard::KEY_LEFT_BRACE;
         case XK_bracketleft:
-            return gameplay::Keyboard::KEY_LEFT_BRACKET;
+            return vkcore::Keyboard::KEY_LEFT_BRACKET;
         case XK_bar:
-            return gameplay::Keyboard::KEY_BAR;
+            return vkcore::Keyboard::KEY_BAR;
         case XK_backslash:
-            return gameplay::Keyboard::KEY_BACK_SLASH;
+            return vkcore::Keyboard::KEY_BACK_SLASH;
         case XK_braceright:
-            return gameplay::Keyboard::KEY_RIGHT_BRACE;
+            return vkcore::Keyboard::KEY_RIGHT_BRACE;
         case XK_bracketright:
-            return gameplay::Keyboard::KEY_RIGHT_BRACKET;
+            return vkcore::Keyboard::KEY_RIGHT_BRACKET;
         case XK_quotedbl:
-            return gameplay::Keyboard::KEY_QUOTE;
+            return vkcore::Keyboard::KEY_QUOTE;
         case XK_apostrophe:
-            return gameplay::Keyboard::KEY_APOSTROPHE;
+            return vkcore::Keyboard::KEY_APOSTROPHE;
         case XK_EuroSign:
-            return gameplay::Keyboard::KEY_EURO;
+            return vkcore::Keyboard::KEY_EURO;
         case XK_sterling:
-            return gameplay::Keyboard::KEY_POUND;
+            return vkcore::Keyboard::KEY_POUND;
         case XK_yen:
-            return gameplay::Keyboard::KEY_YEN;
+            return vkcore::Keyboard::KEY_YEN;
         case XK_periodcentered:
-            return gameplay::Keyboard::KEY_MIDDLE_DOT;
+            return vkcore::Keyboard::KEY_MIDDLE_DOT;
         case XK_A:
-            return gameplay::Keyboard::KEY_CAPITAL_A;
+            return vkcore::Keyboard::KEY_CAPITAL_A;
         case XK_a:
-            return gameplay::Keyboard::KEY_A;
+            return vkcore::Keyboard::KEY_A;
         case XK_B:
-            return gameplay::Keyboard::KEY_CAPITAL_B;
+            return vkcore::Keyboard::KEY_CAPITAL_B;
         case XK_b:
-            return gameplay::Keyboard::KEY_B;
+            return vkcore::Keyboard::KEY_B;
         case XK_C:
-            return gameplay::Keyboard::KEY_CAPITAL_C;
+            return vkcore::Keyboard::KEY_CAPITAL_C;
         case XK_c:
-            return gameplay::Keyboard::KEY_C;
+            return vkcore::Keyboard::KEY_C;
         case XK_D:
-            return gameplay::Keyboard::KEY_CAPITAL_D;
+            return vkcore::Keyboard::KEY_CAPITAL_D;
         case XK_d:
-            return gameplay::Keyboard::KEY_D;
+            return vkcore::Keyboard::KEY_D;
         case XK_E:
-            return gameplay::Keyboard::KEY_CAPITAL_E;
+            return vkcore::Keyboard::KEY_CAPITAL_E;
         case XK_e:
-            return gameplay::Keyboard::KEY_E;
+            return vkcore::Keyboard::KEY_E;
         case XK_F:
-            return gameplay::Keyboard::KEY_CAPITAL_F;
+            return vkcore::Keyboard::KEY_CAPITAL_F;
         case XK_f:
-            return gameplay::Keyboard::KEY_F;
+            return vkcore::Keyboard::KEY_F;
         case XK_G:
-            return gameplay::Keyboard::KEY_CAPITAL_G;
+            return vkcore::Keyboard::KEY_CAPITAL_G;
         case XK_g:
-            return gameplay::Keyboard::KEY_G;
+            return vkcore::Keyboard::KEY_G;
         case XK_H:
-            return gameplay::Keyboard::KEY_CAPITAL_H;
+            return vkcore::Keyboard::KEY_CAPITAL_H;
         case XK_h:
-            return gameplay::Keyboard::KEY_H;
+            return vkcore::Keyboard::KEY_H;
         case XK_I:
-            return gameplay::Keyboard::KEY_CAPITAL_I;
+            return vkcore::Keyboard::KEY_CAPITAL_I;
         case XK_i:
-            return gameplay::Keyboard::KEY_I;
+            return vkcore::Keyboard::KEY_I;
         case XK_J:
-            return gameplay::Keyboard::KEY_CAPITAL_J;
+            return vkcore::Keyboard::KEY_CAPITAL_J;
         case XK_j:
-            return gameplay::Keyboard::KEY_J;
+            return vkcore::Keyboard::KEY_J;
         case XK_K:
-            return gameplay::Keyboard::KEY_CAPITAL_K;
+            return vkcore::Keyboard::KEY_CAPITAL_K;
         case XK_k:
-            return gameplay::Keyboard::KEY_K;
+            return vkcore::Keyboard::KEY_K;
         case XK_L:
-            return gameplay::Keyboard::KEY_CAPITAL_L;
+            return vkcore::Keyboard::KEY_CAPITAL_L;
         case XK_l:
-            return gameplay::Keyboard::KEY_L;
+            return vkcore::Keyboard::KEY_L;
         case XK_M:
-            return gameplay::Keyboard::KEY_CAPITAL_M;
+            return vkcore::Keyboard::KEY_CAPITAL_M;
         case XK_m:
-            return gameplay::Keyboard::KEY_M;
+            return vkcore::Keyboard::KEY_M;
         case XK_N:
-            return gameplay::Keyboard::KEY_CAPITAL_N;
+            return vkcore::Keyboard::KEY_CAPITAL_N;
         case XK_n:
-            return gameplay::Keyboard::KEY_N;
+            return vkcore::Keyboard::KEY_N;
         case XK_O:
-            return gameplay::Keyboard::KEY_CAPITAL_O;
+            return vkcore::Keyboard::KEY_CAPITAL_O;
         case XK_o:
-            return gameplay::Keyboard::KEY_O;
+            return vkcore::Keyboard::KEY_O;
         case XK_P:
-            return gameplay::Keyboard::KEY_CAPITAL_P;
+            return vkcore::Keyboard::KEY_CAPITAL_P;
         case XK_p:
-            return gameplay::Keyboard::KEY_P;
+            return vkcore::Keyboard::KEY_P;
         case XK_Q:
-            return gameplay::Keyboard::KEY_CAPITAL_Q;
+            return vkcore::Keyboard::KEY_CAPITAL_Q;
         case XK_q:
-            return gameplay::Keyboard::KEY_Q;
+            return vkcore::Keyboard::KEY_Q;
         case XK_R:
-            return gameplay::Keyboard::KEY_CAPITAL_R;
+            return vkcore::Keyboard::KEY_CAPITAL_R;
         case XK_r:
-            return gameplay::Keyboard::KEY_R;
+            return vkcore::Keyboard::KEY_R;
         case XK_S:
-            return gameplay::Keyboard::KEY_CAPITAL_S;
+            return vkcore::Keyboard::KEY_CAPITAL_S;
         case XK_s:
-            return gameplay::Keyboard::KEY_S;
+            return vkcore::Keyboard::KEY_S;
         case XK_T:
-            return gameplay::Keyboard::KEY_CAPITAL_T;
+            return vkcore::Keyboard::KEY_CAPITAL_T;
         case XK_t:
-            return gameplay::Keyboard::KEY_T;
+            return vkcore::Keyboard::KEY_T;
         case XK_U:
-            return gameplay::Keyboard::KEY_CAPITAL_U;
+            return vkcore::Keyboard::KEY_CAPITAL_U;
         case XK_u:
-            return gameplay::Keyboard::KEY_U;
+            return vkcore::Keyboard::KEY_U;
         case XK_V:
-            return gameplay::Keyboard::KEY_CAPITAL_V;
+            return vkcore::Keyboard::KEY_CAPITAL_V;
         case XK_v:
-            return gameplay::Keyboard::KEY_V;
+            return vkcore::Keyboard::KEY_V;
         case XK_W:
-            return gameplay::Keyboard::KEY_CAPITAL_W;
+            return vkcore::Keyboard::KEY_CAPITAL_W;
         case XK_w:
-            return gameplay::Keyboard::KEY_W;
+            return vkcore::Keyboard::KEY_W;
         case XK_X:
-            return gameplay::Keyboard::KEY_CAPITAL_X;
+            return vkcore::Keyboard::KEY_CAPITAL_X;
         case XK_x:
-            return gameplay::Keyboard::KEY_X;
+            return vkcore::Keyboard::KEY_X;
         case XK_Y:
-            return gameplay::Keyboard::KEY_CAPITAL_Y;
+            return vkcore::Keyboard::KEY_CAPITAL_Y;
         case XK_y:
-            return gameplay::Keyboard::KEY_Y;
+            return vkcore::Keyboard::KEY_Y;
         case XK_Z:
-            return gameplay::Keyboard::KEY_CAPITAL_Z;
+            return vkcore::Keyboard::KEY_CAPITAL_Z;
         case XK_z:
-            return gameplay::Keyboard::KEY_Z;
+            return vkcore::Keyboard::KEY_Z;
         default:
-            return gameplay::Keyboard::KEY_NONE;
+            return vkcore::Keyboard::KEY_NONE;
     }
 }
 
 /**
  * Returns the unicode value for the given keycode or zero if the key is not a valid printable character.
  */
-static int getUnicode(gameplay::Keyboard::Key key)
+static int getUnicode(vkcore::Keyboard::Key key)
 {
     switch (key)
     {
-        case gameplay::Keyboard::KEY_BACKSPACE:
+        case vkcore::Keyboard::KEY_BACKSPACE:
             return 0x0008;
-        case gameplay::Keyboard::KEY_TAB:
+        case vkcore::Keyboard::KEY_TAB:
             return 0x0009;
-        case gameplay::Keyboard::KEY_RETURN:
-        case gameplay::Keyboard::KEY_KP_ENTER:
+        case vkcore::Keyboard::KEY_RETURN:
+        case vkcore::Keyboard::KEY_KP_ENTER:
             return 0x000A;
-        case gameplay::Keyboard::KEY_ESCAPE:
+        case vkcore::Keyboard::KEY_ESCAPE:
             return 0x001B;
-        case gameplay::Keyboard::KEY_SPACE:
-        case gameplay::Keyboard::KEY_EXCLAM:
-        case gameplay::Keyboard::KEY_QUOTE:
-        case gameplay::Keyboard::KEY_NUMBER:
-        case gameplay::Keyboard::KEY_DOLLAR:
-        case gameplay::Keyboard::KEY_PERCENT:
-        case gameplay::Keyboard::KEY_CIRCUMFLEX:
-        case gameplay::Keyboard::KEY_AMPERSAND:
-        case gameplay::Keyboard::KEY_APOSTROPHE:
-        case gameplay::Keyboard::KEY_LEFT_PARENTHESIS:
-        case gameplay::Keyboard::KEY_RIGHT_PARENTHESIS:
-        case gameplay::Keyboard::KEY_ASTERISK:
-        case gameplay::Keyboard::KEY_PLUS:
-        case gameplay::Keyboard::KEY_COMMA:
-        case gameplay::Keyboard::KEY_MINUS:
-        case gameplay::Keyboard::KEY_PERIOD:
-        case gameplay::Keyboard::KEY_SLASH:
-        case gameplay::Keyboard::KEY_ZERO:
-        case gameplay::Keyboard::KEY_ONE:
-        case gameplay::Keyboard::KEY_TWO:
-        case gameplay::Keyboard::KEY_THREE:
-        case gameplay::Keyboard::KEY_FOUR:
-        case gameplay::Keyboard::KEY_FIVE:
-        case gameplay::Keyboard::KEY_SIX:
-        case gameplay::Keyboard::KEY_SEVEN:
-        case gameplay::Keyboard::KEY_EIGHT:
-        case gameplay::Keyboard::KEY_NINE:
-        case gameplay::Keyboard::KEY_COLON:
-        case gameplay::Keyboard::KEY_SEMICOLON:
-        case gameplay::Keyboard::KEY_LESS_THAN:
-        case gameplay::Keyboard::KEY_EQUAL:
-        case gameplay::Keyboard::KEY_GREATER_THAN:
-        case gameplay::Keyboard::KEY_QUESTION:
-        case gameplay::Keyboard::KEY_AT:
-        case gameplay::Keyboard::KEY_CAPITAL_A:
-        case gameplay::Keyboard::KEY_CAPITAL_B:
-        case gameplay::Keyboard::KEY_CAPITAL_C:
-        case gameplay::Keyboard::KEY_CAPITAL_D:
-        case gameplay::Keyboard::KEY_CAPITAL_E:
-        case gameplay::Keyboard::KEY_CAPITAL_F:
-        case gameplay::Keyboard::KEY_CAPITAL_G:
-        case gameplay::Keyboard::KEY_CAPITAL_H:
-        case gameplay::Keyboard::KEY_CAPITAL_I:
-        case gameplay::Keyboard::KEY_CAPITAL_J:
-        case gameplay::Keyboard::KEY_CAPITAL_K:
-        case gameplay::Keyboard::KEY_CAPITAL_L:
-        case gameplay::Keyboard::KEY_CAPITAL_M:
-        case gameplay::Keyboard::KEY_CAPITAL_N:
-        case gameplay::Keyboard::KEY_CAPITAL_O:
-        case gameplay::Keyboard::KEY_CAPITAL_P:
-        case gameplay::Keyboard::KEY_CAPITAL_Q:
-        case gameplay::Keyboard::KEY_CAPITAL_R:
-        case gameplay::Keyboard::KEY_CAPITAL_S:
-        case gameplay::Keyboard::KEY_CAPITAL_T:
-        case gameplay::Keyboard::KEY_CAPITAL_U:
-        case gameplay::Keyboard::KEY_CAPITAL_V:
-        case gameplay::Keyboard::KEY_CAPITAL_W:
-        case gameplay::Keyboard::KEY_CAPITAL_X:
-        case gameplay::Keyboard::KEY_CAPITAL_Y:
-        case gameplay::Keyboard::KEY_CAPITAL_Z:
-        case gameplay::Keyboard::KEY_LEFT_BRACKET:
-        case gameplay::Keyboard::KEY_BACK_SLASH:
-        case gameplay::Keyboard::KEY_RIGHT_BRACKET:
-        case gameplay::Keyboard::KEY_UNDERSCORE:
-        case gameplay::Keyboard::KEY_GRAVE:
-        case gameplay::Keyboard::KEY_A:
-        case gameplay::Keyboard::KEY_B:
-        case gameplay::Keyboard::KEY_C:
-        case gameplay::Keyboard::KEY_D:
-        case gameplay::Keyboard::KEY_E:
-        case gameplay::Keyboard::KEY_F:
-        case gameplay::Keyboard::KEY_G:
-        case gameplay::Keyboard::KEY_H:
-        case gameplay::Keyboard::KEY_I:
-        case gameplay::Keyboard::KEY_J:
-        case gameplay::Keyboard::KEY_K:
-        case gameplay::Keyboard::KEY_L:
-        case gameplay::Keyboard::KEY_M:
-        case gameplay::Keyboard::KEY_N:
-        case gameplay::Keyboard::KEY_O:
-        case gameplay::Keyboard::KEY_P:
-        case gameplay::Keyboard::KEY_Q:
-        case gameplay::Keyboard::KEY_R:
-        case gameplay::Keyboard::KEY_S:
-        case gameplay::Keyboard::KEY_T:
-        case gameplay::Keyboard::KEY_U:
-        case gameplay::Keyboard::KEY_V:
-        case gameplay::Keyboard::KEY_W:
-        case gameplay::Keyboard::KEY_X:
-        case gameplay::Keyboard::KEY_Y:
-        case gameplay::Keyboard::KEY_Z:
-        case gameplay::Keyboard::KEY_LEFT_BRACE:
-        case gameplay::Keyboard::KEY_BAR:
-        case gameplay::Keyboard::KEY_RIGHT_BRACE:
-        case gameplay::Keyboard::KEY_TILDE:
+        case vkcore::Keyboard::KEY_SPACE:
+        case vkcore::Keyboard::KEY_EXCLAM:
+        case vkcore::Keyboard::KEY_QUOTE:
+        case vkcore::Keyboard::KEY_NUMBER:
+        case vkcore::Keyboard::KEY_DOLLAR:
+        case vkcore::Keyboard::KEY_PERCENT:
+        case vkcore::Keyboard::KEY_CIRCUMFLEX:
+        case vkcore::Keyboard::KEY_AMPERSAND:
+        case vkcore::Keyboard::KEY_APOSTROPHE:
+        case vkcore::Keyboard::KEY_LEFT_PARENTHESIS:
+        case vkcore::Keyboard::KEY_RIGHT_PARENTHESIS:
+        case vkcore::Keyboard::KEY_ASTERISK:
+        case vkcore::Keyboard::KEY_PLUS:
+        case vkcore::Keyboard::KEY_COMMA:
+        case vkcore::Keyboard::KEY_MINUS:
+        case vkcore::Keyboard::KEY_PERIOD:
+        case vkcore::Keyboard::KEY_SLASH:
+        case vkcore::Keyboard::KEY_ZERO:
+        case vkcore::Keyboard::KEY_ONE:
+        case vkcore::Keyboard::KEY_TWO:
+        case vkcore::Keyboard::KEY_THREE:
+        case vkcore::Keyboard::KEY_FOUR:
+        case vkcore::Keyboard::KEY_FIVE:
+        case vkcore::Keyboard::KEY_SIX:
+        case vkcore::Keyboard::KEY_SEVEN:
+        case vkcore::Keyboard::KEY_EIGHT:
+        case vkcore::Keyboard::KEY_NINE:
+        case vkcore::Keyboard::KEY_COLON:
+        case vkcore::Keyboard::KEY_SEMICOLON:
+        case vkcore::Keyboard::KEY_LESS_THAN:
+        case vkcore::Keyboard::KEY_EQUAL:
+        case vkcore::Keyboard::KEY_GREATER_THAN:
+        case vkcore::Keyboard::KEY_QUESTION:
+        case vkcore::Keyboard::KEY_AT:
+        case vkcore::Keyboard::KEY_CAPITAL_A:
+        case vkcore::Keyboard::KEY_CAPITAL_B:
+        case vkcore::Keyboard::KEY_CAPITAL_C:
+        case vkcore::Keyboard::KEY_CAPITAL_D:
+        case vkcore::Keyboard::KEY_CAPITAL_E:
+        case vkcore::Keyboard::KEY_CAPITAL_F:
+        case vkcore::Keyboard::KEY_CAPITAL_G:
+        case vkcore::Keyboard::KEY_CAPITAL_H:
+        case vkcore::Keyboard::KEY_CAPITAL_I:
+        case vkcore::Keyboard::KEY_CAPITAL_J:
+        case vkcore::Keyboard::KEY_CAPITAL_K:
+        case vkcore::Keyboard::KEY_CAPITAL_L:
+        case vkcore::Keyboard::KEY_CAPITAL_M:
+        case vkcore::Keyboard::KEY_CAPITAL_N:
+        case vkcore::Keyboard::KEY_CAPITAL_O:
+        case vkcore::Keyboard::KEY_CAPITAL_P:
+        case vkcore::Keyboard::KEY_CAPITAL_Q:
+        case vkcore::Keyboard::KEY_CAPITAL_R:
+        case vkcore::Keyboard::KEY_CAPITAL_S:
+        case vkcore::Keyboard::KEY_CAPITAL_T:
+        case vkcore::Keyboard::KEY_CAPITAL_U:
+        case vkcore::Keyboard::KEY_CAPITAL_V:
+        case vkcore::Keyboard::KEY_CAPITAL_W:
+        case vkcore::Keyboard::KEY_CAPITAL_X:
+        case vkcore::Keyboard::KEY_CAPITAL_Y:
+        case vkcore::Keyboard::KEY_CAPITAL_Z:
+        case vkcore::Keyboard::KEY_LEFT_BRACKET:
+        case vkcore::Keyboard::KEY_BACK_SLASH:
+        case vkcore::Keyboard::KEY_RIGHT_BRACKET:
+        case vkcore::Keyboard::KEY_UNDERSCORE:
+        case vkcore::Keyboard::KEY_GRAVE:
+        case vkcore::Keyboard::KEY_A:
+        case vkcore::Keyboard::KEY_B:
+        case vkcore::Keyboard::KEY_C:
+        case vkcore::Keyboard::KEY_D:
+        case vkcore::Keyboard::KEY_E:
+        case vkcore::Keyboard::KEY_F:
+        case vkcore::Keyboard::KEY_G:
+        case vkcore::Keyboard::KEY_H:
+        case vkcore::Keyboard::KEY_I:
+        case vkcore::Keyboard::KEY_J:
+        case vkcore::Keyboard::KEY_K:
+        case vkcore::Keyboard::KEY_L:
+        case vkcore::Keyboard::KEY_M:
+        case vkcore::Keyboard::KEY_N:
+        case vkcore::Keyboard::KEY_O:
+        case vkcore::Keyboard::KEY_P:
+        case vkcore::Keyboard::KEY_Q:
+        case vkcore::Keyboard::KEY_R:
+        case vkcore::Keyboard::KEY_S:
+        case vkcore::Keyboard::KEY_T:
+        case vkcore::Keyboard::KEY_U:
+        case vkcore::Keyboard::KEY_V:
+        case vkcore::Keyboard::KEY_W:
+        case vkcore::Keyboard::KEY_X:
+        case vkcore::Keyboard::KEY_Y:
+        case vkcore::Keyboard::KEY_Z:
+        case vkcore::Keyboard::KEY_LEFT_BRACE:
+        case vkcore::Keyboard::KEY_BAR:
+        case vkcore::Keyboard::KEY_RIGHT_BRACE:
+        case vkcore::Keyboard::KEY_TILDE:
             return key;
         default:
             return 0;
@@ -536,7 +536,7 @@ static int getUnicode(gameplay::Keyboard::Key key)
 // Included here to avoid the naming conflict between KEY_* defined in input.h and the ones defined in gameplay/Keyboard.h 
 #include <linux/joystick.h> 
 
-namespace gameplay
+namespace vkcore
 {
 
 extern void print(const char* format, ...)
@@ -1173,7 +1173,7 @@ int Platform::enterMessagePump()
                 case ConfigureNotify:
                     {
                         updateWindowSize();
-                        gameplay::Platform::resizeEventInternal(evt.xconfigure.width, evt.xconfigure.height);
+                        vkcore::Platform::resizeEventInternal(evt.xconfigure.width, evt.xconfigure.height);
                     }
                     break;
 
@@ -1195,7 +1195,7 @@ int Platform::enterMessagePump()
                             XConvertCase(sym,  &tempSym, &sym);
 
                         Keyboard::Key key = getKey(sym);
-                        gameplay::Platform::keyEventInternal(gameplay::Keyboard::KEY_PRESS, key);
+                        vkcore::Platform::keyEventInternal(vkcore::Keyboard::KEY_PRESS, key);
 
                         if (key == Keyboard::KEY_CAPS_LOCK)
                             capsOn = !capsOn;
@@ -1203,7 +1203,7 @@ int Platform::enterMessagePump()
                             shiftDown = true;
 
                         if (int character = getUnicode(key))
-                            gameplay::Platform::keyEventInternal(gameplay::Keyboard::KEY_CHAR, character);
+                            vkcore::Platform::keyEventInternal(vkcore::Keyboard::KEY_CHAR, character);
 
                     }
                     break;
@@ -1226,7 +1226,7 @@ int Platform::enterMessagePump()
 
                         KeySym sym = XLookupKeysym(&evt.xkey, 0);
                         Keyboard::Key key = getKey(sym);
-                        gameplay::Platform::keyEventInternal(gameplay::Keyboard::KEY_RELEASE, key);
+                        vkcore::Platform::keyEventInternal(vkcore::Keyboard::KEY_RELEASE, key);
 
                         if (key == Keyboard::KEY_SHIFT)
                             shiftDown = false;
@@ -1235,20 +1235,20 @@ int Platform::enterMessagePump()
 
                 case ButtonPress:
                     {
-                        gameplay::Mouse::MouseEvent mouseEvt;
+                        vkcore::Mouse::MouseEvent mouseEvt;
 
                         if (evt.xbutton.button >= 1 && evt.xbutton.button <= 3)
                         {
                             if (evt.xbutton.button == 1)
-                                mouseEvt = gameplay::Mouse::MOUSE_PRESS_LEFT_BUTTON;
+                                mouseEvt = vkcore::Mouse::MOUSE_PRESS_LEFT_BUTTON;
                             else if (evt.xbutton.button == 2)
-                                mouseEvt = gameplay::Mouse::MOUSE_PRESS_MIDDLE_BUTTON;
+                                mouseEvt = vkcore::Mouse::MOUSE_PRESS_MIDDLE_BUTTON;
                             else if (evt.xbutton.button == 3)
-                                mouseEvt = gameplay::Mouse::MOUSE_PRESS_RIGHT_BUTTON;
+                                mouseEvt = vkcore::Mouse::MOUSE_PRESS_RIGHT_BUTTON;
 
-                            if (!gameplay::Platform::mouseEventInternal(mouseEvt, evt.xbutton.x, evt.xbutton.y, 0))
+                            if (!vkcore::Platform::mouseEventInternal(mouseEvt, evt.xbutton.x, evt.xbutton.y, 0))
                             {
-                                gameplay::Platform::touchEventInternal(gameplay::Touch::TOUCH_PRESS, evt.xbutton.x, evt.xbutton.y, 0, true);
+                                vkcore::Platform::touchEventInternal(vkcore::Touch::TOUCH_PRESS, evt.xbutton.x, evt.xbutton.y, 0, true);
                             }
                         }
                         else if (evt.xbutton.button >= 4 && evt.xbutton.button <= 5)
@@ -1261,27 +1261,27 @@ int Platform::enterMessagePump()
                             else
                                 wheelDelta = 0;
 
-                            gameplay::Platform::mouseEventInternal(gameplay::Mouse::MOUSE_WHEEL, evt.xbutton.x, evt.xbutton.y, wheelDelta);
+                            vkcore::Platform::mouseEventInternal(vkcore::Mouse::MOUSE_WHEEL, evt.xbutton.x, evt.xbutton.y, wheelDelta);
                         }
                     }
                     break;
 
                 case ButtonRelease:
                     {
-                        gameplay::Mouse::MouseEvent mouseEvt;
+                        vkcore::Mouse::MouseEvent mouseEvt;
 
                         if (evt.xbutton.button >= 1 && evt.xbutton.button <= 3)
                         {
                             if (evt.xbutton.button == 1)
-                                mouseEvt = gameplay::Mouse::MOUSE_RELEASE_LEFT_BUTTON;
+                                mouseEvt = vkcore::Mouse::MOUSE_RELEASE_LEFT_BUTTON;
                             else if (evt.xbutton.button == 2)
-                                mouseEvt = gameplay::Mouse::MOUSE_RELEASE_MIDDLE_BUTTON;
+                                mouseEvt = vkcore::Mouse::MOUSE_RELEASE_MIDDLE_BUTTON;
                             else if (evt.xbutton.button == 3)
-                                mouseEvt = gameplay::Mouse::MOUSE_RELEASE_RIGHT_BUTTON;
+                                mouseEvt = vkcore::Mouse::MOUSE_RELEASE_RIGHT_BUTTON;
 
-                            if (!gameplay::Platform::mouseEventInternal(mouseEvt, evt.xbutton.x, evt.xbutton.y, 0))
+                            if (!vkcore::Platform::mouseEventInternal(mouseEvt, evt.xbutton.x, evt.xbutton.y, 0))
                             {
-                                gameplay::Platform::touchEventInternal(gameplay::Touch::TOUCH_RELEASE, evt.xbutton.x, evt.xbutton.y, 0, true);
+                                vkcore::Platform::touchEventInternal(vkcore::Touch::TOUCH_RELEASE, evt.xbutton.x, evt.xbutton.y, 0, true);
                             }
                         }
                     }
@@ -1307,11 +1307,11 @@ int Platform::enterMessagePump()
                             XWarpPointer(__display, None, __window, 0, 0, 0, 0, __mouseCapturePointX, __mouseCapturePointY);
                         }
 
-                        if (!gameplay::Platform::mouseEventInternal(gameplay::Mouse::MOUSE_MOVE, x, y, 0))
+                        if (!vkcore::Platform::mouseEventInternal(vkcore::Mouse::MOUSE_MOVE, x, y, 0))
                         {
                             if (evt.xmotion.state & Button1Mask)
                             {
-                                gameplay::Platform::touchEventInternal(gameplay::Touch::TOUCH_MOVE, x, y, 0, true);
+                                vkcore::Platform::touchEventInternal(vkcore::Touch::TOUCH_MOVE, x, y, 0, true);
                             }
                         }
                     }

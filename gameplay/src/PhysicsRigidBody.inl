@@ -1,7 +1,7 @@
 #include "PhysicsRigidBody.h"
 #include "Base.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 inline float PhysicsRigidBody::getMass() const

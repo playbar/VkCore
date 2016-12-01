@@ -5,7 +5,7 @@
 #include "Model.h"
 #include "Material.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 Mesh::Mesh(const VertexFormat& vertexFormat) 

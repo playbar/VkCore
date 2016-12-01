@@ -3,7 +3,7 @@
 
 #include "Theme.h"
 
-namespace gameplay 
+namespace vkcore 
 {	
 
 class Properties;

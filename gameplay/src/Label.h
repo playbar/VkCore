@@ -4,7 +4,7 @@
 #include "Control.h"
 #include "Theme.h"
 
-namespace gameplay
+namespace vkcore
 {
 
 /**
