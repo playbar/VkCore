@@ -87,10 +87,10 @@ public:
 	} vertices;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::vec4 instancePos[3];
+		Matrix projection;
+		Matrix model;
+		Matrix view;
+		Vector4 instancePos[3];
 		int layer;
 	} uboVS, uboOffscreenVS;
 
@@ -98,19 +98,19 @@ public:
 	// The matrices are indexed using geometry shader instancing
 	// The instancePos is used to place the models using instanced draws
 	struct {
-		glm::mat4 mvp[LIGHT_COUNT];
-		glm::vec4 instancePos[3];
+		Matrix mvp[LIGHT_COUNT];
+		Vector4 instancePos[3];
 	} uboShadowGS;
 
 	struct Light {
-		glm::vec4 position;
-		glm::vec4 target;
-		glm::vec4 color;
-		glm::mat4 viewMatrix;
+		Vector4 position;
+		Vector4 target;
+		Vector4 color;
+		Matrix viewMatrix;
 	};
 
 	struct {
-		glm::vec4 viewPos;
+		Vector4 viewPos;
 		Light lights[LIGHT_COUNT];
 		uint32_t useShadows = 1;
 	} uboFragmentLights;
@@ -182,7 +182,7 @@ public:
 		mCamera.rotationSpeed = 0.25f;
 #endif
 		mCamera.position = { 2.15f, 0.3f, -8.75f };
-		mCamera.setRotation(glm::vec3(-0.75f, 12.5f, 0.0f));
+		mCamera.setRotation(Vector3(-0.75f, 12.5f, 0.0f));
 		mCamera.setPerspective(60.0f, (float)width / (float)height, zNear, zFar);
 		timerSpeed *= 0.25f;
 		paused = true;
@@ -966,12 +966,12 @@ public:
 			&uniformData.uboShadowGS.descriptor);
 
 		// Init some values
-		uboOffscreenVS.instancePos[0] = glm::vec4(0.0f);
-		uboOffscreenVS.instancePos[1] = glm::vec4(-4.0f, 0.0, -4.0f, 0.0f);
-		uboOffscreenVS.instancePos[2] = glm::vec4(4.0f, 0.0, -4.0f, 0.0f);
+		uboOffscreenVS.instancePos[0] = Vector4(0.0f);
+		uboOffscreenVS.instancePos[1] = Vector4(-4.0f, 0.0, -4.0f, 0.0f);
+		uboOffscreenVS.instancePos[2] = Vector4(4.0f, 0.0, -4.0f, 0.0f);
 
-		uboOffscreenVS.instancePos[1] = glm::vec4(-7.0f, 0.0, -4.0f, 0.0f);
-		uboOffscreenVS.instancePos[2] = glm::vec4(4.0f, 0.0, -6.0f, 0.0f);
+		uboOffscreenVS.instancePos[1] = Vector4(-7.0f, 0.0, -4.0f, 0.0f);
+		uboOffscreenVS.instancePos[2] = Vector4(4.0f, 0.0, -6.0f, 0.0f);
 
 
 		// Update
@@ -982,8 +982,9 @@ public:
 
 	void updateUniformBuffersScreen()
 	{
-		uboVS.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
-		uboVS.model = glm::mat4();
+		Matrix::createOrthographicOffCenter(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f, &uboVS.projection);
+		//uboVS.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
+		//uboVS.model = glm::mat4();
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsFullScreen.memory, 0, sizeof(uboVS), 0, (void **)&pData));
@@ -995,7 +996,7 @@ public:
 	{
 		uboOffscreenVS.projection = mCamera.mMatrices.perspective;
 		uboOffscreenVS.view = mCamera.mMatrices.view;
-		uboOffscreenVS.model = glm::mat4();
+		//uboOffscreenVS.model = glm::mat4();
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsOffscreen.memory, 0, sizeof(uboOffscreenVS), 0, (void **)&pData));
@@ -1003,20 +1004,20 @@ public:
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsOffscreen.memory);
 	}
 
-	Light initLight(glm::vec3 pos, glm::vec3 target, glm::vec3 color)
+	Light initLight(Vector3 pos, Vector3 target, Vector3 color)
 	{
 		Light light;
-		light.position = glm::vec4(pos, 1.0f);
-		light.target = glm::vec4(target, 0.0f);
-		light.color = glm::vec4(color, 0.0f);
+		light.position = Vector4(pos.x, pos.y, pos.z, 1.0f);
+		light.target = Vector4(target.x, target.y, target.z, 0.0f);
+		light.color = Vector4(color.x, color.y, color.z, 0.0f);
 		return light;
 	}
 
 	void initLights()
 	{
-		uboFragmentLights.lights[0] = initLight(glm::vec3(-14.0f, -0.5f, 15.0f), glm::vec3(-2.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.5f, 0.5f));
-		uboFragmentLights.lights[1] = initLight(glm::vec3(14.0f, -4.0f, 12.0f), glm::vec3(2.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		uboFragmentLights.lights[2] = initLight(glm::vec3(0.0f, -10.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		uboFragmentLights.lights[0] = initLight(Vector3(-14.0f, -0.5f, 15.0f), Vector3(-2.0f, 0.0f, 0.0f), Vector3(1.0f, 0.5f, 0.5f));
+		uboFragmentLights.lights[1] = initLight(Vector3(14.0f, -4.0f, 12.0f), Vector3(2.0f, 0.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
+		uboFragmentLights.lights[2] = initLight(Vector3(0.0f, -10.0f, 4.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.0f));
 	}
 
 	// Update fragment shader light position uniform block
@@ -1038,9 +1039,16 @@ public:
 		for (uint32_t i = 0; i < LIGHT_COUNT; i++)
 		{
 			// mvp from light's pov (for shadows)
-			glm::mat4 shadowProj = glm::perspective(glm::radians(lightFOV), 1.0f, zNear, zFar);
-			glm::mat4 shadowView = glm::lookAt(glm::vec3(uboFragmentLights.lights[i].position), glm::vec3(uboFragmentLights.lights[i].target), glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 shadowModel = glm::mat4();
+			Matrix shadowProj, shadowView, shadowModel;
+			Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(lightFOV), 1.0f, zNear, zFar, &shadowProj);
+			Vector4 &eye = uboFragmentLights.lights[i].position;
+			Vector4 &target = uboFragmentLights.lights[i].target;
+			Matrix::createLookAt(Vector3(eye.x, eye.y, eye.z),
+				Vector3(target.x, target.y, target.z), Vector3(0.0f, 1.0f, 0.0f), &shadowView);
+
+			//glm::mat4 shadowProj = glm::perspective(glm::radians(lightFOV), 1.0f, zNear, zFar);
+			//glm::mat4 shadowView = glm::lookAt(glm::vec3(uboFragmentLights.lights[i].position), glm::vec3(uboFragmentLights.lights[i].target), glm::vec3(0.0f, 1.0f, 0.0f));
+			//glm::mat4 shadowModel = glm::mat4();
 
 			uboShadowGS.mvp[i] = shadowProj * shadowView * shadowModel;
 			uboFragmentLights.lights[i].viewMatrix = uboShadowGS.mvp[i];
@@ -1054,7 +1062,8 @@ public:
 		memcpy(pData, &uboShadowGS, sizeof(uboShadowGS));
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.uboShadowGS.memory);
 
-		uboFragmentLights.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);;
+		uboFragmentLights.viewPos = Vector4(mCamera.position.x, mCamera.position.y,
+			mCamera.position.z, 0.0f) * Vector4(-1.0f, 1.0f, -1.0f, 1.0f);
 
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.fsLights.memory, 0, sizeof(uboFragmentLights), 0, (void **)&pData));
 		memcpy(pData, &uboFragmentLights, sizeof(uboFragmentLights));

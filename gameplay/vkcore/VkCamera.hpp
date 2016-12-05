@@ -1,13 +1,11 @@
 #pragma once
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 #define MATH_DEG_TO_RAD(x)          ((x) * 0.01745329251994329576923690768489f)
 
 #include "Matrix.h"
 #include "Vector3.h"
+#include "Vector2.h"
 using namespace vkcore;
 
 class VkCamera
@@ -118,9 +116,9 @@ public:
 			if (moving())
 			{
 				Vector3 camFront;
-				camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
-				camFront.y = sin(glm::radians(rotation.x));
-				camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
+				camFront.x = -cos(MATH_DEG_TO_RAD(rotation.x)) * sin(MATH_DEG_TO_RAD(rotation.y));
+				camFront.y = sin(MATH_DEG_TO_RAD(rotation.x));
+				camFront.z = cos(MATH_DEG_TO_RAD(rotation.x)) * cos(MATH_DEG_TO_RAD(rotation.y));
 				//camFront = glm::normalize(camFront);
 				camFront.normalize();
 
@@ -150,7 +148,7 @@ public:
 
 	// Update camera passing separate axis data (gamepad)
 	// Returns true if view or position has been changed
-	bool updatePad(glm::vec2 axisLeft, glm::vec2 axisRight, float deltaTime)
+	bool updatePad(Vector2 axisLeft, Vector2 axisRight, float deltaTime)
 	{
 		bool retVal = false;
 
@@ -163,9 +161,9 @@ public:
 			const float range = 1.0f - deadZone;
 
 			Vector3 camFront;
-			camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
-			camFront.y = sin(glm::radians(rotation.x));
-			camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
+			camFront.x = -cos(MATH_DEG_TO_RAD(rotation.x)) * sin(MATH_DEG_TO_RAD(rotation.y));
+			camFront.y = sin(MATH_DEG_TO_RAD(rotation.x));
+			camFront.z = cos(MATH_DEG_TO_RAD(rotation.x)) * cos(MATH_DEG_TO_RAD(rotation.y));
 			camFront.normalize();
 
 			//camFront = glm::normalize(camFront);

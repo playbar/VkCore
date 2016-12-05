@@ -3,15 +3,15 @@
 #include <math.h>
 #include <vector>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
 
 #include "vulkan/vulkan.h"
 
 #include "vulkantools.h"
 #include "VkCoreDevice.hpp"
 #include "vulkanbuffer.hpp"
+#include "Vector3.h"
+
+using namespace vkcore;
 
 struct VertexGear
 {
@@ -19,7 +19,7 @@ struct VertexGear
 	float normal[3];
 	float color[3];
 
-	VertexGear(const glm::vec3& p, const glm::vec3& n, const glm::vec3& c)
+	VertexGear(const Vector3& p, const Vector3& n, const Vector3& c)
 	{
 		pos[0] = p.x;
 		pos[1] = p.y;
@@ -40,8 +40,8 @@ struct GearInfo
 	float width;
 	int numTeeth;
 	float toothDepth;
-	glm::vec3 color;
-	glm::vec3 pos;
+	Vector3 color;
+	Vector3 pos;
 	float rotSpeed;
 	float rotOffset;
 };
@@ -51,17 +51,17 @@ class VulkanGear
 private:
 	struct UBO
 	{
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 normal;
-		glm::mat4 view;
-		glm::vec3 lightPos;
+		Matrix projection;
+		Matrix model;
+		Matrix normal;
+		Matrix view;
+		Vector3 lightPos;
 	};
 
 	VkCoreDevice *vulkanDevice;
 
-	glm::vec3 color;
-	glm::vec3 pos;
+	Vector3 color;
+	Vector3 pos;
 	float rotSpeed;
 	float rotOffset;
 
@@ -72,7 +72,7 @@ private:
 	UBO ubo;
 	vkTools::UniformData uniformData;
 
-	int32_t newVertex(std::vector<VertexGear> *vBuffer, float x, float y, float z, const glm::vec3& normal);
+	int32_t newVertex(std::vector<VertexGear> *vBuffer, float x, float y, float z, const Vector3& normal);
 	void newFace(std::vector<uint32_t> *iBuffer, int a, int b, int c);
 
 	void prepareUniformBuffer();
@@ -80,7 +80,7 @@ public:
 	VkDescriptorSet descriptorSet;
 
 	void draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout);
-	void updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, float zoom, float timer);
+	void updateUniformBuffer(Matrix perspective, Vector3 rotation, float zoom, float timer);
 
 	void setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout);
 

@@ -36,7 +36,7 @@ public:
 	VkGears() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -16.0f;
-		mRotation = glm::vec3(-23.75, 41.25, 21.0);
+		mRotation = Vector3(-23.75, 41.25, 21.0);
 		timerSpeed *= 0.25f;
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Gears";
@@ -109,15 +109,15 @@ public:
 		std::vector<float> widths = { 1.0f, 2.0f, 0.5f };
 		std::vector<int32_t> toothCount = { 20, 10, 10 };
 		std::vector<float> toothDepth = { 0.7f, 0.7f, 0.7f };
-		std::vector<glm::vec3> colors = {
-			glm::vec3(1.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 1.0f, 0.2f),
-			glm::vec3(0.0f, 0.0f, 1.0f)
+		std::vector<Vector3> colors = {
+			Vector3(1.0f, 0.0f, 0.0f),
+			Vector3(0.0f, 1.0f, 0.2f),
+			Vector3(0.0f, 0.0f, 1.0f)
 		};
-		std::vector<glm::vec3> positions = {
-			glm::vec3(-3.0, 0.0, 0.0),
-			glm::vec3(3.1, 0.0, 0.0),
-			glm::vec3(-3.1, -6.2, 0.0)
+		std::vector<Vector3> positions = {
+			Vector3(-3.0, 0.0, 0.0),
+			Vector3(3.1, 0.0, 0.0),
+			Vector3(-3.1, -6.2, 0.0)
 		};
 		std::vector<float> rotationSpeeds = { 1.0f, -2.0f, -2.0f };
 		std::vector<float> rotationOffsets = { 0.0f, -9.0f, -30.0f };
@@ -310,7 +310,9 @@ public:
 
 	void updateUniformBuffers()
 	{
-		glm::mat4 perspective = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
+		Matrix perspective;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.001f, 256.0f, &perspective);
+		//glm::mat4 perspective = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
 		for (auto& gear : gears)
 		{
 			gear->updateUniformBuffer(perspective, mRotation, mZoom, timer * 360.0f);

@@ -38,6 +38,7 @@ public:
      */
     Vector4();
 
+	Vector4(float val);
     /**
      * Constructs a new vector initialized to the specified values.
      *

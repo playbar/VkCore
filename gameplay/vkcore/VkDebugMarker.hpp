@@ -7,8 +7,6 @@
 #include <vector>
 
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -156,10 +154,10 @@ class VkDebugMarker : public VulkanBase
 	// Vertex layout used in this example
 	struct Vertex 
 	{
-		glm::vec3 pos;
-		glm::vec3 normal;
-		glm::vec2 uv;
-		glm::vec3 color;
+		Vector3 pos;
+		Vector3 normal;
+		Vector2 uv;
+		Vector3 color;
 	};
 public:
 	bool wireframe = true;
@@ -178,9 +176,9 @@ public:
 	} uniformData;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::vec4 lightPos = glm::vec4(0.0f, 5.0f, 15.0f, 1.0f);
+		Matrix projection;
+		Matrix model;
+		Vector4 lightPos = Vector4(0.0f, 5.0f, 15.0f, 1.0f);
 	} uboVS;
 
 	struct {
@@ -1045,13 +1043,23 @@ public:
 
 	void updateUniformBuffers()
 	{
-		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 256.0f, &uboVS.projection);
+		Matrix viewMatrix, matTmp;
+		viewMatrix.translate(Vector3(0.0f, 0.0f, mZoom));
 
-		uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+
+		Matrix::createTranslation(cameraPos, &matTmp);
+		uboVS.model = viewMatrix * matTmp;
+		uboVS.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboVS.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboVS.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+
+		//uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));

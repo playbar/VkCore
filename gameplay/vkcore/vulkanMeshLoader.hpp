@@ -26,6 +26,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "VkCoreDevice.hpp"
+#include "Vector3.h"
+#include "Vector2.h"
+
+using namespace vkcore;
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>
@@ -230,16 +234,16 @@ private:
 
 	struct Vertex
 	{
-		glm::vec3 m_pos;
-		glm::vec2 m_tex;
-		glm::vec3 m_normal;
-		glm::vec3 m_color;
-		glm::vec3 m_tangent;
-		glm::vec3 m_binormal;
+		Vector3 m_pos;
+		Vector2 m_tex;
+		Vector3 m_normal;
+		Vector3 m_color;
+		Vector3 m_tangent;
+		Vector3 m_binormal;
 
 		Vertex() {}
 
-		Vertex(const glm::vec3& pos, const glm::vec2& tex, const glm::vec3& normal, const glm::vec3& tangent, const glm::vec3& bitangent, const glm::vec3& color)
+		Vertex(const Vector3& pos, const Vector2& tex, const Vector3& normal, const Vector3& tangent, const Vector3& bitangent, const Vector3& color)
 		{
 			m_pos = pos;
 			m_tex = tex;
@@ -378,12 +382,12 @@ public:
 			aiVector3D* pBiTangent = (paiMesh->HasTangentsAndBitangents()) ? &(paiMesh->mBitangents[i]) : &Zero3D;
 
 			Vertex v(
-				glm::vec3(pPos->x, -pPos->y, pPos->z), 
-				glm::vec2(pTexCoord->x , pTexCoord->y),
-				glm::vec3(pNormal->x, pNormal->y, pNormal->z),
-				glm::vec3(pTangent->x, pTangent->y, pTangent->z),
-				glm::vec3(pBiTangent->x, pBiTangent->y, pBiTangent->z),
-				glm::vec3(pColor.r, pColor.g, pColor.b)
+				Vector3(pPos->x, -pPos->y, pPos->z),
+				Vector2(pTexCoord->x , pTexCoord->y),
+				Vector3(pNormal->x, pNormal->y, pNormal->z),
+				Vector3(pTangent->x, pTangent->y, pTangent->z),
+				Vector3(pBiTangent->x, pBiTangent->y, pBiTangent->z),
+				Vector3(pColor.r, pColor.g, pColor.b)
 				);
 		
 			dim.max.x = fmax(pPos->x, dim.max.x);
@@ -472,15 +476,15 @@ public:
 					// Texture coordinates
 					if (layoutDetail == vkMeshLoader::VERTEX_LAYOUT_UV)
 					{
-						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_tex.s * uvscale.s);
-						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_tex.t * uvscale.t);
+						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_tex.x * uvscale.s);
+						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_tex.y * uvscale.t);
 					}
 					// Color
 					if (layoutDetail == vkMeshLoader::VERTEX_LAYOUT_COLOR)
 					{
-						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_color.r);
-						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_color.g);
-						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_color.b);
+						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_color.x);
+						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_color.y);
+						vertexBuffer.push_back(m_Entries[m].Vertices[i].m_color.z);
 					}
 					// Tangent
 					if (layoutDetail == vkMeshLoader::VERTEX_LAYOUT_TANGENT)

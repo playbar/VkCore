@@ -6,8 +6,6 @@
 #include <assert.h>
 #include <vector>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -57,22 +55,22 @@ public:
 	} vertices;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::vec4 instancePos[3];
+		Matrix projection;
+		Matrix model;
+		Matrix view;
+		Vector4 instancePos[3];
 	} uboVS, uboOffscreenVS;
 
 	struct Light {
-		glm::vec4 position;
-		glm::vec3 color;
+		Vector4 position;
+		Vector3 color;
 		float radius;
 	};
 
 	struct {
 		Light lights[6];
-		glm::vec4 viewPos;
-		glm::ivec2 windowSize;
+		Vector4 viewPos;
+		Vector2 windowSize;
 	} uboFragmentLights;
 
 	struct {
@@ -137,7 +135,7 @@ public:
 		mCamera.rotationSpeed = 0.25f;
 #endif
 		mCamera.position = { 2.15f, 0.3f, -8.75f };
-		mCamera.setRotation(glm::vec3(-0.75f, 12.5f, 0.0f));
+		mCamera.setRotation(Vector3(-0.75f, 12.5f, 0.0f));
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 		paused = true;
 	}
@@ -986,9 +984,9 @@ public:
 			&uniformData.fsLights.descriptor);
 
 		// Init some values
-		uboOffscreenVS.instancePos[0] = glm::vec4(0.0f);
-		uboOffscreenVS.instancePos[1] = glm::vec4(-4.0f, 0.0, -4.0f, 0.0f);
-		uboOffscreenVS.instancePos[2] = glm::vec4(4.0f, 0.0, -4.0f, 0.0f);
+		uboOffscreenVS.instancePos[0] = Vector4(0.0f);
+		uboOffscreenVS.instancePos[1] = Vector4(-4.0f, 0.0, -4.0f, 0.0f);
+		uboOffscreenVS.instancePos[2] = Vector4(4.0f, 0.0, -4.0f, 0.0f);
 
 		// Update
 		updateUniformBuffersScreen();
@@ -1000,13 +998,15 @@ public:
 	{
 		if (debugDisplay)
 		{
-			uboVS.projection = glm::ortho(0.0f, 2.0f, 0.0f, 2.0f, -1.0f, 1.0f);
+			Matrix::createOrthographicOffCenter(0.0f, 2.0f, 0.0f, 2.0f, -1.0f, 1.0f, &uboVS.projection);
+			//uboVS.projection = glm::ortho(0.0f, 2.0f, 0.0f, 2.0f, -1.0f, 1.0f);
 		}
 		else
 		{
-			uboVS.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
+			Matrix::createOrthographicOffCenter(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f, &uboVS.projection);
+			//uboVS.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
 		}
-		uboVS.model = glm::mat4();
+		//uboVS.model = glm::mat4();
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsFullScreen.memory, 0, sizeof(uboVS), 0, (void **)&pData));
@@ -1016,18 +1016,26 @@ public:
 
 	void updateUniformBufferDeferredMatrices()
 	{
-		uboOffscreenVS.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
-		uboOffscreenVS.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(45.0f), (float)width / (float)height, 0.1f, 256.0f, &uboOffscreenVS.projection);
+		Matrix::createTranslation(Vector3(0.0f, 0.0f, mZoom), &uboOffscreenVS.view);
 
-		uboOffscreenVS.model = glm::mat4();
-		uboOffscreenVS.model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.25f, 0.0f) + cameraPos);
-		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//uboOffscreenVS.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//uboOffscreenVS.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+
+		Matrix::createTranslation(Vector3(0.0f, 0.25f, 0.0f) + cameraPos, &uboOffscreenVS.model);
+		uboOffscreenVS.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboOffscreenVS.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboOffscreenVS.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+
+		//uboOffscreenVS.model = glm::mat4();
+		//uboOffscreenVS.model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.25f, 0.0f) + cameraPos);
+		//uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboOffscreenVS.projection = mCamera.mMatrices.perspective;
 		uboOffscreenVS.view = mCamera.mMatrices.view;
-		uboOffscreenVS.model = glm::mat4();
+		//uboOffscreenVS.model = glm::mat4();
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsOffscreen.memory, 0, sizeof(uboOffscreenVS), 0, (void **)&pData));
@@ -1039,28 +1047,28 @@ public:
 	void updateUniformBufferDeferredLights()
 	{
 		// White
-		uboFragmentLights.lights[0].position = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
-		uboFragmentLights.lights[0].color = glm::vec3(1.5f);
+		uboFragmentLights.lights[0].position = Vector4(0.0f, 0.0f, 1.0f, 0.0f);
+		uboFragmentLights.lights[0].color = Vector3(1.5f);
 		uboFragmentLights.lights[0].radius = 15.0f * 0.25f;
 		// Red
-		uboFragmentLights.lights[1].position = glm::vec4(-2.0f, 0.0f, 0.0f, 0.0f);
-		uboFragmentLights.lights[1].color = glm::vec3(1.0f, 0.0f, 0.0f);
+		uboFragmentLights.lights[1].position = Vector4(-2.0f, 0.0f, 0.0f, 0.0f);
+		uboFragmentLights.lights[1].color = Vector3(1.0f, 0.0f, 0.0f);
 		uboFragmentLights.lights[1].radius = 15.0f;
 		// Blue
-		uboFragmentLights.lights[2].position = glm::vec4(2.0f, 1.0f, 0.0f, 0.0f);
-		uboFragmentLights.lights[2].color = glm::vec3(0.0f, 0.0f, 2.5f);
+		uboFragmentLights.lights[2].position = Vector4(2.0f, 1.0f, 0.0f, 0.0f);
+		uboFragmentLights.lights[2].color = Vector3(0.0f, 0.0f, 2.5f);
 		uboFragmentLights.lights[2].radius = 5.0f;
 		// Yellow
-		uboFragmentLights.lights[3].position = glm::vec4(0.0f, 0.9f, 0.5f, 0.0f);
-		uboFragmentLights.lights[3].color = glm::vec3(1.0f, 1.0f, 0.0f);
+		uboFragmentLights.lights[3].position = Vector4(0.0f, 0.9f, 0.5f, 0.0f);
+		uboFragmentLights.lights[3].color = Vector3(1.0f, 1.0f, 0.0f);
 		uboFragmentLights.lights[3].radius = 2.0f;
 		// Green
-		uboFragmentLights.lights[4].position = glm::vec4(0.0f, 0.5f, 0.0f, 0.0f);
-		uboFragmentLights.lights[4].color = glm::vec3(0.0f, 1.0f, 0.2f);
+		uboFragmentLights.lights[4].position = Vector4(0.0f, 0.5f, 0.0f, 0.0f);
+		uboFragmentLights.lights[4].color = Vector3(0.0f, 1.0f, 0.2f);
 		uboFragmentLights.lights[4].radius = 5.0f;
 		// Yellow
-		uboFragmentLights.lights[5].position = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
-		uboFragmentLights.lights[5].color = glm::vec3(1.0f, 0.7f, 0.3f);
+		uboFragmentLights.lights[5].position = Vector4(0.0f, 1.0f, 0.0f, 0.0f);
+		uboFragmentLights.lights[5].color = Vector3(1.0f, 0.7f, 0.3f);
 		uboFragmentLights.lights[5].radius = 25.0f;
 
 		uboFragmentLights.lights[0].position.x = sin(glm::radians(360.0f * timer)) * 5.0f;
@@ -1079,7 +1087,8 @@ public:
 		uboFragmentLights.lights[5].position.z = 0.0f - cos(glm::radians(-360.0f * timer - 45.0f)) * 10.0f;
 
 		// Current view position
-		uboFragmentLights.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+		uboFragmentLights.viewPos = Vector4(mCamera.position.x, mCamera.position.y,
+			mCamera.position.z, 0.0f) * Vector4(-1.0f, 1.0f, -1.0f, 1.0f);
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.fsLights.memory, 0, sizeof(uboFragmentLights), 0, (void **)&pData));
@@ -1144,7 +1153,7 @@ public:
 	virtual void viewChanged()
 	{
 		updateUniformBufferDeferredMatrices();
-		uboFragmentLights.windowSize = glm::ivec2(width, height);
+		uboFragmentLights.windowSize = Vector2(width, height);
 	}
 
 	void toggleDebugDisplay()

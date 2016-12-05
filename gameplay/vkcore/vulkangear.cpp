@@ -1,8 +1,9 @@
 #include "vulkangear.h"
+#include "VkCamera.hpp"
 
-int32_t VulkanGear::newVertex(std::vector<VertexGear> *vBuffer, float x, float y, float z, const glm::vec3& normal)
+int32_t VulkanGear::newVertex(std::vector<VertexGear> *vBuffer, float x, float y, float z, const Vector3& normal)
 {
-	VertexGear v(glm::vec3(x, y, z), normal, color);
+	VertexGear v(Vector3(x, y, z), normal, color);
 	vBuffer->push_back(v);
 	return vBuffer->size() - 1;
 }
@@ -47,7 +48,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 	r2 = gearinfo->outerRadius + gearinfo->toothDepth / 2.0;
 	da = 2.0 * M_PI / gearinfo->numTeeth / 4.0;
 
-	glm::vec3 normal;
+	Vector3 normal;
 
 	for (i = 0; i < gearinfo->numTeeth; i++)
 	{
@@ -73,7 +74,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		v2 = r1 * sin_ta_3da - r2 * sin_ta_2da;
 
 		// front face
-		normal = glm::vec3(0.0, 0.0, 1.0);
+		normal = Vector3(0.0, 0.0, 1.0);
 		ix0 = newVertex(&vBuffer, r0 * cos_ta, r0 * sin_ta, gearinfo->width * 0.5, normal);
 		ix1 = newVertex(&vBuffer, r1 * cos_ta, r1 * sin_ta, gearinfo->width * 0.5, normal);
 		ix2 = newVertex(&vBuffer, r0 * cos_ta, r0 * sin_ta, gearinfo->width * 0.5, normal);
@@ -86,7 +87,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix3, ix5, ix4);
 
 		// front sides of teeth
-		normal = glm::vec3(0.0, 0.0, 1.0);
+		normal = Vector3(0.0, 0.0, 1.0);
 		ix0 = newVertex(&vBuffer, r1 * cos_ta, r1 * sin_ta, gearinfo->width * 0.5, normal);
 		ix1 = newVertex(&vBuffer, r2 * cos_ta_1da, r2 * sin_ta_1da, gearinfo->width * 0.5, normal);
 		ix2 = newVertex(&vBuffer, r1 * cos_ta_3da, r1 * sin_ta_3da, gearinfo->width * 0.5, normal);
@@ -95,7 +96,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix1, ix3, ix2);
 
 		// back face 
-		normal = glm::vec3(0.0, 0.0, -1.0);
+		normal = Vector3(0.0, 0.0, -1.0);
 		ix0 = newVertex(&vBuffer, r1 * cos_ta, r1 * sin_ta, -gearinfo->width * 0.5, normal);
 		ix1 = newVertex(&vBuffer, r0 * cos_ta, r0 * sin_ta, -gearinfo->width * 0.5, normal);
 		ix2 = newVertex(&vBuffer, r1 * cos_ta_3da, r1 * sin_ta_3da, -gearinfo->width * 0.5, normal);
@@ -108,7 +109,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix3, ix5, ix4);
 
 		// back sides of teeth 
-		normal = glm::vec3(0.0, 0.0, -1.0);
+		normal = Vector3(0.0, 0.0, -1.0);
 		ix0 = newVertex(&vBuffer, r1 * cos_ta_3da, r1 * sin_ta_3da, -gearinfo->width * 0.5, normal);
 		ix1 = newVertex(&vBuffer, r2 * cos_ta_2da, r2 * sin_ta_2da, -gearinfo->width * 0.5, normal);
 		ix2 = newVertex(&vBuffer, r1 * cos_ta, r1 * sin_ta, -gearinfo->width * 0.5, normal);
@@ -117,7 +118,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix1, ix3, ix2);
 
 		// draw outward faces of teeth 
-		normal = glm::vec3(v1, -u1, 0.0);
+		normal = Vector3(v1, -u1, 0.0);
 		ix0 = newVertex(&vBuffer, r1 * cos_ta, r1 * sin_ta, gearinfo->width * 0.5, normal);
 		ix1 = newVertex(&vBuffer, r1 * cos_ta, r1 * sin_ta, -gearinfo->width * 0.5, normal);
 		ix2 = newVertex(&vBuffer, r2 * cos_ta_1da, r2 * sin_ta_1da, gearinfo->width * 0.5, normal);
@@ -125,7 +126,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix0, ix1, ix2);
 		newFace(&iBuffer, ix1, ix3, ix2);
 
-		normal = glm::vec3(cos_ta, sin_ta, 0.0);
+		normal = Vector3(cos_ta, sin_ta, 0.0);
 		ix0 = newVertex(&vBuffer, r2 * cos_ta_1da, r2 * sin_ta_1da, gearinfo->width * 0.5, normal);
 		ix1 = newVertex(&vBuffer, r2 * cos_ta_1da, r2 * sin_ta_1da, -gearinfo->width * 0.5, normal);
 		ix2 = newVertex(&vBuffer, r2 * cos_ta_2da, r2 * sin_ta_2da, gearinfo->width * 0.5, normal);
@@ -133,7 +134,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix0, ix1, ix2);
 		newFace(&iBuffer, ix1, ix3, ix2);
 
-		normal = glm::vec3(v2, -u2, 0.0);
+		normal = Vector3(v2, -u2, 0.0);
 		ix0 = newVertex(&vBuffer, r2 * cos_ta_2da, r2 * sin_ta_2da, gearinfo->width * 0.5, normal);
 		ix1 = newVertex(&vBuffer, r2 * cos_ta_2da, r2 * sin_ta_2da, -gearinfo->width * 0.5, normal);
 		ix2 = newVertex(&vBuffer, r1 * cos_ta_3da, r1 * sin_ta_3da, gearinfo->width * 0.5, normal);
@@ -141,7 +142,7 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix0, ix1, ix2);
 		newFace(&iBuffer, ix1, ix3, ix2);
 
-		normal = glm::vec3(cos_ta, sin_ta, 0.0);
+		normal = Vector3(cos_ta, sin_ta, 0.0);
 		ix0 = newVertex(&vBuffer, r1 * cos_ta_3da, r1 * sin_ta_3da, gearinfo->width * 0.5, normal);
 		ix1 = newVertex(&vBuffer, r1 * cos_ta_3da, r1 * sin_ta_3da, -gearinfo->width * 0.5, normal);
 		ix2 = newVertex(&vBuffer, r1 * cos_ta_4da, r1 * sin_ta_4da, gearinfo->width * 0.5, normal);
@@ -150,10 +151,10 @@ void VulkanGear::generate(GearInfo *gearinfo, VkQueue queue)
 		newFace(&iBuffer, ix1, ix3, ix2);
 
 		// draw inside radius cylinder 
-		ix0 = newVertex(&vBuffer, r0 * cos_ta, r0 * sin_ta, -gearinfo->width * 0.5, glm::vec3(-cos_ta, -sin_ta, 0.0));
-		ix1 = newVertex(&vBuffer, r0 * cos_ta, r0 * sin_ta, gearinfo->width * 0.5, glm::vec3(-cos_ta, -sin_ta, 0.0));
-		ix2 = newVertex(&vBuffer, r0 * cos_ta_4da, r0 * sin_ta_4da, -gearinfo->width * 0.5, glm::vec3(-cos_ta_4da, -sin_ta_4da, 0.0));
-		ix3 = newVertex(&vBuffer, r0 * cos_ta_4da, r0 * sin_ta_4da, gearinfo->width * 0.5, glm::vec3(-cos_ta_4da, -sin_ta_4da, 0.0));
+		ix0 = newVertex(&vBuffer, r0 * cos_ta, r0 * sin_ta, -gearinfo->width * 0.5, Vector3(-cos_ta, -sin_ta, 0.0));
+		ix1 = newVertex(&vBuffer, r0 * cos_ta, r0 * sin_ta, gearinfo->width * 0.5, Vector3(-cos_ta, -sin_ta, 0.0));
+		ix2 = newVertex(&vBuffer, r0 * cos_ta_4da, r0 * sin_ta_4da, -gearinfo->width * 0.5, Vector3(-cos_ta_4da, -sin_ta_4da, 0.0));
+		ix3 = newVertex(&vBuffer, r0 * cos_ta_4da, r0 * sin_ta_4da, gearinfo->width * 0.5, Vector3(-cos_ta_4da, -sin_ta_4da, 0.0));
 		newFace(&iBuffer, ix0, ix1, ix2);
 		newFace(&iBuffer, ix1, ix3, ix2);
 	}
@@ -257,28 +258,43 @@ void VulkanGear::draw(VkCommandBuffer cmdbuffer, VkPipelineLayout pipelineLayout
 	vkCmdDrawIndexed(cmdbuffer, indexCount, 1, 0, 0, 1);
 }
 
-void VulkanGear::updateUniformBuffer(glm::mat4 perspective, glm::vec3 rotation, float zoom, float timer)
+void VulkanGear::updateUniformBuffer(Matrix perspective, Vector3 rotation, float zoom, float timer)
 {
 	ubo.projection = perspective;
 
-	ubo.view = glm::lookAt(
-		glm::vec3(0, 0, -zoom),
-		glm::vec3(-1.0, -1.5, 0),
-		glm::vec3(0, 1, 0)
-		);
-	ubo.view = glm::rotate(ubo.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	ubo.view = glm::rotate(ubo.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	Matrix::createLookAt(
+		Vector3(0, 0, -zoom),
+		Vector3(-1.0, -1.5, 0),
+		Vector3(0, 1, 0),
+		&ubo.view);
+	ubo.view.rotateX(MATH_DEG_TO_RAD(rotation.x));
+	ubo.view.rotateY(MATH_DEG_TO_RAD(rotation.y));
 
-	ubo.model = glm::mat4();
-	ubo.model = glm::translate(ubo.model, pos);
+	//ubo.view = glm::lookAt(
+	//	glm::vec3(0, 0, -zoom),
+	//	glm::vec3(-1.0, -1.5, 0),
+	//	glm::vec3(0, 1, 0)
+	//	);
+	//ubo.view = glm::rotate(ubo.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	//ubo.view = glm::rotate(ubo.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	rotation.z = (rotSpeed * timer) + rotOffset;
-	ubo.model = glm::rotate(ubo.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.model.setIdentity();
+	ubo.model.translate(pos);
+	ubo.model.rotateZ(MATH_DEG_TO_RAD(rotation.z));
 
-	ubo.normal = glm::inverseTranspose(ubo.view * ubo.model);
+	//ubo.model = glm::mat4();
+	//ubo.model = glm::translate(ubo.model, pos);
+	//ubo.model = glm::rotate(ubo.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	ubo.lightPos = glm::vec3(0.0f, 0.0f, 2.5f);
-	ubo.lightPos.x = sin(glm::radians(timer)) * 8.0f;
-	ubo.lightPos.z = cos(glm::radians(timer)) * 8.0f;
+	ubo.normal = Matrix(ubo.view * ubo.model);
+	ubo.normal.invert();
+	ubo.normal.transpose();
+
+	//ubo.normal = glm::inverseTranspose(ubo.view * ubo.model);
+
+	ubo.lightPos = Vector3(0.0f, 0.0f, 2.5f);
+	ubo.lightPos.x = sin(MATH_DEG_TO_RAD(timer)) * 8.0f;
+	ubo.lightPos.z = cos(MATH_DEG_TO_RAD(timer)) * 8.0f;
 
 	uint8_t *pData;
 	VK_CHECK_RESULT(vkMapMemory(vulkanDevice->mLogicalDevice, uniformData.memory, 0, sizeof(ubo), 0, (void **)&pData));

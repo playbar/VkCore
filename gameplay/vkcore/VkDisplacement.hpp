@@ -52,9 +52,9 @@ public:
 	} uboTC;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::vec4 lightPos = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
+		Matrix projection;
+		Matrix model;
+		Vector4 lightPos = Vector4(0.0f, -1.0f, 0.0f, 0.0f);
 		float tessAlpha = 1.0f;
 		float tessStrength = 0.1f;
 	} uboTE;
@@ -71,7 +71,7 @@ public:
 	VkDisplacement() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -1.25f;
-		mRotation = glm::vec3(-20.0f, 45.0f, 0.0f);
+		mRotation = Vector3(-20.0f, 45.0f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Tessellation shader displacement mapping";
 		// Support for tessellation shaders is optional, so check first
@@ -441,17 +441,27 @@ public:
 	void updateUniformBuffers()
 	{
 		// Tessellation eval
-		glm::mat4 viewMatrix = glm::mat4();
-		uboTE.projection = glm::perspective(glm::radians(45.0f), (float)(width) / (float)height, 0.1f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(45.0f), (float)(width) / (float)height, 0.1f, 256.0f, &uboTE.projection);
+		viewMatrix.translate(Vector3(0.0f, 0.0f, mZoom));
+		//glm::mat4 viewMatrix = glm::mat4();
+		//uboTE.projection = glm::perspective(glm::radians(45.0f), (float)(width) / (float)height, 0.1f, 256.0f);
+		//viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
 
 		float offset = 0.5f;
 		int uboIndex = 1;
-		uboTE.model = glm::mat4();
-		uboTE.model = viewMatrix * glm::translate(uboTE.model, glm::vec3(0, 0, 0));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		Matrix::createTranslation(Vector3(0.0f, 0.0f, 0.0f), &matTmp);
+		Matrix::multiply(viewMatrix, matTmp, &uboTE.model);
+		uboTE.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboTE.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboTE.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+	
+		//uboTE.model = glm::mat4();
+		//uboTE.model = viewMatrix * glm::translate(uboTE.model, glm::vec3(0, 0, 0));
+		//uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboTE.lightPos.y = -0.5f - uboTE.tessStrength;
 		uint8_t *pData;

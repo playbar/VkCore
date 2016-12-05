@@ -9,6 +9,11 @@ Vector4::Vector4()
 {
 }
 
+Vector4::Vector4(float val) : x(val), y(val), z(val), w(val)
+{
+
+}
+
 Vector4::Vector4(float x, float y, float z, float w)
     : x(x), y(y), z(z), w(w)
 {
