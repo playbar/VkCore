@@ -43,10 +43,7 @@ private:
 	// Set to true when example is created with enabled validation layers
 	bool mEnableValidation = false;
 	// Set to true if v-sync will be forced for the swapchain
-	bool enableVSync = false;
-	// Device features enabled by the example
-	// If not set, no additional features are enabled (may result in validation layer errors)
-	VkPhysicalDeviceFeatures enabledFeatures = {};
+	bool enableVSync = false;	
 	// fps timer (one second interval)
 	float fpsTimer = 0.0f;
 
@@ -56,10 +53,7 @@ private:
 	uint32_t destWidth;
 	uint32_t destHeight;
 	bool resizing = false;
-	// Called if the window is resized and some resources have to be recreatesd
-	void windowResize();
-	VkResult createInstance(bool enableValidation);
-	std::string getWindowTitle();
+
 protected:
 	// Last frame time, measured using a high performance timer (if available)
 	float frameTimer = 1.0f;
@@ -69,6 +63,10 @@ protected:
 	// Vulkan instance, stores all per-application states
 	VkInstance mInstance;
 	VkCoreDevice *mVulkanDevice;
+
+	// Device features enabled by the example
+	// If not set, no additional features are enabled (may result in validation layer errors)
+	VkPhysicalDeviceFeatures enabledFeatures = {};
 
 	// Handle to the device graphics queue that command buffers are submitted to
 	VkQueue mQueue;
@@ -114,7 +112,7 @@ protected:
 	// Simple texture loader
 	vkTools::VulkanTextureLoader *textureLoader = nullptr;
 	// Returns the base asset path (for shaders, models, textures) depending on the os
-	const std::string getAssetPath();
+	
 public: 
 	bool prepared = false;
 	uint32_t width = 1280;
@@ -144,7 +142,7 @@ public:
 
 	VkCamera camera;
 
-	glm::vec3 rotation = glm::vec3();
+	glm::vec3 mRotation = glm::vec3();
 	glm::vec3 cameraPos = glm::vec3();
 	glm::vec2 mousePos;
 
@@ -192,6 +190,12 @@ public:
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
 	void initVulkan(bool enableValidation);
+
+	// Called if the window is resized and some resources have to be recreatesd
+	void windowResize();
+	VkResult createInstance(bool enableValidation);
+	std::string getWindowTitle();
+	const std::string getAssetPath();
 
 #if defined(_WIN32)
 	void setupConsole(std::string title);

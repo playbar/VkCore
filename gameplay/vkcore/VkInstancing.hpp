@@ -524,9 +524,9 @@ public:
 		{
 			uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
 			uboVS.view = glm::translate(glm::mat4(), cameraPos + glm::vec3(0.0f, 0.0f, mZoom));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 
 		if (!paused)

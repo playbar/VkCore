@@ -147,7 +147,7 @@ public:
 	VkSsao() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -8.0f;
-		rotation = { 0.0f, 0.0f, 0.0f };
+		mRotation = { 0.0f, 0.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Screen space ambient occlusion";
 		camera.type = VkCamera::CameraType::firstperson;

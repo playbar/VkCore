@@ -89,7 +89,7 @@ public:
 	VkParallaxMapping() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -2.7f;
-		rotation = glm::vec3(56.0f, 0.0f, 0.0f);
+		mRotation = glm::vec3(56.0f, 0.0f, 0.0f);
 		rotationSpeed = 0.25f;
 		mEnableTextOverlay = true;
 		timerSpeed *= 0.25f;
@@ -484,9 +484,9 @@ public:
 
 		ubos.vertexShader.model = glm::mat4();
 		ubos.vertexShader.model = viewMatrix * glm::translate(ubos.vertexShader.model, cameraPos);
-		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		ubos.vertexShader.normal = glm::inverseTranspose(ubos.vertexShader.model);
 

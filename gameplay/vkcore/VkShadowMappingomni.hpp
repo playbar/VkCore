@@ -122,7 +122,7 @@ public:
 		mZoom = -175.0f;
 		zoomSpeed = 10.0f;
 		timerSpeed *= 0.25f;
-		rotation = { -20.5f, -673.0f, 0.0f };
+		mRotation = { -20.5f, -673.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Point light shadows";
 	}
@@ -958,9 +958,9 @@ public:
 		uboVSscene.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, displayCubeMap ? 0.0f : mZoom));
 
 		uboVSscene.model = glm::mat4();
-		uboVSscene.model = glm::rotate(uboVSscene.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVSscene.model = glm::rotate(uboVSscene.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVSscene.model = glm::rotate(uboVSscene.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboVSscene.model = glm::rotate(uboVSscene.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboVSscene.model = glm::rotate(uboVSscene.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboVSscene.model = glm::rotate(uboVSscene.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboVSscene.lightPos = lightPos;
 

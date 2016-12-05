@@ -67,7 +67,7 @@ public:
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
 		timerSpeed *= 0.5f;
-		rotation = { -32.5, 45.0, 0.0 };
+		mRotation = { -32.5, 45.0, 0.0 };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Push constants";
 
@@ -415,9 +415,9 @@ public:
 		float offset = 0.5f;
 		int uboIndex = 1;
 		uboVS.model = viewMatrix * glm::translate(glm::mat4(), glm::vec3(0, 0, 0));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vertexShader.memory, 0, sizeof(uboVS), 0, (void **)&pData));

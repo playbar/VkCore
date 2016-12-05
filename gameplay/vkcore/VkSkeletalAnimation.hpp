@@ -393,7 +393,7 @@ public:
 		mZoom = -150.0f;
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
-		rotation = { -182.5f, -38.5f, 180.0f };
+		mRotation = { -182.5f, -38.5f, 180.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Skeletal animation";
 		cameraPos = { 0.0f, 0.0f, 12.0f };
@@ -933,18 +933,18 @@ public:
 			viewMatrix = glm::scale(viewMatrix, glm::vec3(0.025f));
 
 			uboVS.view = viewMatrix * glm::translate(glm::mat4(), glm::vec3(cameraPos.x, -cameraPos.z, cameraPos.y) * 100.0f);
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(rotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(-rotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
+			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
+			uboVS.view = glm::rotate(uboVS.view, glm::radians(-mRotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
 
 			uboVS.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
 
 			uboFloor.projection = uboVS.projection;
 			uboFloor.view = viewMatrix;
 			uboFloor.model = glm::translate(glm::mat4(), glm::vec3(cameraPos.x, -cameraPos.z, cameraPos.y) * 100.0f);
-			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(rotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
-			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(-rotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
+			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(mRotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
+			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(-mRotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
 			uboFloor.model = glm::translate(uboFloor.model, glm::vec3(0.0f, 0.0f, -1800.0f));
 			uboFloor.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
 		}

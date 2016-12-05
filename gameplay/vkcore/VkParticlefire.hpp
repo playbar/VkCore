@@ -117,7 +117,7 @@ public:
 	VkParticlefire() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -75.0f;
-		rotation = { -15.0f, 45.0f, 0.0f };
+		mRotation = { -15.0f, 45.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Particle system";
 		zoomSpeed *= 1.5f;
@@ -710,9 +710,9 @@ public:
 
 		uboVS.model = glm::mat4();
 		uboVS.model = viewMatrix * glm::translate(uboVS.model, glm::vec3(0.0f, 15.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboVS.viewportDim = glm::vec2((float)width, (float)height);
 

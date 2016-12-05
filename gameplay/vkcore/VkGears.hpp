@@ -36,7 +36,7 @@ public:
 	VkGears() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -16.0f;
-		rotation = glm::vec3(-23.75, 41.25, 21.0);
+		mRotation = glm::vec3(-23.75, 41.25, 21.0);
 		timerSpeed *= 0.25f;
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Gears";
@@ -313,7 +313,7 @@ public:
 		glm::mat4 perspective = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
 		for (auto& gear : gears)
 		{
-			gear->updateUniformBuffer(perspective, rotation, mZoom, timer * 360.0f);
+			gear->updateUniformBuffer(perspective, mRotation, mZoom, timer * 360.0f);
 		}
 	}
 

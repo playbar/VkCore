@@ -75,7 +75,7 @@ public:
 	{
 		mZoom = -15.0f;
 		rotationSpeed = 0.25f;
-		rotation = { -15.0f, 35.0f, 0.0f };
+		mRotation = { -15.0f, 35.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Texture arrays";
 	}
@@ -635,9 +635,9 @@ public:
 
 		// View
 		uboVS.matrices.view = glm::translate(glm::mat4(), glm::vec3(0.0f, -1.0f, mZoom));
-		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboVS.matrices.view = glm::rotate(uboVS.matrices.view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		// Only update the matrices part of the uniform buffer
 		uint8_t *pData;

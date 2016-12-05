@@ -108,7 +108,7 @@ public:
 	VkRadialBlur() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -10.0f;
-		rotation = { -16.25f, -28.75f, 0.0f };
+		mRotation = { -16.25f, -28.75f, 0.0f };
 		timerSpeed *= 0.5f;
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Radial blur";
@@ -753,10 +753,10 @@ public:
 
 		uboScene.model = glm::mat4();
 		uboScene.model = viewMatrix * glm::translate(uboScene.model, cameraPos);
-		uboScene.model = glm::rotate(uboScene.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboScene.model = glm::rotate(uboScene.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		uboScene.model = glm::rotate(uboScene.model, glm::radians(timer * 360.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboScene.model = glm::rotate(uboScene.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		if (!paused)
 		{

@@ -128,7 +128,7 @@ public:
 	VkDeferredMultisampling() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -8.0f;
-		rotation = { 0.0f, 0.0f, 0.0f };
+		mRotation = { 0.0f, 0.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading (2016 by Sascha Willems)";
 		camera.type = VkCamera::CameraType::firstperson;
@@ -1021,9 +1021,9 @@ public:
 
 		uboOffscreenVS.model = glm::mat4();
 		uboOffscreenVS.model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.25f, 0.0f) + cameraPos);
-		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboOffscreenVS.projection = camera.matrices.perspective;
 		uboOffscreenVS.view = camera.matrices.view;

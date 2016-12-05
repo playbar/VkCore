@@ -120,7 +120,7 @@ public:
 	VkBloom() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -10.25f;
-		rotation = { 7.5f, -343.0f, 0.0f };
+		mRotation = { 7.5f, -343.0f, 0.0f };
 		timerSpeed *= 0.5f;
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Bloom";
@@ -904,11 +904,11 @@ public:
 		ubos.fullscreen.model = viewMatrix *
 			glm::translate(glm::mat4(), glm::vec3(sin(glm::radians(timer * 360.0f)) * 0.25f, 0.0f, cos(glm::radians(timer * 360.0f)) * 0.25f) + cameraPos);
 
-		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, -sinf(glm::radians(timer * 360.0f)) * 0.15f, glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(timer * 360.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsFullScreen.memory, 0, sizeof(ubos.fullscreen), 0, (void **)&pData));
@@ -919,9 +919,9 @@ public:
 		ubos.skyBox.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
 
 		ubos.skyBox.model = glm::mat4();
-		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsSkyBox.memory, 0, sizeof(ubos.skyBox), 0, (void **)&pData));
 		memcpy(pData, &ubos.skyBox, sizeof(ubos.skyBox));

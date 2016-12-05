@@ -68,7 +68,7 @@ public:
 		mZoom = -0.9f;
 		rotationSpeed = 0.75f;
 		zoomSpeed = 0.25f;
-		rotation = glm::vec3(-25.0f, 23.75f, 0.0f);
+		mRotation = glm::vec3(-25.0f, 23.75f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Spherical Environment Mapping";
 	}
@@ -387,9 +387,9 @@ public:
 		);
 
 		uboVS.model = glm::mat4();
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboVS.normal = glm::inverseTranspose(uboVS.view * uboVS.model);
 

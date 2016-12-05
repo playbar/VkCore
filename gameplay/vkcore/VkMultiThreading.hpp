@@ -114,7 +114,7 @@ public:
 		mZoom = -32.5f;
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
-		rotation = { 0.0f, 37.5f, 0.0f };
+		mRotation = { 0.0f, 37.5f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Multi threaded rendering";
 		// Get number of max. concurrrent threads
@@ -315,9 +315,9 @@ public:
 		vkCmdBindPipeline(secondaryCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.starsphere);
 
 		glm::mat4 view = glm::mat4();
-		view = glm::rotate(view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		view = glm::rotate(view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		view = glm::rotate(view, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		view = glm::rotate(view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		view = glm::rotate(view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		view = glm::rotate(view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		glm::mat4 mvp = matrices.projection * view;
 
@@ -566,9 +566,9 @@ public:
 	{
 		matrices.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
 		matrices.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
-		matrices.view = glm::rotate(matrices.view, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		matrices.view = glm::rotate(matrices.view, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		matrices.view = glm::rotate(matrices.view, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		frustum.update(matrices.projection * matrices.view);
 	}

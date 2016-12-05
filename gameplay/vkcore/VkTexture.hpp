@@ -75,7 +75,7 @@ public:
 	VkTexture() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -2.5f;
-		rotation = { 0.0f, 15.0f, 0.0f };
+		mRotation = { 0.0f, 15.0f, 0.0f };
 		title = "VkCoreTexturing";
 		mEnableTextOverlay = true;
 	}
@@ -810,9 +810,9 @@ public:
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		mUboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		mUboVS.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
 

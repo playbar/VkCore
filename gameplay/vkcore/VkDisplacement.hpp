@@ -71,7 +71,7 @@ public:
 	VkDisplacement() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -1.25f;
-		rotation = glm::vec3(-20.0f, 45.0f, 0.0f);
+		mRotation = glm::vec3(-20.0f, 45.0f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Tessellation shader displacement mapping";
 		// Support for tessellation shaders is optional, so check first
@@ -449,9 +449,9 @@ public:
 		int uboIndex = 1;
 		uboTE.model = glm::mat4();
 		uboTE.model = viewMatrix * glm::translate(uboTE.model, glm::vec3(0, 0, 0));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboTE.lightPos.y = -0.5f - uboTE.tessStrength;
 		uint8_t *pData;

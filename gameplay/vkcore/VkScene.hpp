@@ -78,7 +78,7 @@ public:
 		height = 720;
 		mZoom = -3.75f;
 		rotationSpeed = 0.5f;
-		rotation = glm::vec3(15.0f, 0.f, 0.0f);
+		mRotation = glm::vec3(15.0f, 0.f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Demo Scene - (c) 2016 by Sascha Willems";
 	}
@@ -510,9 +510,9 @@ public:
 		);
 
 		uboVS.model = glm::mat4();
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboVS.normal = glm::inverseTranspose(uboVS.view * uboVS.model);
 

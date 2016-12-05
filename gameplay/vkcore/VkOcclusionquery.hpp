@@ -89,7 +89,7 @@ public:
 		mZoom = -35.0f;
 		zoomSpeed = 2.5f;
 		rotationSpeed = 0.5f;
-		rotation = { 0.0, -123.75, 0.0 };
+		mRotation = { 0.0, -123.75, 0.0 };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Occlusion queries";
 	}
@@ -572,9 +572,9 @@ public:
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
 		glm::mat4 rotMatrix = glm::mat4();
-		rotMatrix = glm::rotate(rotMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		rotMatrix = glm::rotate(rotMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		rotMatrix = glm::rotate(rotMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboVS.model = viewMatrix * rotMatrix;
 

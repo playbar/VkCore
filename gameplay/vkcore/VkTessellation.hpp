@@ -68,7 +68,7 @@ public:
 	VkTessellation() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -6.5f;
-		rotation = glm::vec3(-350.0f, 60.0f, 0.0f);
+		mRotation = glm::vec3(-350.0f, 60.0f, 0.0f);
 		cameraPos = glm::vec3(-3.0f, 2.3f, 0.0f);
 		title = "Vulkan Example - Tessellation shader (PN Triangles)";
 		mEnableTextOverlay = true;
@@ -459,9 +459,9 @@ public:
 
 		uboTE.model = glm::mat4();
 		uboTE.model = viewMatrix * glm::translate(uboTE.model, cameraPos);
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 
