@@ -136,7 +136,7 @@ public:
 	VulkanTextOverlay *mTextOverlay;
 
 	// Use to adjust mouse rotation speed
-	float rotationSpeed = 1.0f;
+	float rotationSpeed = 0.02f;
 	// Use to adjust mouse zoom speed
 	float zoomSpeed = 1.0f;
 

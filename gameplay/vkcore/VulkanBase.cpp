@@ -1095,8 +1095,8 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		{
 			int32_t posx = LOWORD(lParam);
 			int32_t posy = HIWORD(lParam);
-			rotation.x += (mousePos.y - (float)posy) * 1.25f * rotationSpeed;
-			rotation.y -= (mousePos.x - (float)posx) * 1.25f * rotationSpeed;
+			mRotation.x += (mousePos.y - (float)posy) * 1.25f * rotationSpeed;
+			mRotation.y -= (mousePos.x - (float)posx) * 1.25f * rotationSpeed;
 			camera.rotate(glm::vec3((mousePos.y - (float)posy) * camera.rotationSpeed, -(mousePos.x - (float)posx) * camera.rotationSpeed, 0.0f));
 			mousePos = glm::vec2((float)posx, (float)posy);
 			viewUpdated = true;

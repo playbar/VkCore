@@ -17,6 +17,8 @@
 #include <iomanip>
 #include "Matrix.h"
 
+using namespace vkcore;
+
 class VkTriangle : public VulkanBase
 {
 	struct Vertex
@@ -366,16 +368,21 @@ public:
 		//std::cout.precision(4);
 		//std::cout << mZoom << std::endl;
 
-		mUboVS.viewMatrix.translate(0.0f, 0.0f, mZoom);
+		Matrix::createTranslation(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
+		//mUboVS.viewMatrix.translate(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
 		char szTmp[256] = {};
 		sprintf(szTmp, "zoom=%f", mZoom);
 		OutputDebugString(szTmp);
 		//mUboVS.modelMatrix = glm::mat4();
 		//mUboVS.modelMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -1.7));
 		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		mUboVS.modelMatrix.rotate(vkcore::Vector3(1.0f, 0.0f, 0.0f), mRotation.x);
-		mUboVS.modelMatrix.rotate(vkcore::Vector3(0.0f, 1.0f, 0.0f), mRotation.y);
-		mUboVS.modelMatrix.rotate(vkcore::Vector3(0.0f, 0.0f, 1.0f), mRotation.z);
+		//mUboVS.modelMatrix.rotate(vkcore::Vector3(1.0f, 0.0f, 0.0f), mRotation.x);
+		Matrix::createRotationX(mRotation.x, &mUboVS.modelMatrix);
+		mUboVS.modelMatrix.rotateY(mRotation.y);
+		mUboVS.modelMatrix.rotateZ(mRotation.z);
+		//Matrix::createRotationY(mRotation.y, &mUboVS.modelMatrix);
+		//mat.rotate(vkcore::Vector3(0.0f, 1.0f, 0.0f), mRotation.y, &mUboVS.modelMatrix);
+		//mUboVS.modelMatrix.rotate(vkcore::Vector3(0.0f, 0.0f, 1.0f), mRotation.z);
 		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
