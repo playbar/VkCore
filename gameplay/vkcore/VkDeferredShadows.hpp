@@ -174,16 +174,16 @@ public:
 	{
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading with shadows (2016 by Sascha Willems)";
-		camera.type = VkCamera::CameraType::firstperson;
+		mCamera.type = VkCamera::CameraType::firstperson;
 #if defined(__ANDROID__)
-		camera.movementSpeed = 2.5f;
+		mCamera.movementSpeed = 2.5f;
 #else
-		camera.movementSpeed = 5.0f;
-		camera.rotationSpeed = 0.25f;
+		mCamera.movementSpeed = 5.0f;
+		mCamera.rotationSpeed = 0.25f;
 #endif
-		camera.position = { 2.15f, 0.3f, -8.75f };
-		camera.setRotation(glm::vec3(-0.75f, 12.5f, 0.0f));
-		camera.setPerspective(60.0f, (float)width / (float)height, zNear, zFar);
+		mCamera.position = { 2.15f, 0.3f, -8.75f };
+		mCamera.setRotation(glm::vec3(-0.75f, 12.5f, 0.0f));
+		mCamera.setPerspective(60.0f, (float)width / (float)height, zNear, zFar);
 		timerSpeed *= 0.25f;
 		paused = true;
 	}
@@ -993,8 +993,8 @@ public:
 
 	void updateUniformBufferDeferredMatrices()
 	{
-		uboOffscreenVS.projection = camera.matrices.perspective;
-		uboOffscreenVS.view = camera.matrices.view;
+		uboOffscreenVS.projection = mCamera.mMatrices.perspective;
+		uboOffscreenVS.view = mCamera.mMatrices.view;
 		uboOffscreenVS.model = glm::mat4();
 
 		uint8_t *pData;
@@ -1054,7 +1054,7 @@ public:
 		memcpy(pData, &uboShadowGS, sizeof(uboShadowGS));
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.uboShadowGS.memory);
 
-		uboFragmentLights.viewPos = glm::vec4(camera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);;
+		uboFragmentLights.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);;
 
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.fsLights.memory, 0, sizeof(uboFragmentLights), 0, (void **)&pData));
 		memcpy(pData, &uboFragmentLights, sizeof(uboFragmentLights));

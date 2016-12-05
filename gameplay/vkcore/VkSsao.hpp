@@ -150,14 +150,14 @@ public:
 		mRotation = { 0.0f, 0.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Screen space ambient occlusion";
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.movementSpeed = 5.0f;
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.movementSpeed = 5.0f;
 #ifndef __ANDROID__
-		camera.rotationSpeed = 0.25f;
+		mCamera.rotationSpeed = 0.25f;
 #endif
-		camera.position = { 7.5f, -6.75f, 0.0f };
-		camera.setRotation(glm::vec3(5.0f, 90.0f, 0.0f));
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 64.0f);
+		mCamera.position = { 7.5f, -6.75f, 0.0f };
+		mCamera.setRotation(glm::vec3(5.0f, 90.0f, 0.0f));
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 64.0f);
 	}
 
 	~VkSsao()
@@ -1045,8 +1045,8 @@ public:
 
 	void updateUniformBufferMatrices()
 	{
-		uboSceneMatrices.projection = camera.matrices.perspective;
-		uboSceneMatrices.view = camera.matrices.view;
+		uboSceneMatrices.projection = mCamera.mMatrices.perspective;
+		uboSceneMatrices.view = mCamera.mMatrices.view;
 		uboSceneMatrices.model = glm::mat4();
 
 		VK_CHECK_RESULT(uniformBuffers.sceneMatrices.map());
@@ -1056,7 +1056,7 @@ public:
 
 	void updateUniformBufferSSAOParams()
 	{
-		uboSSAOParams.projection = camera.matrices.perspective;
+		uboSSAOParams.projection = mCamera.mMatrices.perspective;
 
 		VK_CHECK_RESULT(uniformBuffers.ssaoParams.map());
 		uniformBuffers.ssaoParams.copyTo(&uboSSAOParams, sizeof(uboSSAOParams));

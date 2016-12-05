@@ -74,12 +74,12 @@ public:
 	{
 		title = "Vulkan Example - Runtime mip map generation";
 		mEnableTextOverlay = true;
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 1024.0f);
-		camera.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
-		camera.setTranslation(glm::vec3(40.75f, 0.0f, 0.0f));
-		camera.movementSpeed = 2.5f;
-		camera.rotationSpeed = 0.5f;
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 1024.0f);
+		mCamera.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
+		mCamera.setTranslation(glm::vec3(40.75f, 0.0f, 0.0f));
+		mCamera.movementSpeed = 2.5f;
+		mCamera.rotationSpeed = 0.5f;
 		timerSpeed *= 0.05f;
 		paused = true;
 	}
@@ -651,10 +651,10 @@ public:
 
 	void updateUniformBuffers()
 	{
-		uboVS.projection = camera.matrices.perspective;
-		uboVS.view = camera.matrices.view;
+		uboVS.projection = mCamera.mMatrices.perspective;
+		uboVS.view = mCamera.mMatrices.view;
 		uboVS.model = glm::rotate(glm::mat4(), glm::radians(timer * 360.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.viewPos = glm::vec4(camera.position, 0.0f) * glm::vec4(-1.0f);
+		uboVS.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f);
 		VK_CHECK_RESULT(uniformBufferVS.map());
 		memcpy(uniformBufferVS.mapped, &uboVS, sizeof(uboVS));
 		uniformBufferVS.unmap();

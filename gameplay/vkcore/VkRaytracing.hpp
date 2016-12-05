@@ -88,12 +88,12 @@ public:
 		compute.ubo.aspectRatio = (float)width / (float)height;
 		timerSpeed *= 0.25f;
 
-		camera.type = VkCamera::CameraType::lookat;
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
-		camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-		camera.setTranslation(glm::vec3(0.0f, 0.0f, -4.0f));
-		camera.rotationSpeed = 0.0f;
-		camera.movementSpeed = 2.5f;
+		mCamera.type = VkCamera::CameraType::lookat;
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
+		mCamera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+		mCamera.setTranslation(glm::vec3(0.0f, 0.0f, -4.0f));
+		mCamera.rotationSpeed = 0.0f;
+		mCamera.movementSpeed = 2.5f;
 	}
 
 	~VkRaytracing()
@@ -666,7 +666,7 @@ public:
 		compute.ubo.lightPos.x = 0.0f + sin(glm::radians(timer * 360.0f)) * cos(glm::radians(timer * 360.0f)) * 2.0f;
 		compute.ubo.lightPos.y = 0.0f + sin(glm::radians(timer * 360.0f)) * 2.0f;
 		compute.ubo.lightPos.z = 0.0f + cos(glm::radians(timer * 360.0f)) * 2.0f;
-		compute.ubo.camera.pos = camera.position * -1.0f;
+		compute.ubo.camera.pos = mCamera.position * -1.0f;
 		VK_CHECK_RESULT(compute.uniformBuffer.map());
 		memcpy(compute.uniformBuffer.mapped, &compute.ubo, sizeof(compute.ubo));
 		compute.uniformBuffer.unmap();

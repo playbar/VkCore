@@ -23,11 +23,11 @@ private:
 
 		if (type == CameraType::firstperson)
 		{
-			matrices.view = rotM * transM;
+			mMatrices.view = rotM * transM;
 		}
 		else
 		{
-			matrices.view = transM * rotM;
+			mMatrices.view = transM * rotM;
 		}
 	};
 public:
@@ -44,7 +44,7 @@ public:
 	{
 		glm::mat4 perspective;
 		glm::mat4 view;
-	} matrices;
+	} mMatrices;
 
 	struct
 	{
@@ -64,12 +64,12 @@ public:
 		this->fov = fov;
 		this->znear = znear;
 		this->zfar = zfar;
-		matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
+		mMatrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
 	};
 
 	void updateAspectRatio(float aspect)
 	{
-		matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
+		mMatrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
 	}
 
 	void setRotation(glm::vec3 rotation)

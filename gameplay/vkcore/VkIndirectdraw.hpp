@@ -102,11 +102,11 @@ public:
 	{
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Indirect rendering";
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
-		camera.setRotation(glm::vec3(-12.0f, 159.0f, 0.0f));
-		camera.setTranslation(glm::vec3(0.4f, 1.25f, 0.0f));
-		camera.movementSpeed = 5.0f;
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
+		mCamera.setRotation(glm::vec3(-12.0f, 159.0f, 0.0f));
+		mCamera.setTranslation(glm::vec3(0.4f, 1.25f, 0.0f));
+		mCamera.movementSpeed = 5.0f;
 	}
 
 	~VkIndirectdraw()
@@ -587,8 +587,8 @@ public:
 	{
 		if (viewChanged)
 		{
-			uboVS.projection = camera.matrices.perspective;
-			uboVS.view = camera.matrices.view;
+			uboVS.projection = mCamera.mMatrices.perspective;
+			uboVS.view = mCamera.mMatrices.view;
 		}
 
 		memcpy(uniformData.scene.mapped, &uboVS, sizeof(uboVS));

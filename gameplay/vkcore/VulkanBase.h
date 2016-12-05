@@ -140,7 +140,7 @@ public:
 	// Use to adjust mouse zoom speed
 	float zoomSpeed = 1.0f;
 
-	VkCamera camera;
+	VkCamera mCamera;
 
 	glm::vec3 mRotation = glm::vec3();
 	glm::vec3 cameraPos = glm::vec3();

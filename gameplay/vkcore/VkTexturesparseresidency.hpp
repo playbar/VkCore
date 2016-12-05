@@ -240,14 +240,14 @@ public:
 		{
 			vkTools::exitFatal("Device does not support sparse residency for 2D images!", "Feature not supported");
 		}
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.movementSpeed = 50.0f;
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.movementSpeed = 50.0f;
 #ifndef __ANDROID__
-		camera.rotationSpeed = 0.25f;
+		mCamera.rotationSpeed = 0.25f;
 #endif
-		camera.position = { 84.5f, 40.5f, 225.0f };
-		camera.setRotation(glm::vec3(-8.5f, -200.0f, 0.0f));
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 1024.0f);
+		mCamera.position = { 84.5f, 40.5f, 225.0f };
+		mCamera.setRotation(glm::vec3(-8.5f, -200.0f, 0.0f));
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 1024.0f);
 	}
 
 	~VkTexturesparseresidency()
@@ -892,8 +892,8 @@ public:
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		uboVS.projection = camera.matrices.perspective;
-		uboVS.model = camera.matrices.view;
+		uboVS.projection = mCamera.mMatrices.perspective;
+		uboVS.model = mCamera.mMatrices.view;
 		//uboVS.model = glm::mat4();
 
 		uboVS.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);

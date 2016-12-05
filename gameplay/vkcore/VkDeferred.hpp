@@ -133,14 +133,14 @@ public:
 		mRotation = { 0.0f, 0.0f, 0.0f };
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Deferred shading (2016 by Sascha Willems)";
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.movementSpeed = 5.0f;
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.movementSpeed = 5.0f;
 #ifndef __ANDROID__
-		camera.rotationSpeed = 0.25f;
+		mCamera.rotationSpeed = 0.25f;
 #endif
-		camera.position = { 2.15f, 0.3f, -8.75f };
-		camera.setRotation(glm::vec3(-0.75f, 12.5f, 0.0f));
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
+		mCamera.position = { 2.15f, 0.3f, -8.75f };
+		mCamera.setRotation(glm::vec3(-0.75f, 12.5f, 0.0f));
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 	}
 
 	~VkDeferred()
@@ -1046,8 +1046,8 @@ public:
 		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		uboOffscreenVS.model = glm::rotate(uboOffscreenVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		uboOffscreenVS.projection = camera.matrices.perspective;
-		uboOffscreenVS.view = camera.matrices.view;
+		uboOffscreenVS.projection = mCamera.mMatrices.perspective;
+		uboOffscreenVS.view = mCamera.mMatrices.view;
 		uboOffscreenVS.model = glm::mat4();
 
 		uint8_t *pData;
@@ -1100,7 +1100,7 @@ public:
 		uboFragmentLights.lights[5].position.z = 0.0f - cos(glm::radians(-360.0f * timer - 45.0f)) * 10.0f;
 
 		// Current view position
-		uboFragmentLights.viewPos = glm::vec4(camera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+		uboFragmentLights.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.fsLights.memory, 0, sizeof(uboFragmentLights), 0, (void **)&pData));

@@ -96,14 +96,14 @@ public:
 	{
 		mEnableTextOverlay = false;
 		title = "Vulkan Example - Subpasses";
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.movementSpeed = 5.0f;
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.movementSpeed = 5.0f;
 #ifndef __ANDROID__
-		camera.rotationSpeed = 0.25f;
+		mCamera.rotationSpeed = 0.25f;
 #endif
-		camera.position = { 9.5f, 4.5f, -5.8f };
-		camera.setRotation(glm::vec3(-9.5f, 53.25f, 0.0f));
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
+		mCamera.position = { 9.5f, 4.5f, -5.8f };
+		mCamera.setRotation(glm::vec3(-9.5f, 53.25f, 0.0f));
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 	}
 
 	~VkSubPasses()
@@ -810,8 +810,8 @@ public:
 
 	void updateUniformBufferDeferredMatrices()
 	{
-		uboGBuffer.projection = camera.matrices.perspective;
-		uboGBuffer.view = camera.matrices.view;
+		uboGBuffer.projection = mCamera.mMatrices.perspective;
+		uboGBuffer.view = mCamera.mMatrices.view;
 		uboGBuffer.model = glm::mat4();
 
 		VK_CHECK_RESULT(uniformBuffers.GBuffer.map());
@@ -846,7 +846,7 @@ public:
 	void updateUniformBufferDeferredLights()
 	{
 		// Current view position
-		uboLights.viewPos = glm::vec4(camera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+		uboLights.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
 
 		VK_CHECK_RESULT(uniformBuffers.lights.map());
 		memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));

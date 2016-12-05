@@ -114,10 +114,10 @@ public:
 	{
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Compute cull and lod";
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
-		camera.setTranslation(glm::vec3(0.5f, 0.0f, 0.0f));
-		camera.movementSpeed = 5.0f;
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
+		mCamera.setTranslation(glm::vec3(0.5f, 0.0f, 0.0f));
+		mCamera.movementSpeed = 5.0f;
 		memset(&indirectStats, 0, sizeof(indirectStats));
 	}
 
@@ -750,11 +750,11 @@ public:
 	{
 		if (viewChanged)
 		{
-			uboScene.projection = camera.matrices.perspective;
-			uboScene.modelview = camera.matrices.view;
+			uboScene.projection = mCamera.mMatrices.perspective;
+			uboScene.modelview = mCamera.mMatrices.view;
 			if (!fixedFrustum)
 			{
-				uboScene.cameraPos = glm::vec4(camera.position, 1.0f) * -1.0f;
+				uboScene.cameraPos = glm::vec4(mCamera.position, 1.0f) * -1.0f;
 				frustum.update(uboScene.projection * uboScene.modelview);
 				memcpy(uboScene.frustumPlanes, frustum.planes.data(), sizeof(glm::vec4) * 6);
 			}

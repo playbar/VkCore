@@ -537,11 +537,11 @@ public:
 	{
 		rotationSpeed = 0.5f;
 		mEnableTextOverlay = true;
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.movementSpeed = 7.5f;
-		camera.position = { 15.0f, -13.5f, 0.0f };
-		camera.setRotation(glm::vec3(5.0f, 90.0f, 0.0f));
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.movementSpeed = 7.5f;
+		mCamera.position = { 15.0f, -13.5f, 0.0f };
+		mCamera.setRotation(glm::vec3(5.0f, 90.0f, 0.0f));
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 		title = "Vulkan Example - Scene rendering";
 	}
 
@@ -744,11 +744,11 @@ public:
 	{
 		if (attachLight)
 		{
-			scene->uniformData.lightPos = glm::vec4(-camera.position, 1.0f);
+			scene->uniformData.lightPos = glm::vec4(-mCamera.position, 1.0f);
 		}
 
-		scene->uniformData.projection = camera.matrices.perspective;
-		scene->uniformData.view = camera.matrices.view;
+		scene->uniformData.projection = mCamera.mMatrices.perspective;
+		scene->uniformData.view = mCamera.mMatrices.view;
 		scene->uniformData.model = glm::mat4();
 
 		memcpy(scene->uniformBuffer.mapped, &scene->uniformData, sizeof(scene->uniformData));

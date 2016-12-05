@@ -108,12 +108,12 @@ public:
 	{
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Dynamic terrain tessellation";
-		camera.type = VkCamera::CameraType::firstperson;
-		camera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
-		camera.setRotation(glm::vec3(-12.0f, 159.0f, 0.0f));
-		camera.setTranslation(glm::vec3(18.0f, 22.5f, 57.5f));
+		mCamera.type = VkCamera::CameraType::firstperson;
+		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
+		mCamera.setRotation(glm::vec3(-12.0f, 159.0f, 0.0f));
+		mCamera.setTranslation(glm::vec3(18.0f, 22.5f, 57.5f));
 
-		camera.movementSpeed = 7.5f;
+		mCamera.movementSpeed = 7.5f;
 		// Support for tessellation shaders is optional, so check first
 		//if (!deviceFeatures.tessellationShader)
 		//{
@@ -827,8 +827,8 @@ public:
 	{
 		// Tessellation
 
-		uboTess.projection = camera.matrices.perspective;
-		uboTess.modelview = camera.matrices.view * glm::mat4();
+		uboTess.projection = mCamera.mMatrices.perspective;
+		uboTess.modelview = mCamera.mMatrices.view * glm::mat4();
 		uboTess.lightPos.y = -0.5f - uboTess.displacementFactor; // todo: Not uesed yet
 		uboTess.viewportDim = glm::vec2((float)width, (float)height);
 
@@ -853,7 +853,7 @@ public:
 		}
 
 		// Skysphere vertex shader
-		uboVS.mvp = camera.matrices.perspective * glm::mat4(glm::mat3(camera.matrices.view));
+		uboVS.mvp = mCamera.mMatrices.perspective * glm::mat4(glm::mat3(mCamera.mMatrices.view));
 
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.skysphereVertex.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
