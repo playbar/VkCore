@@ -9,8 +9,6 @@
 #include <random>
 
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -54,7 +52,7 @@ public:
 
 	// Per-instance data block
 	struct InstanceData {
-		glm::vec3 pos;
+		Vector3 pos;
 		float scale;
 	};
 
@@ -529,7 +527,7 @@ public:
 				for (uint32_t z = 0; z < OBJECT_COUNT; z++)
 				{
 					uint32_t index = x + y * OBJECT_COUNT + z * OBJECT_COUNT * OBJECT_COUNT;
-					instanceData[index].pos = glm::vec3((float)x, (float)y, (float)z) - glm::vec3((float)OBJECT_COUNT / 2.0f);
+					instanceData[index].pos = Vector3((float)x, (float)y, (float)z) - Vector3((float)OBJECT_COUNT / 2.0f);
 					instanceData[index].scale = 2.0f;
 				}
 			}
@@ -756,8 +754,8 @@ public:
 			{
 				uboScene.cameraPos = Vector4(mCamera.position.x,
 					mCamera.position.y, mCamera.position.z, 1.0f) * -1.0f;
-
-				frustum.update(uboScene.projection * uboScene.modelview);
+				Matrix mat = uboScene.projection * uboScene.modelview;
+				frustum.update(mat);
 				memcpy(uboScene.frustumPlanes, frustum.planes.data(), sizeof(glm::vec4) * 6);
 			}
 		}

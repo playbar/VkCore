@@ -8,9 +8,6 @@
 #include <random>
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -71,9 +68,9 @@ public:
 
 	// SSBO particle declaration
 	struct Particle {
-		glm::vec2 pos;								// Particle position
-		glm::vec2 vel;								// Particle velocity
-		glm::vec4 gradientPos;						// Texture coordiantes for the gradient ramp map
+		Vector2 pos;								// Particle position
+		Vector2 vel;								// Particle velocity
+		Vector4 gradientPos;						// Texture coordiantes for the gradient ramp map
 	};
 
 	VkComputeParticles() : VulkanBase(ENABLE_VALIDATION)
@@ -230,8 +227,8 @@ public:
 		std::vector<Particle> particleBuffer(PARTICLE_COUNT);
 		for (auto& particle : particleBuffer)
 		{
-			particle.pos = glm::vec2(rDistribution(rGenerator), rDistribution(rGenerator));
-			particle.vel = glm::vec2(0.0f);
+			particle.pos = Vector2(rDistribution(rGenerator), rDistribution(rGenerator));
+			particle.vel = Vector2(0.0f, 0.0f);
 			particle.gradientPos.x = particle.pos.x / 2.0f;
 		}
 

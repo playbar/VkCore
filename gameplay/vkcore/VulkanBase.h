@@ -33,6 +33,7 @@
 #include "vulkanMeshLoader.hpp"
 #include "vulkantextoverlay.hpp"
 #include "VkCamera.hpp"
+#include "Vector2.h"
 
 // Function pointer for getting physical device fetures to be enabled
 typedef VkPhysicalDeviceFeatures (*PFN_GetEnabledFeatures)();
@@ -136,15 +137,15 @@ public:
 	VulkanTextOverlay *mTextOverlay;
 
 	// Use to adjust mouse rotation speed
-	float rotationSpeed = 0.02f;
+	float rotationSpeed = 0.5f;
 	// Use to adjust mouse zoom speed
 	float zoomSpeed = 1.0f;
 
 	VkCamera mCamera;
 
-	glm::vec3 mRotation = glm::vec3();
-	glm::vec3 cameraPos = glm::vec3();
-	glm::vec2 mousePos;
+	Vector3 mRotation;
+	Vector3 cameraPos;
+	Vector2 mousePos;
 
 	std::string title = "VkCore";
 	std::string name = "VkCore";

@@ -7,8 +7,6 @@
 #include <vector>
 #include <random>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"

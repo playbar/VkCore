@@ -1088,7 +1088,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			int32_t posy = HIWORD(lParam);
 			mZoom += (mousePos.y - (float)posy) * .005f * zoomSpeed;
 			mCamera.translate(Vector3(-0.0f, 0.0f, (mousePos.y - (float)posy) * .005f * zoomSpeed));
-			mousePos = glm::vec2((float)posx, (float)posy);
+			mousePos = Vector2((float)posx, (float)posy);
 			viewUpdated = true;
 		}
 		if (wParam & MK_LBUTTON)
@@ -1098,7 +1098,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			mRotation.x += (mousePos.y - (float)posy) * 1.25f * rotationSpeed;
 			mRotation.y -= (mousePos.x - (float)posx) * 1.25f * rotationSpeed;
 			mCamera.rotate(Vector3((mousePos.y - (float)posy) * mCamera.rotationSpeed, -(mousePos.x - (float)posx) * mCamera.rotationSpeed, 0.0f));
-			mousePos = glm::vec2((float)posx, (float)posy);
+			mousePos = Vector2((float)posx, (float)posy);
 			viewUpdated = true;
 		}
 		if (wParam & MK_MBUTTON)

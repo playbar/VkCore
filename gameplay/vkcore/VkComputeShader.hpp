@@ -7,8 +7,6 @@
 #include <vector>
 
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -64,8 +62,8 @@ public:
 	vkTools::UniformData uniformDataVS;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
+		Matrix projection;
+		Matrix model;
 	} uboVS;
 
 	struct {
@@ -720,14 +718,23 @@ public:
 
 	void updateUniformBuffers()
 	{
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width*0.5f / (float)height, 0.1f, 256.0f, &uboVS.projection);
+		Matrix viewMatrix,tmpMat;
+		viewMatrix.translate(0.0f, 0.0f, mZoom);
 		// Vertex shader uniform buffer block
-		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width*0.5f / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width*0.5f / (float)height, 0.1f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
-		uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix::createTranslation(cameraPos, &tmpMat);
+		uboVS.model = viewMatrix * tmpMat;
+		uboVS.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboVS.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboVS.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+
+		//uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformDataVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));

@@ -7,9 +7,6 @@
 #include <vector>
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -60,8 +57,8 @@ public:
 	} uniformData;
 
 	struct UBO {
-		glm::mat4 projection;
-		glm::mat4 model;
+		Matrix projection;
+		Matrix model;
 	};
 
 	struct UBOBlur {
@@ -897,31 +894,45 @@ public:
 	// Update uniform buffers for rendering the 3D scene
 	void updateUniformBuffersScene()
 	{
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(45.0f), (float)width / (float)height, 0.1f, 256.0f, &ubos.fullscreen.projection);
+
+		Matrix viewMatrix, tmpMat;
+		viewMatrix.translate(Vector3(0.0f, -1.0f, mZoom));
+		tmpMat.translate(Vector3(sin(MATH_DEG_TO_RAD(timer * 360.0f)) * 0.25f, 0.0f, cos(MATH_DEG_TO_RAD(timer * 360.0f)) * 0.25f) + cameraPos);
 		// UFO
-		ubos.fullscreen.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, -1.0f, mZoom));
+		//ubos.fullscreen.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, -1.0f, mZoom));
 
-		ubos.fullscreen.model = viewMatrix *
-			glm::translate(glm::mat4(), glm::vec3(sin(glm::radians(timer * 360.0f)) * 0.25f, 0.0f, cos(glm::radians(timer * 360.0f)) * 0.25f) + cameraPos);
+		ubos.fullscreen.model = viewMatrix * tmpMat;
+		//glm::translate(glm::mat4(), glm::vec3(sin(glm::radians(timer * 360.0f)) * 0.25f, 0.0f, cos(glm::radians(timer * 360.0f)) * 0.25f) + cameraPos);
 
-		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, -sinf(glm::radians(timer * 360.0f)) * 0.15f, glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(timer * 360.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubos.fullscreen.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		ubos.fullscreen.model.rotateX(-sinf(MATH_DEG_TO_RAD(timer * 360.0f)) * 0.15f);
+		ubos.fullscreen.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		ubos.fullscreen.model.rotateY(MATH_DEG_TO_RAD(timer * 360.0f));
+		ubos.fullscreen.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+
+		//ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, -sinf(glm::radians(timer * 360.0f)) * 0.15f, glm::vec3(1.0f, 0.0f, 0.0f));
+		//ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(timer * 360.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubos.fullscreen.model = glm::rotate(ubos.fullscreen.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsFullScreen.memory, 0, sizeof(ubos.fullscreen), 0, (void **)&pData));
 		memcpy(pData, &ubos.fullscreen, sizeof(ubos.fullscreen));
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsFullScreen.memory);
 
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(45.0f), (float)width / (float)height, 0.1f, 256.0f, &ubos.skyBox.projection);
 		// Skybox
-		ubos.skyBox.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
-
-		ubos.skyBox.model = glm::mat4();
-		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubos.skyBox.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
+		Matrix::createRotationX(MATH_DEG_TO_RAD(mRotation.x), &ubos.skyBox.model);
+		ubos.skyBox.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		ubos.skyBox.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+		//ubos.skyBox.model = glm::mat4();
+		//ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubos.skyBox.model = glm::rotate(ubos.skyBox.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsSkyBox.memory, 0, sizeof(ubos.skyBox), 0, (void **)&pData));
 		memcpy(pData, &ubos.skyBox, sizeof(ubos.skyBox));
@@ -931,9 +942,10 @@ public:
 	// Update uniform buffers for the fullscreen quad
 	void updateUniformBuffersScreen()
 	{
+		Matrix::createOrthographicOffCenter(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f, &ubos.scene.projection);
 		// Vertex shader
-		ubos.scene.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
-		ubos.scene.model = glm::mat4();
+		//ubos.scene.projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f);
+		//ubos.scene.model = glm::mat4();
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory, 0, sizeof(ubos.scene), 0, (void **)&pData));

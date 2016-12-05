@@ -79,14 +79,12 @@ public:
 		this->fov = fov;
 		this->znear = znear;
 		this->zfar = zfar;
-		Matrix::createPerspectiveVK(fov, aspect, znear, zfar, &mMatrices.perspective);
-		//mMatrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(fov), aspect, znear, zfar, &mMatrices.perspective);
 	};
 
 	void updateAspectRatio(float aspect)
 	{
-		Matrix::createPerspectiveVK(fov, aspect, znear, zfar, &mMatrices.perspective);	
-		//mMatrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(fov), aspect, znear, zfar, &mMatrices.perspective);	
 	}
 
 	void setRotation(Vector3 rotation)

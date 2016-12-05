@@ -39,6 +39,7 @@ public:
      */
     Vector3();
 
+	Vector3(float val);
     /**
      * Constructs a new vector initialized to the specified values.
      *
