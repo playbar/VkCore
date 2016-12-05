@@ -40,19 +40,19 @@ public:
 	} vertices;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 view;
+		Matrix projection;
+		Matrix model;
+		Matrix view;
 	} uboGBuffer;
 
 	struct Light {
-		glm::vec4 position;
-		glm::vec3 color;
+		Vector4 position;
+		Vector3 color;
 		float radius;
 	};
 
 	struct {
-		glm::vec4 viewPos;
+		Vector4 viewPos;
 		Light lights[NUM_LIGHTS];
 	} uboLights;
 
@@ -102,7 +102,7 @@ public:
 		mCamera.rotationSpeed = 0.25f;
 #endif
 		mCamera.position = { 9.5f, 4.5f, -5.8f };
-		mCamera.setRotation(glm::vec3(-9.5f, 53.25f, 0.0f));
+		mCamera.setRotation(Vector3(-9.5f, 53.25f, 0.0f));
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
 	}
 
@@ -812,7 +812,6 @@ public:
 	{
 		uboGBuffer.projection = mCamera.mMatrices.perspective;
 		uboGBuffer.view = mCamera.mMatrices.view;
-		uboGBuffer.model = glm::mat4();
 
 		VK_CHECK_RESULT(uniformBuffers.GBuffer.map());
 		memcpy(uniformBuffers.GBuffer.mapped, &uboGBuffer, sizeof(uboGBuffer));
@@ -821,13 +820,13 @@ public:
 
 	void initLights()
 	{
-		std::vector<glm::vec3> colors =
+		std::vector<Vector3> colors =
 		{
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			glm::vec3(1.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 1.0f, 0.0f),
-			glm::vec3(0.0f, 0.0f, 1.0f),
-			glm::vec3(1.0f, 1.0f, 0.0f),
+			Vector3(1.0f, 1.0f, 1.0f),
+			Vector3(1.0f, 0.0f, 0.0f),
+			Vector3(0.0f, 1.0f, 0.0f),
+			Vector3(0.0f, 0.0f, 1.0f),
+			Vector3(1.0f, 1.0f, 0.0f),
 		};
 
 		std::mt19937 rndGen((unsigned)time(NULL));
@@ -836,7 +835,7 @@ public:
 
 		for (auto& light : uboLights.lights)
 		{
-			light.position = glm::vec4(rndDist(rndGen) * 6.0f, 0.25f + std::abs(rndDist(rndGen)) * 4.0f, rndDist(rndGen) * 6.0f, 1.0f);
+			light.position = Vector4(rndDist(rndGen) * 6.0f, 0.25f + std::abs(rndDist(rndGen)) * 4.0f, rndDist(rndGen) * 6.0f, 1.0f);
 			light.color = colors[rndCol(rndGen)];
 			light.radius = 1.0f + std::abs(rndDist(rndGen));
 		}
@@ -846,7 +845,8 @@ public:
 	void updateUniformBufferDeferredLights()
 	{
 		// Current view position
-		uboLights.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+		uboLights.viewPos = Vector4(mCamera.position.x, mCamera.position.y,
+			mCamera.position.z, 0.0f) * Vector4(-1.0f, 1.0f, -1.0f, 1.0f);
 
 		VK_CHECK_RESULT(uniformBuffers.lights.map());
 		memcpy(uniformBuffers.lights.mapped, &uboLights, sizeof(uboLights));

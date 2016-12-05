@@ -170,8 +170,11 @@ public:
      * @param zFarPlane The distance to the far view plane.
      * @param dst A matrix to store the result in.
      */
-    static void createPerspective(float fieldOfView, float aspectRatio, float zNearPlane, float zFarPlane, Matrix* dst);
+    static void createPerspective(float fieldOfView, float aspectRatio, float zNearPlane,
+		float zFarPlane, Matrix* dst);
 
+	static void createPerspectiveVK(float fieldOfView, float aspectRatio,
+		float zNearPlane, float zFarPlane, Matrix* dst);
     /**
      * Creates an orthographic projection matrix.
      *

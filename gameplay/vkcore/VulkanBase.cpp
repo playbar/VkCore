@@ -1077,7 +1077,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 		short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 		mZoom += (float)wheelDelta * 0.005f * zoomSpeed;
-		mCamera.translate(glm::vec3(0.0f, 0.0f, (float)wheelDelta * 0.005f * zoomSpeed));
+		mCamera.translate(Vector3(0.0f, 0.0f, (float)wheelDelta * 0.005f * zoomSpeed));
 		viewUpdated = true;
 		break;
 	}
@@ -1087,7 +1087,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			int32_t posx = LOWORD(lParam);
 			int32_t posy = HIWORD(lParam);
 			mZoom += (mousePos.y - (float)posy) * .005f * zoomSpeed;
-			mCamera.translate(glm::vec3(-0.0f, 0.0f, (mousePos.y - (float)posy) * .005f * zoomSpeed));
+			mCamera.translate(Vector3(-0.0f, 0.0f, (mousePos.y - (float)posy) * .005f * zoomSpeed));
 			mousePos = glm::vec2((float)posx, (float)posy);
 			viewUpdated = true;
 		}
@@ -1097,7 +1097,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			int32_t posy = HIWORD(lParam);
 			mRotation.x += (mousePos.y - (float)posy) * 1.25f * rotationSpeed;
 			mRotation.y -= (mousePos.x - (float)posx) * 1.25f * rotationSpeed;
-			mCamera.rotate(glm::vec3((mousePos.y - (float)posy) * mCamera.rotationSpeed, -(mousePos.x - (float)posx) * mCamera.rotationSpeed, 0.0f));
+			mCamera.rotate(Vector3((mousePos.y - (float)posy) * mCamera.rotationSpeed, -(mousePos.x - (float)posx) * mCamera.rotationSpeed, 0.0f));
 			mousePos = glm::vec2((float)posx, (float)posy);
 			viewUpdated = true;
 		}
@@ -1107,7 +1107,7 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			int32_t posy = HIWORD(lParam);
 			cameraPos.x -= (mousePos.x - (float)posx) * 0.01f;
 			cameraPos.y -= (mousePos.y - (float)posy) * 0.01f;
-			mCamera.translate(glm::vec3(-(mousePos.x - (float)posx) * 0.01f, -(mousePos.y - (float)posy) * 0.01f, 0.0f));
+			mCamera.translate(Vector3(-(mousePos.x - (float)posx) * 0.01f, -(mousePos.y - (float)posy) * 0.01f, 0.0f));
 			viewUpdated = true;
 			mousePos.x = (float)posx;
 			mousePos.y = (float)posy;

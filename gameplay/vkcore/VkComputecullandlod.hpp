@@ -74,10 +74,10 @@ public:
 	std::vector<VkDrawIndexedIndirectCommand> indirectCommands;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 modelview;
-		glm::vec4 cameraPos;
-		glm::vec4 frustumPlanes[6];
+		Matrix projection;
+		Matrix modelview;
+		Vector4 cameraPos;
+		Vector4 frustumPlanes[6];
 	} uboScene;
 
 	struct {
@@ -116,7 +116,7 @@ public:
 		title = "Vulkan Example - Compute cull and lod";
 		mCamera.type = VkCamera::CameraType::firstperson;
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
-		mCamera.setTranslation(glm::vec3(0.5f, 0.0f, 0.0f));
+		mCamera.setTranslation(Vector3(0.5f, 0.0f, 0.0f));
 		mCamera.movementSpeed = 5.0f;
 		memset(&indirectStats, 0, sizeof(indirectStats));
 	}
@@ -754,7 +754,9 @@ public:
 			uboScene.modelview = mCamera.mMatrices.view;
 			if (!fixedFrustum)
 			{
-				uboScene.cameraPos = glm::vec4(mCamera.position, 1.0f) * -1.0f;
+				uboScene.cameraPos = Vector4(mCamera.position.x,
+					mCamera.position.y, mCamera.position.z, 1.0f) * -1.0f;
+
 				frustum.update(uboScene.projection * uboScene.modelview);
 				memcpy(uboScene.frustumPlanes, frustum.planes.data(), sizeof(glm::vec4) * 6);
 			}

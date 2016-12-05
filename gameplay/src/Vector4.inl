@@ -89,4 +89,15 @@ inline const Vector4 operator*(float x, const Vector4& v)
     return result;
 }
 
+inline const Vector4 operator*(const Vector4& v1, const Vector4 &v2)
+{
+	Vector4 result = {
+		v1.x * v2.x,
+		v1.y * v2.y,
+		v1.z * v2.z,
+		v1.w * v2.w
+	};
+	return result;
+}
+
 }

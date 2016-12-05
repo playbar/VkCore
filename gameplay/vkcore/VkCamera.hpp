@@ -4,6 +4,12 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#define MATH_DEG_TO_RAD(x)          ((x) * 0.01745329251994329576923690768489f)
+
+#include "Matrix.h"
+#include "Vector3.h"
+using namespace vkcore;
+
 class VkCamera
 {
 private:
@@ -12,14 +18,21 @@ private:
 
 	void updateViewMatrix()
 	{
-		glm::mat4 rotM = glm::mat4();
-		glm::mat4 transM;
+		//glm::mat4 rotM = glm::mat4();
+		//glm::mat4 transM;
 
-		rotM = glm::rotate(rotM, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		rotM = glm::rotate(rotM, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		rotM = glm::rotate(rotM, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix rotM;
+		Matrix transM;
+		rotM.rotateX(MATH_DEG_TO_RAD(rotation.x));
+		rotM.rotateY(MATH_DEG_TO_RAD(rotation.y));
+		rotM.rotateZ(MATH_DEG_TO_RAD(rotation.z));
 
-		transM = glm::translate(glm::mat4(), position);
+		//rotM = glm::rotate(rotM, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//rotM = glm::rotate(rotM, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//rotM = glm::rotate(rotM, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//transM = glm::translate(glm::mat4(), position);
+
+		transM.translate(position);
 
 		if (type == CameraType::firstperson)
 		{
@@ -34,16 +47,18 @@ public:
 	enum CameraType { lookat, firstperson };
 	CameraType type = CameraType::lookat;
 
-	glm::vec3 rotation = glm::vec3();
-	glm::vec3 position = glm::vec3();
+	Vector3 rotation;
+	Vector3 position;
 
 	float rotationSpeed = 1.0f;
 	float movementSpeed = 1.0f;
 
 	struct
 	{
-		glm::mat4 perspective;
-		glm::mat4 view;
+		Matrix perspective;
+		Matrix view;
+		//glm::mat4 perspective;
+		//glm::mat4 view;
 	} mMatrices;
 
 	struct
@@ -64,33 +79,35 @@ public:
 		this->fov = fov;
 		this->znear = znear;
 		this->zfar = zfar;
-		mMatrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
+		Matrix::createPerspectiveVK(fov, aspect, znear, zfar, &mMatrices.perspective);
+		//mMatrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
 	};
 
 	void updateAspectRatio(float aspect)
 	{
-		mMatrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
+		Matrix::createPerspectiveVK(fov, aspect, znear, zfar, &mMatrices.perspective);	
+		//mMatrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
 	}
 
-	void setRotation(glm::vec3 rotation)
+	void setRotation(Vector3 rotation)
 	{
 		this->rotation = rotation;
 		updateViewMatrix();
 	};
 
-	void rotate(glm::vec3 delta)
+	void rotate(Vector3 delta)
 	{
 		this->rotation += delta;
 		updateViewMatrix();
 	}
 
-	void setTranslation(glm::vec3 translation)
+	void setTranslation(Vector3 translation)
 	{
 		this->position = translation;
 		updateViewMatrix();
 	};
 
-	void translate(glm::vec3 delta)
+	void translate(Vector3 delta)
 	{
 		this->position += delta;
 		updateViewMatrix();
@@ -102,11 +119,12 @@ public:
 		{
 			if (moving())
 			{
-				glm::vec3 camFront;
+				Vector3 camFront;
 				camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
 				camFront.y = sin(glm::radians(rotation.x));
 				camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
-				camFront = glm::normalize(camFront);
+				//camFront = glm::normalize(camFront);
+				camFront.normalize();
 
 				float moveSpeed = deltaTime * movementSpeed;
 
@@ -115,9 +133,17 @@ public:
 				if (keys.down)
 					position -= camFront * moveSpeed;
 				if (keys.left)
-					position -= glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+				{
+					//position -= glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+					camFront.cross(Vector3(0.0f, 1.0f, 0.0f));
+					position -= camFront.normalize() * moveSpeed;
+				}
 				if (keys.right)
-					position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+				{
+					//position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+					camFront.cross(Vector3(0.0f, 1.0f, 0.0f));
+					position -= camFront.normalize() * moveSpeed;
+				}
 
 				updateViewMatrix();
 			}
@@ -138,11 +164,13 @@ public:
 			const float deadZone = 0.0015f;
 			const float range = 1.0f - deadZone;
 
-			glm::vec3 camFront;
+			Vector3 camFront;
 			camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
 			camFront.y = sin(glm::radians(rotation.x));
 			camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
-			camFront = glm::normalize(camFront);
+			camFront.normalize();
+
+			//camFront = glm::normalize(camFront);
 
 			float moveSpeed = deltaTime * movementSpeed * 2.0f;
 			float rotSpeed = deltaTime * rotationSpeed * 50.0f;
@@ -157,7 +185,9 @@ public:
 			if (fabsf(axisLeft.x) > deadZone)
 			{
 				float pos = (fabsf(axisLeft.x) - deadZone) / range;
-				position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * pos * ((axisLeft.x < 0.0f) ? -1.0f : 1.0f) * moveSpeed;
+				//position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * pos * ((axisLeft.x < 0.0f) ? -1.0f : 1.0f) * moveSpeed;
+				camFront.cross(Vector3(0.0f, 1.0f, 0.0f));
+				position += camFront.normalize() * pos * ((axisLeft.x < 0.0f) ? -1.0f : 1.0f) * moveSpeed;
 				retVal = true;
 			}
 

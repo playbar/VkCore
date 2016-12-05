@@ -452,6 +452,8 @@ public:
  */
 inline const Vector4 operator*(float x, const Vector4& v);
 
+inline const Vector4 operator*(const Vector4& v1, const Vector4 &v2);
+
 }
 
 #include "Vector4.inl"

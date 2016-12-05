@@ -137,6 +137,34 @@ void Matrix::createPerspective(float fieldOfView, float aspectRatio,
     dst->m[14] = -2.0f * zFarPlane * zNearPlane * f_n;
 }
 
+
+void Matrix::createPerspectiveVK(float fieldOfView, float aspectRatio,
+	float zNearPlane, float zFarPlane, Matrix* dst)
+{
+	GP_ASSERT(dst);
+	GP_ASSERT(zFarPlane != zNearPlane);
+
+	float theta = MATH_DEG_TO_RAD(fieldOfView);
+	if (fabs(fmod(theta, MATH_PIOVER2)) < MATH_EPSILON)
+	{
+		GP_ERROR("Invalid field of view value (%d) causes attempted calculation tan(%d), which is undefined.", fieldOfView, theta);
+		return;
+	}
+	float divisor = tan(theta / 2.0f);
+	GP_ASSERT(divisor);
+	float factor = 1.0f / divisor;
+
+	memset(dst, 0, MATRIX_SIZE);
+
+	GP_ASSERT(aspectRatio);
+	dst->m[0] = (1.0f / aspectRatio) * factor;
+	dst->m[5] = factor;
+	dst->m[10] = zFarPlane / (zNearPlane - zFarPlane) ; //(-(zFarPlane + zNearPlane)) * f_n;
+	dst->m[11] = -1.0f;
+	dst->m[14] =  -(zFarPlane * zNearPlane) / (zFarPlane - zNearPlane);
+}
+
+
 void Matrix::createOrthographic(float width, float height, float zNearPlane, float zFarPlane, Matrix* dst)
 {
     float halfWidth = width / 2.0f;
