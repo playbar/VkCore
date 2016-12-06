@@ -214,7 +214,10 @@ screenshots/
 cmake/
 images/
 *.md
-samples/
 external-deps/
 gameplay/gameplay.xcodeproj/
 gameplay/res/
+samples/racer/res/
+samples/character/res/
+samples/spaceship/res/
+samples/browser/res/

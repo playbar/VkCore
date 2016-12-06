@@ -6,8 +6,6 @@
 #include <assert.h>
 #include <vector>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -38,13 +36,13 @@ public:
 	} meshes;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
+		Matrix projection;
+		Matrix model;
 	} uboVS;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
+		Matrix projection;
+		Matrix model;
 	} uboGS;
 
 	struct {
@@ -64,7 +62,7 @@ public:
 	VkGeometryShader() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -8.0f;
-		mRotation = glm::vec3(0.0f, -25.0f, 0.0f);
+		mRotation = Vector3(0.0f, -25.0f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Geometry shader";
 	}
