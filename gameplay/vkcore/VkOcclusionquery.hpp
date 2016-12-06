@@ -8,9 +8,6 @@
 
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -48,9 +45,9 @@ public:
 	} uniformData;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::vec4 lightPos = glm::vec4(10.0f, 10.0f, 10.0f, 1.0f);
+		Matrix projection;
+		Matrix model;
+		Vector4 lightPos = Vector4(10.0f, 10.0f, 10.0f, 1.0f);
 		float visible;
 	} uboVS;
 
@@ -567,14 +564,23 @@ public:
 
 	void updateUniformBuffers()
 	{
-		// Vertex shader
-		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		Matrix viewMatrix;
+		Matrix rotMatrix;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 256.0f, &uboVS.projection);
+		Matrix::createTranslation(Vector3(0.0f, 0.0f, mZoom), &viewMatrix);
+		
+		rotMatrix.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		rotMatrix.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		rotMatrix.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
-		glm::mat4 rotMatrix = glm::mat4();
-		rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		// Vertex shader
+		//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+
+		//glm::mat4 rotMatrix = glm::mat4();
+		//rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//rotMatrix = glm::rotate(rotMatrix, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uboVS.model = viewMatrix * rotMatrix;
 
@@ -588,16 +594,20 @@ public:
 
 		// Teapot
 		// Toggle color depending on visibility
+		Matrix matTeapot;
+		Matrix::createTranslation(Vector3(0.0f, 0.0f, -10.0f), &matTeapot);
 		uboVS.visible = (passedSamples[0] > 0) ? 1.0f : 0.0f;
-		uboVS.model = viewMatrix * rotMatrix * glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -10.0f));
+		uboVS.model = viewMatrix * rotMatrix * matTeapot; // glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -10.0f));
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.teapot.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.teapot.memory);
 
 		// Sphere
 		// Toggle color depending on visibility
+		Matrix matSphere;
+		matSphere.translate(0.0f, 0.0f, 10.0f);
 		uboVS.visible = (passedSamples[1] > 0) ? 1.0f : 0.0f;
-		uboVS.model = viewMatrix * rotMatrix * glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 10.0f));
+		uboVS.model = viewMatrix * rotMatrix *matSphere; //glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 10.0f));
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.sphere.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.sphere.memory);

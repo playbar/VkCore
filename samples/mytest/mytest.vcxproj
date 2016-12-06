@@ -84,11 +84,11 @@
     <ClInclude Include="..\base\vulkantools.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="window_surface.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Shader.frag" />
     <None Include="Shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="hello_triangle.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
