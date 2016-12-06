@@ -10,9 +10,6 @@
 
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -49,8 +46,8 @@ public:
 
 	// Per-instance data block
 	struct InstanceData {
-		glm::vec3 pos;
-		glm::vec3 rot;
+		Vector3 pos;
+		Vector3 rot;
 		float scale;
 		uint32_t texIndex;
 	};
@@ -64,8 +61,8 @@ public:
 	} instanceBuffer;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 view;
+		Matrix projection;
+		Matrix view;
 		float time = 0.0f;
 	} uboVS;
 
@@ -442,11 +439,10 @@ public:
 
 		for (auto i = 0; i < INSTANCE_COUNT; i++)
 		{
-			instanceData[i].rot = glm::vec3(M_PI * uniformDist(rndGenerator), M_PI * uniformDist(rndGenerator), M_PI * uniformDist(rndGenerator));
+			instanceData[i].rot = Vector3(M_PI * uniformDist(rndGenerator), M_PI * uniformDist(rndGenerator), M_PI * uniformDist(rndGenerator));
 			float theta = 2 * M_PI * uniformDist(rndGenerator);
 			float phi = acos(1 - 2 * uniformDist(rndGenerator));
-			glm::vec3 pos;
-			instanceData[i].pos = glm::vec3(sin(phi) * cos(theta), sin(theta) * uniformDist(rndGenerator) / 1500.0f, cos(phi)) * 7.5f;
+			instanceData[i].pos = Vector3(sin(phi) * cos(theta), sin(theta) * uniformDist(rndGenerator) / 1500.0f, cos(phi)) * 7.5f;
 			instanceData[i].scale = 1.0f + uniformDist(rndGenerator) * 2.0f;
 			instanceData[i].texIndex = rnd(textures.colorMap.layerCount);
 		}
@@ -522,11 +518,16 @@ public:
 	{
 		if (viewChanged)
 		{
-			uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-			uboVS.view = glm::translate(glm::mat4(), cameraPos + glm::vec3(0.0f, 0.0f, mZoom));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+			Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.001f, 256.0f, &uboVS.projection);
+			Matrix::createTranslation(cameraPos + Vector3(0.0f, 0.0f, mZoom), &uboVS.view);
+			uboVS.view.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+			uboVS.view.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+			uboVS.view.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+			//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
+			//uboVS.view = glm::translate(glm::mat4(), cameraPos + glm::vec3(0.0f, 0.0f, mZoom));
+			//uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			//uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+			//uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 
 		if (!paused)

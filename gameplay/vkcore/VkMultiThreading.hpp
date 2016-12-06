@@ -9,8 +9,6 @@
 #include <random>
 
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -44,8 +42,8 @@ public:
 
 	// Shared matrices used for thread push constant blocks
 	struct {
-		glm::mat4 projection;
-		glm::mat4 view;
+		Matrix projection;
+		Matrix view;
 	} matrices;
 
 	struct {
@@ -69,14 +67,14 @@ public:
 	// Use push constants to update shader
 	// parameters on a per-thread base
 	struct ThreadPushConstantBlock {
-		glm::mat4 mvp;
-		glm::vec3 color;
+		Matrix mvp;
+		Vector3 color;
 	};
 
 	struct ObjectData {
-		glm::mat4 model;
-		glm::vec3 pos;
-		glm::vec3 rotation;
+		Matrix model;
+		Vector3 pos;
+		Vector3 rotation;
 		float rotationDir;
 		float rotationSpeed;
 		float scale;
@@ -216,15 +214,15 @@ public:
 			{
 				float theta = 2.0f * float(M_PI) * uniformDist(rndGenerator);
 				float phi = acos(1.0f - 2.0f * uniformDist(rndGenerator));
-				thread->objectData[j].pos = glm::vec3(sin(phi) * cos(theta), 0.0f, cos(phi)) * 35.0f;
+				thread->objectData[j].pos = Vector3(sin(phi) * cos(theta), 0.0f, cos(phi)) * 35.0f;
 
-				thread->objectData[j].rotation = glm::vec3(0.0f, rnd(360.0f), 0.0f);
+				thread->objectData[j].rotation = Vector3(0.0f, rnd(360.0f), 0.0f);
 				thread->objectData[j].deltaT = rnd(1.0f);
 				thread->objectData[j].rotationDir = (rnd(100.0f) < 50.0f) ? 1.0f : -1.0f;
 				thread->objectData[j].rotationSpeed = (2.0f + rnd(4.0f)) * thread->objectData[j].rotationDir;
 				thread->objectData[j].scale = 0.75f + rnd(0.5f);
 
-				thread->pushConstBlock[j].color = glm::vec3(rnd(1.0f), rnd(1.0f), rnd(1.0f));
+				thread->pushConstBlock[j].color = Vector3(rnd(1.0f), rnd(1.0f), rnd(1.0f));
 			}
 		}
 
@@ -269,13 +267,19 @@ public:
 		objectData->deltaT += 0.15f * frameTimer;
 		if (objectData->deltaT > 1.0f)
 			objectData->deltaT -= 1.0f;
-		objectData->pos.y = sin(glm::radians(objectData->deltaT * 360.0f)) * 2.5f;
+		objectData->pos.y = sin(MATH_DEG_TO_RAD(objectData->deltaT * 360.0f)) * 2.5f;
 
-		objectData->model = glm::translate(glm::mat4(), objectData->pos);
-		objectData->model = glm::rotate(objectData->model, -sinf(glm::radians(objectData->deltaT * 360.0f)) * 0.25f, glm::vec3(objectData->rotationDir, 0.0f, 0.0f));
-		objectData->model = glm::rotate(objectData->model, glm::radians(objectData->rotation.y), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
-		objectData->model = glm::rotate(objectData->model, glm::radians(objectData->deltaT * 360.0f), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
-		objectData->model = glm::scale(objectData->model, glm::vec3(objectData->scale));
+		Matrix::createTranslation(objectData->pos, &objectData->model);
+		objectData->model.rotateX(-sinf(MATH_DEG_TO_RAD(objectData->deltaT * 360.0f)) * 0.25f);
+		objectData->model.rotateY(MATH_DEG_TO_RAD(objectData->rotation.y));
+		objectData->model.rotateZ(MATH_DEG_TO_RAD(objectData->deltaT * 360.0f));
+		objectData->model.scale(objectData->scale);
+
+		//objectData->model = glm::translate(glm::mat4(), objectData->pos);
+		//objectData->model = glm::rotate(objectData->model, -sinf(glm::radians(objectData->deltaT * 360.0f)) * 0.25f, glm::vec3(objectData->rotationDir, 0.0f, 0.0f));
+		//objectData->model = glm::rotate(objectData->model, glm::radians(objectData->rotation.y), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
+		//objectData->model = glm::rotate(objectData->model, glm::radians(objectData->deltaT * 360.0f), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
+		//objectData->model = glm::scale(objectData->model, glm::vec3(objectData->scale));
 
 		thread->pushConstBlock[cmdBufferIndex].mvp = matrices.projection * matrices.view * objectData->model;
 
@@ -314,12 +318,16 @@ public:
 
 		vkCmdBindPipeline(secondaryCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.starsphere);
 
-		glm::mat4 view = glm::mat4();
-		view = glm::rotate(view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		view = glm::rotate(view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		view = glm::rotate(view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix view;
+		view.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		view.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		view.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+		//glm::mat4 view = glm::mat4();
+		//view = glm::rotate(view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//view = glm::rotate(view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//view = glm::rotate(view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		glm::mat4 mvp = matrices.projection * view;
+		Matrix mvp = matrices.projection * view;
 
 		vkCmdPushConstants(
 			secondaryCommandBuffer,
@@ -564,13 +572,20 @@ public:
 
 	void updateMatrices()
 	{
-		matrices.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		matrices.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
-		matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 256.0f, &matrices.projection);
+		Matrix::createTranslation(Vector3(0.0f, 0.0f, mZoom), &matrices.view);
+		matrices.view.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		matrices.view.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		matrices.view.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
-		frustum.update(matrices.projection * matrices.view);
+		//matrices.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//matrices.view = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//matrices.view = glm::rotate(matrices.view, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix matTmp;
+		matTmp = matrices.projection * matrices.view;
+		frustum.update(matTmp);
 	}
 
 	void draw()

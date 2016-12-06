@@ -8,9 +8,6 @@
 
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -63,9 +60,9 @@ public:
 	} uniformData;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::vec4 lightPos = glm::vec4(5.0f, 5.0f, 5.0f, 1.0f);
+		Matrix projection;
+		Matrix model;
+		Vector4 lightPos = Vector4(5.0f, 5.0f, 5.0f, 1.0f);
 	} uboVS;
 
 	struct {
@@ -82,8 +79,8 @@ public:
 		mZoom = -7.5f;
 		zoomSpeed = 2.5f;
 		mRotation = { 0.0f, -90.0f, 0.0f };
-		cameraPos = glm::vec3(2.5f, 2.5f, 0.0f);
-		title = "Vulkan Example - Multisampling";
+		cameraPos = Vector3(2.5f, 2.5f, 0.0f);
+		title = "Multisampling";
 	}
 
 	~VkMultisampling()
@@ -646,17 +643,24 @@ public:
 	void updateUniformBuffers()
 	{
 		// Vertex shader
-		glm::mat4 viewMatrix = glm::mat4();
-		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 256.0f, &uboVS.projection);
+		Matrix::createTranslation(Vector3(0.0f, 0.0f, mZoom), &viewMatrix);
 
-		float offset = 0.5f;
-		int uboIndex = 1;
-		uboVS.model = glm::mat4();
-		uboVS.model = viewMatrix * glm::translate(uboVS.model, cameraPos);
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix::createTranslation(cameraPos, &matTmp);
+		uboVS.model = viewMatrix * matTmp;
+		uboVS.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboVS.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboVS.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+
+		//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
+
+		//uboVS.model = glm::mat4();
+		//uboVS.model = viewMatrix * glm::translate(uboVS.model, cameraPos);
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));

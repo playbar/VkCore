@@ -60,8 +60,8 @@ public:
 
 	// Per-instance data block
 	struct InstanceData {
-		glm::vec3 pos;
-		glm::vec3 rot;
+		Vector3 pos;
+		Vector3 rot;
 		float scale;
 		uint32_t texIndex;
 	};
@@ -73,8 +73,8 @@ public:
 	uint32_t indirectDrawCount;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 view;
+		Matrix projection;
+		Matrix view;
 	} uboVS;
 
 	struct {
@@ -104,8 +104,8 @@ public:
 		title = "Vulkan Example - Indirect rendering";
 		mCamera.type = VkCamera::CameraType::firstperson;
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
-		mCamera.setRotation(glm::vec3(-12.0f, 159.0f, 0.0f));
-		mCamera.setTranslation(glm::vec3(0.4f, 1.25f, 0.0f));
+		mCamera.setRotation(Vector3(-12.0f, 159.0f, 0.0f));
+		mCamera.setTranslation(Vector3(0.4f, 1.25f, 0.0f));
 		mCamera.movementSpeed = 5.0f;
 	}
 
@@ -543,10 +543,10 @@ public:
 
 		for (uint32_t i = 0; i < objectCount; i++)
 		{
-			instanceData[i].rot = glm::vec3(0.0f, float(M_PI) * uniformDist(rndGenerator), 0.0f);
+			instanceData[i].rot = Vector3(0.0f, float(M_PI) * uniformDist(rndGenerator), 0.0f);
 			float theta = 2 * float(M_PI) * uniformDist(rndGenerator);
 			float phi = acos(1 - 2 * uniformDist(rndGenerator));
-			instanceData[i].pos = glm::vec3(sin(phi) * cos(theta), 0.0f, cos(phi)) * PLANT_RADIUS;
+			instanceData[i].pos = Vector3(sin(phi) * cos(theta), 0.0f, cos(phi)) * PLANT_RADIUS;
 			instanceData[i].scale = 1.0f + uniformDist(rndGenerator) * 2.0f;
 			instanceData[i].texIndex = i / OBJECT_INSTANCE_COUNT;
 		}

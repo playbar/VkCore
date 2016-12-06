@@ -80,7 +80,7 @@ namespace vkTools
 			}
 		}
 		
-		bool checkSphere(glm::vec3 pos, float radius)
+		bool checkSphere(Vector3 &pos, float radius)
 		{
 			for (auto i = 0; i < planes.size(); i++)
 			{

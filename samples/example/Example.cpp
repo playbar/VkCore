@@ -16,11 +16,11 @@
 #include "VkDistancefieldfonts.hpp"
 #include "VkGears.hpp"
 #include "VkGeometryShader.hpp"
-//#include "VkIndirectdraw.hpp"
-//#include "VkInstancing.hpp"
-//#include "VkMesh.hpp"
-//#include "VkMultisampling.hpp"
-//#include "VkMultiThreading.hpp"
+#include "VkIndirectdraw.hpp"
+#include "VkInstancing.hpp"
+#include "VkMesh.hpp"
+#include "VkMultisampling.hpp"
+#include "VkMultiThreading.hpp"
 //#include "VkOcclusionquery.hpp"
 //#include "VkOffScreen.hpp"
 //#include "VkParallaxMapping.hpp"
@@ -49,7 +49,7 @@
 //#include "VkTriangle.hpp"
 
 
-VkGears *vulkanExample;
+VkMultiThreading *vulkanExample;
 
 #if defined(_WIN32)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -86,7 +86,7 @@ int main(const int argc, const char *argv[])
 	app_dummy();
 #endif	
 #if defined(_WIN32)
-	vulkanExample = new VkGears();
+	vulkanExample = new VkMultiThreading();
 	vulkanExample->setupWindow(hInstance, WndProc);
 	vulkanExample->initSwapchain();
 	vulkanExample->prepare();
