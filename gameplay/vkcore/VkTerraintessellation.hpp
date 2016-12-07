@@ -8,8 +8,6 @@
 #include <algorithm>
 
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <gli/gli.hpp>
 
 #include <vulkan/vulkan.h>
@@ -56,20 +54,20 @@ public:
 
 	// Shared values for tessellation control and evaluation stages
 	struct {
-		glm::mat4 projection;
-		glm::mat4 modelview;
-		glm::vec4 lightPos = glm::vec4(-48.0f, -40.0f, 46.0f, 0.0f);
-		glm::vec4 frustumPlanes[6];
+		Matrix projection;
+		Matrix modelview;
+		Vector4 lightPos = Vector4(-48.0f, -40.0f, 46.0f, 0.0f);
+		Vector4 frustumPlanes[6];
 		float displacementFactor = 32.0f;
 		float tessellationFactor = 0.75f;
-		glm::vec2 viewportDim;
+		Vector2 viewportDim;
 		// Desired size of tessellated quad patch edge
 		float tessellatedEdgeSize = 20.0f;
 	} uboTess;
 
 	// Skysphere vertex shader stage
 	struct {
-		glm::mat4 mvp;
+		Matrix mvp;
 	} uboVS;
 
 	struct {
@@ -107,11 +105,11 @@ public:
 	VkTerraintessellation() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mEnableTextOverlay = true;
-		title = "Vulkan Example - Dynamic terrain tessellation";
+		title = "Dynamic terrain tessellation";
 		mCamera.type = VkCamera::CameraType::firstperson;
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
-		mCamera.setRotation(glm::vec3(-12.0f, 159.0f, 0.0f));
-		mCamera.setTranslation(glm::vec3(18.0f, 22.5f, 57.5f));
+		mCamera.setRotation(Vector3(-12.0f, 159.0f, 0.0f));
+		mCamera.setTranslation(Vector3(18.0f, 22.5f, 57.5f));
 
 		mCamera.movementSpeed = 7.5f;
 		// Support for tessellation shaders is optional, so check first
@@ -828,11 +826,13 @@ public:
 		// Tessellation
 
 		uboTess.projection = mCamera.mMatrices.perspective;
-		uboTess.modelview = mCamera.mMatrices.view * glm::mat4();
+		uboTess.modelview = mCamera.mMatrices.view;
 		uboTess.lightPos.y = -0.5f - uboTess.displacementFactor; // todo: Not uesed yet
-		uboTess.viewportDim = glm::vec2((float)width, (float)height);
+		uboTess.viewportDim = Vector2((float)width, (float)height);
 
-		frustum.update(uboTess.projection * uboTess.modelview);
+		Matrix matTmp = uboTess.projection * uboTess.modelview;
+		frustum.update(matTmp);
+
 		memcpy(uboTess.frustumPlanes, frustum.planes.data(), sizeof(glm::vec4) * 6);
 
 		float savedFactor = uboTess.tessellationFactor;
@@ -853,7 +853,17 @@ public:
 		}
 
 		// Skysphere vertex shader
-		uboVS.mvp = mCamera.mMatrices.perspective * glm::mat4(glm::mat3(mCamera.mMatrices.view));
+		mCamera.mMatrices.view.m[3] = 0;
+		mCamera.mMatrices.view.m[7] = 0;
+		mCamera.mMatrices.view.m[11] = 0;
+		mCamera.mMatrices.view.m[12] = 0;
+		mCamera.mMatrices.view.m[13] = 0;
+		mCamera.mMatrices.view.m[14] = 0;
+		mCamera.mMatrices.view.m[15] = 1;
+
+
+		uboVS.mvp = mCamera.mMatrices.perspective * mCamera.mMatrices.view;
+		//uboVS.mvp = mCamera.mMatrices.perspective * glm::mat4(glm::mat3(mCamera.mMatrices.view));
 
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.skysphereVertex.memory, 0, sizeof(uboVS), 0, (void **)&pData));
 		memcpy(pData, &uboVS, sizeof(uboVS));

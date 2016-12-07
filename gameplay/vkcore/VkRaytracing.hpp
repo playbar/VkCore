@@ -6,8 +6,6 @@
 #include <assert.h>
 #include <vector>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -50,12 +48,12 @@ public:
 		VkPipelineLayout pipelineLayout;			// Layout of the compute pipeline
 		VkPipeline pipeline;						// Compute raytracing pipeline
 		struct UBOCompute {							// Compute shader uniform block object
-			glm::vec3 lightPos;
+			Vector3 lightPos;
 			float aspectRatio;						// Aspect ratio of the viewport
 			glm::vec4 fogColor = glm::vec4(0.0f);
 			struct {
-				glm::vec3 pos = glm::vec3(0.0f, 0.0f, 4.0f);
-				glm::vec3 lookat = glm::vec3(0.0f, 0.5f, 0.0f);
+				Vector3 pos = Vector3(0.0f, 0.0f, 4.0f);
+				Vector3 lookat = Vector3(0.0f, 0.5f, 0.0f);
 				float fov = 10.0f;
 			} camera;
 		} ubo;
@@ -63,22 +61,22 @@ public:
 
 	// SSBO sphere declaration 
 	struct Sphere {									// Shader uses std140 layout (so we only use vec4 instead of vec3)
-		glm::vec3 pos;
+		Vector3 pos;
 		float radius;
-		glm::vec3 diffuse;
+		Vector3 diffuse;
 		float specular;
 		uint32_t id;								// Id used to identify sphere for raytracing
-		glm::ivec3 _pad;
+		Vector3 _pad;
 	};
 
 	// SSBO plane declaration
 	struct Plane {
-		glm::vec3 normal;
+		Vector3 normal;
 		float distance;
-		glm::vec3 diffuse;
+		Vector3 diffuse;
 		float specular;
 		uint32_t id;
-		glm::ivec3 _pad;
+		Vector3 _pad;
 	};
 
 	VkRaytracing() : VulkanBase(ENABLE_VALIDATION)
@@ -90,8 +88,8 @@ public:
 
 		mCamera.type = VkCamera::CameraType::lookat;
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 512.0f);
-		mCamera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-		mCamera.setTranslation(glm::vec3(0.0f, 0.0f, -4.0f));
+		mCamera.setRotation(Vector3(0.0f, 0.0f, 0.0f));
+		mCamera.setTranslation(Vector3(0.0f, 0.0f, -4.0f));
 		mCamera.rotationSpeed = 0.0f;
 		mCamera.movementSpeed = 2.5f;
 	}
@@ -282,7 +280,7 @@ public:
 
 	uint32_t currentId = 0;	// Id used to identify objects by the ray tracing shader
 
-	Sphere newSphere(glm::vec3 pos, float radius, glm::vec3 diffuse, float specular)
+	Sphere newSphere(Vector3 pos, float radius, Vector3 diffuse, float specular)
 	{
 		Sphere sphere;
 		sphere.id = currentId++;
@@ -293,7 +291,7 @@ public:
 		return sphere;
 	}
 
-	Plane newPlane(glm::vec3 normal, float distance, glm::vec3 diffuse, float specular)
+	Plane newPlane(Vector3 normal, float distance, Vector3 diffuse, float specular)
 	{
 		Plane plane;
 		plane.id = currentId++;
@@ -309,9 +307,9 @@ public:
 	{
 		// Spheres
 		std::vector<Sphere> spheres;
-		spheres.push_back(newSphere(glm::vec3(1.75f, -0.5f, 0.0f), 1.0f, glm::vec3(0.0f, 1.0f, 0.0f), 32.0f));
-		spheres.push_back(newSphere(glm::vec3(0.0f, 1.0f, -0.5f), 1.0f, glm::vec3(0.65f, 0.77f, 0.97f), 32.0f));
-		spheres.push_back(newSphere(glm::vec3(-1.75f, -0.75f, -0.5f), 1.25f, glm::vec3(0.9f, 0.76f, 0.46f), 32.0f));
+		spheres.push_back(newSphere(Vector3(1.75f, -0.5f, 0.0f), 1.0f, Vector3(0.0f, 1.0f, 0.0f), 32.0f));
+		spheres.push_back(newSphere(Vector3(0.0f, 1.0f, -0.5f), 1.0f, Vector3(0.65f, 0.77f, 0.97f), 32.0f));
+		spheres.push_back(newSphere(Vector3(-1.75f, -0.75f, -0.5f), 1.25f, Vector3(0.9f, 0.76f, 0.46f), 32.0f));
 		VkDeviceSize storageBufferSize = spheres.size() * sizeof(Sphere);
 
 		// Stage
@@ -343,12 +341,12 @@ public:
 		// Planes
 		std::vector<Plane> planes;
 		const float roomDim = 4.0f;
-		planes.push_back(newPlane(glm::vec3(0.0f, 1.0f, 0.0f), roomDim, glm::vec3(1.0f), 32.0f));
-		planes.push_back(newPlane(glm::vec3(0.0f, -1.0f, 0.0f), roomDim, glm::vec3(1.0f), 32.0f));
-		planes.push_back(newPlane(glm::vec3(0.0f, 0.0f, 1.0f), roomDim, glm::vec3(1.0f), 32.0f));
-		planes.push_back(newPlane(glm::vec3(0.0f, 0.0f, -1.0f), roomDim, glm::vec3(0.0f), 32.0f));
-		planes.push_back(newPlane(glm::vec3(-1.0f, 0.0f, 0.0f), roomDim, glm::vec3(1.0f, 0.0f, 0.0f), 32.0f));
-		planes.push_back(newPlane(glm::vec3(1.0f, 0.0f, 0.0f), roomDim, glm::vec3(0.0f, 1.0f, 0.0f), 32.0f));
+		planes.push_back(newPlane(Vector3(0.0f, 1.0f, 0.0f), roomDim, Vector3(1.0f), 32.0f));
+		planes.push_back(newPlane(Vector3(0.0f, -1.0f, 0.0f), roomDim, Vector3(1.0f), 32.0f));
+		planes.push_back(newPlane(Vector3(0.0f, 0.0f, 1.0f), roomDim, Vector3(1.0f), 32.0f));
+		planes.push_back(newPlane(Vector3(0.0f, 0.0f, -1.0f), roomDim, Vector3(0.0f), 32.0f));
+		planes.push_back(newPlane(Vector3(-1.0f, 0.0f, 0.0f), roomDim, Vector3(1.0f, 0.0f, 0.0f), 32.0f));
+		planes.push_back(newPlane(Vector3(1.0f, 0.0f, 0.0f), roomDim, Vector3(0.0f, 1.0f, 0.0f), 32.0f));
 		storageBufferSize = planes.size() * sizeof(Plane);
 
 		// Stage

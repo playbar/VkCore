@@ -128,6 +128,8 @@ public:
      */
     static const Matrix& zero();
 
+	static Vector4 project(const Vector3 &obj, const Matrix &model, const Matrix &proj, const Vector4 &viewport);
+
     /**
      * Creates a view matrix based on the specified input parameters.
      *

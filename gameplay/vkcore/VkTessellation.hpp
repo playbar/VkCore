@@ -6,8 +6,6 @@
 #include <assert.h>
 #include <vector>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -47,8 +45,8 @@ public:
 	} uboTC;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
+		Matrix projection;
+		Matrix model;
 		float tessAlpha = 1.0f;
 	} uboTE;
 
@@ -68,9 +66,9 @@ public:
 	VkTessellation() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -6.5f;
-		mRotation = glm::vec3(-350.0f, 60.0f, 0.0f);
-		cameraPos = glm::vec3(-3.0f, 2.3f, 0.0f);
-		title = "Vulkan Example - Tessellation shader (PN Triangles)";
+		mRotation = Vector3(-350.0f, 60.0f, 0.0f);
+		cameraPos = Vector3(-3.0f, 2.3f, 0.0f);
+		title = "Tessellation shader (PN Triangles)";
 		mEnableTextOverlay = true;
 		// Support for tessellation shaders is optional, so check first
 		if (!mVulkanDevice->mFeatures.tessellationShader)
@@ -453,15 +451,22 @@ public:
 	void updateUniformBuffers()
 	{
 		// Tessellation eval
-		glm::mat4 viewMatrix = glm::mat4();
-		uboTE.projection = glm::perspective(glm::radians(45.0f), (float)(width* ((splitScreen) ? 0.5f : 1.0f)) / (float)height, 0.1f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(45.0f), (float)(width* ((splitScreen) ? 0.5f : 1.0f)) / (float)height, 0.1f, 256.0f, &uboTE.projection);
+		viewMatrix.translate(0.0f, 0.0f, mZoom);
+		//uboTE.projection = glm::perspective(glm::radians(45.0f), (float)(width* ((splitScreen) ? 0.5f : 1.0f)) / (float)height, 0.1f, 256.0f);
+		//viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
 
-		uboTE.model = glm::mat4();
-		uboTE.model = viewMatrix * glm::translate(uboTE.model, cameraPos);
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboTE.model.setIdentity();
+		matTmp.translate(cameraPos);
+		uboTE.model = viewMatrix * matTmp;
+		uboTE.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboTE.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboTE.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+		//uboTE.model = viewMatrix * glm::translate(uboTE.model, cameraPos);
+		//uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboTE.model = glm::rotate(uboTE.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 

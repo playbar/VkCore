@@ -7,9 +7,6 @@
 #include <vector>
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -42,9 +39,9 @@ public:
 
 	// Same uniform buffer layout as shader
 	struct {
-		glm::mat4 projection;
-		glm::mat4 modelView;
-		glm::vec4 lightPos = glm::vec4(0.0f, 2.0f, 1.0f, 0.0f);
+		Matrix projection;
+		Matrix modelView;
+		Vector4 lightPos = Vector4(0.0f, 2.0f, 1.0f, 0.0f);
 	} uboVS;
 
 	VkPipelineLayout pipelineLayout;
@@ -68,7 +65,7 @@ public:
 	VkPipelines() : VulkanBase(ENABLE_VALIDATION, getEnabledFeatures)
 	{
 		mZoom = -10.5f;
-		mRotation = glm::vec3(-25.0f, 15.0f, 0.0f);
+		mRotation = Vector3(-25.0f, 15.0f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Example - Pipeline state objects";
 	}
@@ -407,14 +404,21 @@ public:
 
 	void updateUniformBuffers()
 	{
-		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)(width / 3.0f) / (float)height, 0.1f, 256.0f);
+		//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)(width / 3.0f) / (float)height, 0.1f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//uboVS.modelView = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		//uboVS.modelView = glm::rotate(uboVS.modelView, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboVS.modelView = glm::rotate(uboVS.modelView, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboVS.modelView = glm::rotate(uboVS.modelView, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
-
-		uboVS.modelView = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		uboVS.modelView = glm::rotate(uboVS.modelView, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.modelView = glm::rotate(uboVS.modelView, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.modelView = glm::rotate(uboVS.modelView, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)(width / 3.0f) / (float)height, 0.1f, 256.0f, &uboVS.projection);
+		viewMatrix.translate(0, 0, mZoom);
+		matTmp.translate(cameraPos);
+		uboVS.modelView = viewMatrix * matTmp;
+		uboVS.modelView.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboVS.modelView.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboVS.modelView.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformDataVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));

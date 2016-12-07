@@ -6,8 +6,6 @@
 #include <assert.h>
 #include <vector>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -57,9 +55,9 @@ public:
 
 	struct
 	{
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::vec4 viewPos;
+		Matrix projection;
+		Matrix model;
+		Vector4 viewPos;
 		float lodBias = 0.0f;
 	} mUboVS;
 
@@ -805,16 +803,25 @@ public:
 
 	void updateUniformBuffers()
 	{
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.001f, 256.0f, &mUboVS.projection);
+		viewMatrix.translate(0.0f, 0.0f, mZoom);
 		// Vertex shader
-		mUboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//mUboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.001f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
-		mUboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		matTmp.translate(cameraPos);
+		mUboVS.model = viewMatrix *matTmp;
+		mUboVS.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		mUboVS.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		mUboVS.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
-		mUboVS.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
+		//mUboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		//mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//mUboVS.model = glm::rotate(mUboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		mUboVS.viewPos = Vector4(0.0f, 0.0f, -mZoom, 0.0f);
 
 		VK_CHECK_RESULT(mUniformBufferVS.map());
 		memcpy(mUniformBufferVS.mapped, &mUboVS, sizeof(mUboVS));

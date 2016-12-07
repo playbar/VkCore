@@ -7,9 +7,6 @@
 #include <vector>
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -54,15 +51,15 @@ public:
 	} uniformData;
 
 	struct UboVS {
-		glm::mat4 projection;
-		glm::mat4 model;
+		Matrix projection;
+		Matrix model;
 		float gradientPos = 0.0f;
 	} uboScene;
 
 	struct UboBlurParams {
 		float radialBlurScale = 0.35f;
 		float radialBlurStrength = 0.75f;
-		glm::vec2 radialOrigin = glm::vec2(0.5f, 0.5f);
+		Vector2 radialOrigin = Vector2(0.5f, 0.5f);
 	} uboBlurParams;
 
 	struct {
@@ -748,15 +745,25 @@ public:
 	// Update uniform buffers for rendering the 3D scene
 	void updateUniformBuffersScene()
 	{
-		uboScene.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 1.0f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//uboScene.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 1.0f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
-		uboScene.model = glm::mat4();
-		uboScene.model = viewMatrix * glm::translate(uboScene.model, cameraPos);
-		uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboScene.model = glm::rotate(uboScene.model, glm::radians(timer * 360.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//uboScene.model = glm::mat4();
+		//uboScene.model = viewMatrix * glm::translate(uboScene.model, cameraPos);
+		//uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboScene.model = glm::rotate(uboScene.model, glm::radians(timer * 360.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboScene.model = glm::rotate(uboScene.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(45.0f), (float)width / (float)height, 1.0f, 256.0f, &uboScene.projection);
+		viewMatrix.translate(0, 0, mZoom);
+		uboScene.model.setIdentity();
+		matTmp.translate(cameraPos);
+		uboScene.model = viewMatrix * matTmp;
+		uboScene.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboScene.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboScene.model.rotateY(MATH_DEG_TO_RAD(360.0f));
+		uboScene.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
 		if (!paused)
 		{

@@ -60,6 +60,21 @@ const Matrix& Matrix::zero()
     return m;
 }
 
+Vector4 Matrix::project(const Vector3 &obj, const Matrix &model, const Matrix &proj, const Vector4 &viewport)
+{
+	Vector4 tmp = Vector4(obj.x, obj.y, obj.z, 1.0f);
+	tmp = model * tmp;
+	tmp = proj * tmp;
+	tmp = tmp / tmp.w;
+	tmp.x = tmp.x * 0.5f + 0.5f;
+	tmp.y = tmp.y * 0.5f + 0.5f;
+	
+	tmp.x = tmp.x * viewport.z + viewport.x;
+	tmp.y = tmp.y * viewport.w + viewport.y;
+
+	return tmp;
+}
+
 void Matrix::createLookAt(const Vector3& eyePosition, const Vector3& targetPosition, const Vector3& up, Matrix* dst)
 {
     createLookAt(eyePosition.x, eyePosition.y, eyePosition.z, targetPosition.x, targetPosition.y, targetPosition.z,

@@ -7,8 +7,6 @@
 #include <vector>
 #include <random>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -50,13 +48,13 @@ public:
 	} vertices;
 
 	struct UBOSceneMatrices {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 view;
+		Matrix projection;
+		Matrix model;
+		Matrix view;
 	} uboSceneMatrices;
 
 	struct UBOSSAOParams {
-		glm::mat4 projection;
+		Matrix projection;
 		uint32_t ssao = true;
 		uint32_t ssaoOnly = false;
 		uint32_t ssaoBlur = true;
@@ -149,14 +147,14 @@ public:
 		mZoom = -8.0f;
 		mRotation = { 0.0f, 0.0f, 0.0f };
 		mEnableTextOverlay = true;
-		title = "Vulkan Example - Screen space ambient occlusion";
+		title = "Screen space ambient occlusion";
 		mCamera.type = VkCamera::CameraType::firstperson;
 		mCamera.movementSpeed = 5.0f;
 #ifndef __ANDROID__
 		mCamera.rotationSpeed = 0.25f;
 #endif
 		mCamera.position = { 7.5f, -6.75f, 0.0f };
-		mCamera.setRotation(glm::vec3(5.0f, 90.0f, 0.0f));
+		mCamera.setRotation(Vector3(5.0f, 90.0f, 0.0f));
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 64.0f);
 	}
 
@@ -1047,7 +1045,6 @@ public:
 	{
 		uboSceneMatrices.projection = mCamera.mMatrices.perspective;
 		uboSceneMatrices.view = mCamera.mMatrices.view;
-		uboSceneMatrices.model = glm::mat4();
 
 		VK_CHECK_RESULT(uniformBuffers.sceneMatrices.map());
 		uniformBuffers.sceneMatrices.copyTo(&uboSceneMatrices, sizeof(uboSceneMatrices));

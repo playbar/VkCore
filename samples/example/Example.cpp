@@ -25,22 +25,22 @@
 //#include "VkOffScreen.hpp"
 //#include "VkParallaxMapping.hpp"
 //#include "VkParticlefire.hpp"
-//#include "VkPipelines.hpp"
-//#include "VkPushConstants.hpp"
-//#include "VkRadialBlur.hpp"
-//#include "VkRaytracing.hpp"
-//#include "VkScene.hpp"
-//#include "VkSceneRendering.hpp"
-//#include "VkShadowMapping.hpp"
-//#include "VkShadowMappingomni.hpp"
-//#include "VkSkeletalAnimation.hpp"
-//#include "VkSphericalenvmapping.hpp"
-//#include "VkSsao.hpp"
+#include "VkPipelines.hpp"
+#include "VkPushConstants.hpp"
+#include "VkRadialBlur.hpp"
+#include "VkRaytracing.hpp"
+#include "VkScene.hpp"
+#include "VkSceneRendering.hpp"
+#include "VkShadowMapping.hpp"
+#include "VkShadowMappingomni.hpp"
+#include "VkSkeletalAnimation.hpp"
+#include "VkSphericalenvmapping.hpp"
+#include "VkSsao.hpp"
 #include "VkSubPasses.hpp"
-//#include "VkTerraintessellation.hpp"
-//#include "VkTessellation.hpp"
-//#include "VkTextOverLay.hpp"
-//#include "VkTexture.hpp"
+#include "VkTerraintessellation.hpp"
+#include "VkTessellation.hpp"
+#include "VkTextOverLay.hpp"
+#include "VkTexture.hpp"
 //#include "VkTexture3d.hpp"
 //#include "VkTextureArray.hpp"
 //#include "VkTexturecubemap.hpp"
@@ -49,7 +49,7 @@
 //#include "VkTriangle.hpp"
 
 
-VkOcclusionquery *vulkanExample;
+VkPipelines *vulkanExample;
 
 #if defined(_WIN32)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -86,7 +86,7 @@ int main(const int argc, const char *argv[])
 	app_dummy();
 #endif	
 #if defined(_WIN32)
-	vulkanExample = new VkOcclusionquery();
+	vulkanExample = new VkPipelines();
 	vulkanExample->setupWindow(hInstance, WndProc);
 	vulkanExample->initSwapchain();
 	vulkanExample->prepare();

@@ -8,10 +8,6 @@
 
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -48,10 +44,10 @@ public:
 	} uniformData;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 normal;
-		glm::mat4 view;
+		Matrix projection;
+		Matrix model;
+		Matrix normal;
+		Matrix view;
 		int32_t texIndex = 0;
 	} uboVS;
 
@@ -68,9 +64,9 @@ public:
 		mZoom = -0.9f;
 		rotationSpeed = 0.75f;
 		zoomSpeed = 0.25f;
-		mRotation = glm::vec3(-25.0f, 23.75f, 0.0f);
+		mRotation = Vector3(-25.0f, 23.75f, 0.0f);
 		mEnableTextOverlay = true;
-		title = "Vulkan Example - Spherical Environment Mapping";
+		title = "Spherical Environment Mapping";
 	}
 
 	~VkSphericalenvmapping()
@@ -378,20 +374,29 @@ public:
 
 	void updateUniformBuffers()
 	{
-		uboVS.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(45.0f), (float)width / (float)height, 0.1f, 256.0f, &uboVS.projection);
+		//uboVS.projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 256.0f);
+		Matrix::createLookAt(Vector3(0.0, 0.0, -mZoom), Vector3(0, 0, 0), Vector3(0, 1, 0), &uboVS.view);
+		//uboVS.view = glm::lookAt(
+		//	glm::vec3(0, 0, -mZoom),
+		//	glm::vec3(0, 0, 0),
+		//	glm::vec3(0, 1, 0)
+		//);
 
-		uboVS.view = glm::lookAt(
-			glm::vec3(0, 0, -mZoom),
-			glm::vec3(0, 0, 0),
-			glm::vec3(0, 1, 0)
-		);
+		uboVS.model.setIdentity();
+		uboVS.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboVS.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboVS.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
-		uboVS.model = glm::mat4();
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//uboVS.model = glm::mat4();
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		uboVS.normal = glm::inverseTranspose(uboVS.view * uboVS.model);
+		//uboVS.normal = glm::inverseTranspose(uboVS.view * uboVS.model);
+		uboVS.normal = uboVS.view * uboVS.model;
+		uboVS.normal.invert();
+		uboVS.normal.transpose();
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vertexShader.memory, 0, sizeof(uboVS), 0, (void **)&pData));

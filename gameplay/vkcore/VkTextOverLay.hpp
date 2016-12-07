@@ -8,9 +8,6 @@
 #include <sstream>
 #include <iomanip>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
 
 #include <vulkan/vulkan.h>
 
@@ -60,9 +57,9 @@ public:
 
 	struct
 	{
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::vec4 lightPos = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		Matrix projection;
+		Matrix model;
+		Vector4 lightPos = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 	} uboVS;
 
 	struct
@@ -86,7 +83,7 @@ public:
 		mZoom = -4.5f;
 		zoomSpeed = 2.5f;
 		mRotation = { -25.0f, 0.0f, 0.0f };
-		title = "Vulkan Example - Text overlay";
+		title = "Text overlay";
 		// Disable text overlay of the example base class
 		mEnableTextOverlay = false;
 	}
@@ -183,7 +180,8 @@ public:
 				{
 					std::stringstream vpos;
 					vpos << std::showpos << x << "/" << y << "/" << z;
-					glm::vec3 projected = glm::project(glm::vec3((float)x, (float)y, (float)z), uboVS.model, uboVS.projection, glm::vec4(0, 0, (float)width, (float)height));
+					//glm::vec3 projected = glm::project(glm::vec3((float)x, (float)y, (float)z), uboVS.model, uboVS.projection, glm::vec4(0, 0, (float)width, (float)height));
+					Vector4 projected = Matrix::project(Vector3(x, y, z), uboVS.model, uboVS.projection, Vector4(0, 0, width, height));
 					mTextOverlay->addText(vpos.str(), projected.x, projected.y + (y > -1 ? 5.0f : -20.0f), VulkanTextOverlay::alignCenter);
 				}
 			}
@@ -196,11 +194,11 @@ public:
 		{
 			ss.str("");
 			ss << std::fixed << std::setprecision(2) << std::showpos;
-			ss << uboVS.model[0][i] << " " << uboVS.model[1][i] << " " << uboVS.model[2][i] << " " << uboVS.model[3][i];
+			ss << uboVS.model.m[i] << " " << uboVS.model.m[4 + i] << " " << uboVS.model.m[ 8 + i] << " " << uboVS.model.m[ 12 + i];
 			mTextOverlay->addText(ss.str(), width, 25.0f + (float)i * 20.0f, VulkanTextOverlay::alignRight);
 		}
-
-		glm::vec3 projected = glm::project(glm::vec3(0.0f), uboVS.model, uboVS.projection, glm::vec4(0, 0, (float)width, (float)height));
+		Vector4 projected = Matrix::project(Vector3(0.0f), uboVS.model, uboVS.projection, Vector4(0.0f, 0.0f, width, height));
+		//glm::vec3 projected = glm::project(glm::vec3(0.0f), uboVS.model, uboVS.projection, glm::vec4(0, 0, (float)width, (float)height));
 		mTextOverlay->addText("Uniform cube", projected.x, projected.y, VulkanTextOverlay::alignCenter);
 
 #if defined(__ANDROID__)
@@ -467,15 +465,23 @@ public:
 
 	void updateUniformBuffers()
 	{
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 256.0f, &uboVS.projection);
+		viewMatrix.translate(0.0f, 0.0f, mZoom);
 		// Vertex shader
-		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
 
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		matTmp.translate(cameraPos);
+		uboVS.model = viewMatrix * matTmp;
+		uboVS.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboVS.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboVS.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
-		uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//uboVS.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsScene.memory, 0, sizeof(uboVS), 0, (void **)&pData));

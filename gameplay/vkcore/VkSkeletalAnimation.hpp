@@ -8,10 +8,6 @@
 
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 #include "vulkanbuffer.hpp"
@@ -323,10 +319,10 @@ class VkSkeletalAnimation : public VulkanBase
 	// Vertex layout used in this example
 	struct Vertex 
 	{
-		glm::vec3 pos;
-		glm::vec3 normal;
-		glm::vec2 uv;
-		glm::vec3 color;
+		Vector3 pos;
+		Vector3 normal;
+		Vector2 uv;
+		Vector3 color;
 		// Max. four bones per vertex
 		float boneWeights[4];
 		uint32_t boneIDs[4];
@@ -351,21 +347,21 @@ public:
 	} uniformBuffers;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::mat4 bones[MAX_BONES];
-		glm::vec4 lightPos = glm::vec4(0.0f, -250.0f, 250.0f, 1.0);
-		glm::vec4 viewPos;
+		Matrix projection;
+		Matrix model;
+		Matrix view;
+		Matrix bones[MAX_BONES];
+		Vector4 lightPos = Vector4(0.0f, -250.0f, 250.0f, 1.0);
+		Vector4 viewPos;
 	} uboVS;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::vec4 lightPos = glm::vec4(0.0, 0.0f, -25.0f, 1.0);
-		glm::vec4 viewPos;
-		glm::vec2 uvOffset;
+		Matrix projection;
+		Matrix model;
+		Matrix view;
+		Vector4 lightPos = Vector4(0.0, 0.0f, -25.0f, 1.0);
+		Vector4 viewPos;
+		Vector2 uvOffset;
 	} uboFloor;
 
 	struct {
@@ -395,7 +391,7 @@ public:
 		rotationSpeed = 0.5f;
 		mRotation = { -182.5f, -38.5f, 180.0f };
 		mEnableTextOverlay = true;
-		title = "Vulkan Example - Skeletal animation";
+		title = "Skeletal animation";
 		cameraPos = { 0.0f, 0.0f, 12.0f };
 	}
 
@@ -926,40 +922,60 @@ public:
 	{
 		if (viewChanged)
 		{
-			uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 1024.0f);
+			Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 1024.0f, &uboVS.projection);
+			Matrix viewMatrix, matTmp;
+			viewMatrix.translate(0.0f, 0.0f, mZoom);
+			viewMatrix.rotateX(MATH_DEG_TO_RAD(90.0f));
+			viewMatrix.scale(0.025f);
 
-			glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
-			viewMatrix = glm::rotate(viewMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-			viewMatrix = glm::scale(viewMatrix, glm::vec3(0.025f));
 
-			uboVS.view = viewMatrix * glm::translate(glm::mat4(), glm::vec3(cameraPos.x, -cameraPos.z, cameraPos.y) * 100.0f);
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
-			uboVS.view = glm::rotate(uboVS.view, glm::radians(-mRotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
+			//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 1024.0f);
+			//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+			//viewMatrix = glm::rotate(viewMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			//viewMatrix = glm::scale(viewMatrix, glm::vec3(0.025f));
 
-			uboVS.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
+			matTmp.translate(Vector3(cameraPos.x, -cameraPos.z, cameraPos.y) * 100.0f);
+			uboVS.view = viewMatrix * matTmp;
+			uboVS.view.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+			uboVS.view.rotateY(MATH_DEG_TO_RAD(mRotation.z));
+			uboVS.view.rotateZ(MATH_DEG_TO_RAD(mRotation.y));
+
+			//uboVS.view = viewMatrix * glm::translate(glm::mat4(), glm::vec3(cameraPos.x, -cameraPos.z, cameraPos.y) * 100.0f);
+			//uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			//uboVS.view = glm::rotate(uboVS.view, glm::radians(mRotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
+			//uboVS.view = glm::rotate(uboVS.view, glm::radians(-mRotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
+
+			uboVS.viewPos = Vector4(0.0f, 0.0f, -mZoom, 0.0f);
 
 			uboFloor.projection = uboVS.projection;
 			uboFloor.view = viewMatrix;
-			uboFloor.model = glm::translate(glm::mat4(), glm::vec3(cameraPos.x, -cameraPos.z, cameraPos.y) * 100.0f);
-			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(mRotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
-			uboFloor.model = glm::rotate(uboFloor.model, glm::radians(-mRotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
-			uboFloor.model = glm::translate(uboFloor.model, glm::vec3(0.0f, 0.0f, -1800.0f));
-			uboFloor.viewPos = glm::vec4(0.0f, 0.0f, -mZoom, 0.0f);
+			uboFloor.model.setIdentity();
+			uboFloor.model.translate(Vector3(cameraPos.x, -cameraPos.z, cameraPos.y) * 100.0f);
+			uboFloor.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+			uboFloor.model.rotateY(MATH_DEG_TO_RAD(mRotation.z));
+			uboFloor.model.rotateZ(MATH_DEG_TO_RAD(mRotation.y));
+			uboFloor.model.translate(Vector3(0.0f, 0.0f, -1800.0f));
+			//uboFloor.model = glm::translate(glm::mat4(), glm::vec3(cameraPos.x, -cameraPos.z, cameraPos.y) * 100.0f);
+			//uboFloor.model = glm::rotate(uboFloor.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			//uboFloor.model = glm::rotate(uboFloor.model, glm::radians(mRotation.z), glm::vec3(0.0f, 1.0f, 0.0f));
+			//uboFloor.model = glm::rotate(uboFloor.model, glm::radians(-mRotation.y), glm::vec3(0.0f, 0.0f, 1.0f));
+			//uboFloor.model = glm::translate(uboFloor.model, glm::vec3(0.0f, 0.0f, -1800.0f));
+			uboFloor.viewPos = Vector4(0.0f, 0.0f, -mZoom, 0.0f);
 		}
 
 		// Update bones
 		skinnedMesh->update(runningTime);
 		for (uint32_t i = 0; i < skinnedMesh->boneTransforms.size(); i++)
 		{
-			uboVS.bones[i] = glm::transpose(glm::make_mat4(&skinnedMesh->boneTransforms[i].a1));
+			//uboVS.bones[i] = glm::transpose(glm::make_mat4(&skinnedMesh->boneTransforms[i].a1));
+			uboVS.bones[i].set(&skinnedMesh->boneTransforms[i].a1);
+			uboVS.bones[i].transpose();
 		}
 
 		uniformBuffers.mesh.copyTo(&uboVS, sizeof(uboVS));
 
 		// Update floor animation
-		uboFloor.uvOffset.t -= 0.25f * skinnedMesh->animationSpeed * frameTimer;
+		uboFloor.uvOffset.y -= 0.25f * skinnedMesh->animationSpeed * frameTimer;
 		uniformBuffers.floor.copyTo(&uboFloor, sizeof(uboFloor));
 	}
 

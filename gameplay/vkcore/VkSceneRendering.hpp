@@ -6,9 +6,6 @@
 #include <assert.h>
 #include <vector>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -19,10 +16,10 @@
 
 // Vertex layout used in this example
 struct SceneVertex {
-	glm::vec3 pos;
-	glm::vec3 normal;
-	glm::vec2 uv;
-	glm::vec3 color;
+	Vector3 pos;
+	Vector3 normal;
+	Vector2 uv;
+	Vector3 color;
 };
 
 // Scene related structs
@@ -31,9 +28,9 @@ struct SceneVertex {
 // Will be passed to the shaders using push constant
 struct SceneMaterialProperites
 {
-	glm::vec4 ambient;
-	glm::vec4 diffuse;
-	glm::vec4 specular;
+	Vector4 ambient;
+	Vector4 diffuse;
+	Vector4 specular;
 	float opacity;
 };
 
@@ -106,15 +103,19 @@ private:
 			// Properties
 			aiColor4D color;
 			aScene->mMaterials[i]->Get(AI_MATKEY_COLOR_AMBIENT, color);
-			materials[i].properties.ambient = glm::make_vec4(&color.r) + glm::vec4(0.1f);
+			//materials[i].properties.ambient = glm::make_vec4(&color.r) + glm::vec4(0.1f);
+			materials[i].properties.ambient.set(&color.r);
+			materials[i].properties.ambient += Vector4(0.1f);
 			aScene->mMaterials[i]->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-			materials[i].properties.diffuse = glm::make_vec4(&color.r);
+			//materials[i].properties.diffuse = glm::make_vec4(&color.r);
+			materials[i].properties.diffuse.set(&color.r);
 			aScene->mMaterials[i]->Get(AI_MATKEY_COLOR_SPECULAR, color);
-			materials[i].properties.specular = glm::make_vec4(&color.r);
+			//materials[i].properties.specular = glm::make_vec4(&color.r);
+			materials[i].properties.specular.set(&color.r);
 			aScene->mMaterials[i]->Get(AI_MATKEY_OPACITY, materials[i].properties.opacity);
 
 			if ((materials[i].properties.opacity) > 0.0f)
-				materials[i].properties.specular = glm::vec4(0.0f);
+				materials[i].properties.specular = Vector4(0.0f);
 
 			materials[i].name = name.C_Str();
 			std::cout << "Material \"" << materials[i].name << "\"" << std::endl;
@@ -268,12 +269,24 @@ private:
 			for (uint32_t v = 0; v < aMesh->mNumVertices; v++)
 			{
 				SceneVertex vertex;
-				vertex.pos = glm::make_vec3(&aMesh->mVertices[v].x);
+				vertex.pos.set(&aMesh->mVertices[v].x);
 				vertex.pos.y = -vertex.pos.y;
-				vertex.uv = hasUV ? glm::make_vec2(&aMesh->mTextureCoords[0][v].x) : glm::vec2(0.0f);
-				vertex.normal = hasNormals ? glm::make_vec3(&aMesh->mNormals[v].x) : glm::vec3(0.0f);
+				if (hasUV) {
+					vertex.uv.set(&aMesh->mTextureCoords[0][v].x);
+					//vertex.uv = hasUV ? glm::make_vec2(&aMesh->mTextureCoords[0][v].x) : glm::vec2(0.0f);
+				}
+				if (hasNormals) {
+					vertex.normal.set(&aMesh->mNormals[v].x);
+					//vertex.normal = hasNormals ? glm::make_vec3(&aMesh->mNormals[v].x) : glm::vec3(0.0f);
+				}
 				vertex.normal.y = -vertex.normal.y;
-				vertex.color = hasColor ? glm::make_vec3(&aMesh->mColors[0][v].r) : glm::vec3(1.0f);
+				if (hasColor) {
+					vertex.color.set(&aMesh->mColors[0][v].r);
+					//vertex.color = hasColor ? glm::make_vec3(&aMesh->mColors[0][v].r) : glm::vec3(1.0f);
+				}
+				else {
+					vertex.color.set(1.0f, 1.0f, 1.0f);
+				}
 				vertices.push_back(vertex);
 			}
 
@@ -376,10 +389,10 @@ public:
 	// materials and meshes
 	vkTools::UniformData uniformBuffer;
 	struct {
-		glm::mat4 projection;
-		glm::mat4 view;
-		glm::mat4 model;
-		glm::vec4 lightPos = glm::vec4(1.25f, 8.35f, 0.0f, 0.0f);
+		Matrix projection;
+		Matrix view;
+		Matrix model;
+		Vector4 lightPos = Vector4(1.25f, 8.35f, 0.0f, 0.0f);
 	} uniformData;
 
 	// Scene uses multiple pipelines
@@ -540,9 +553,9 @@ public:
 		mCamera.type = VkCamera::CameraType::firstperson;
 		mCamera.movementSpeed = 7.5f;
 		mCamera.position = { 15.0f, -13.5f, 0.0f };
-		mCamera.setRotation(glm::vec3(5.0f, 90.0f, 0.0f));
+		mCamera.setRotation(Vector3(5.0f, 90.0f, 0.0f));
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 256.0f);
-		title = "Vulkan Example - Scene rendering";
+		title = "Scene rendering";
 	}
 
 	~VkSceneRendering()
@@ -744,12 +757,12 @@ public:
 	{
 		if (attachLight)
 		{
-			scene->uniformData.lightPos = glm::vec4(-mCamera.position, 1.0f);
+			scene->uniformData.lightPos = Vector4(-mCamera.position.x, 
+				-mCamera.position.y, -mCamera.position.z, 1.0f);
 		}
 
 		scene->uniformData.projection = mCamera.mMatrices.perspective;
 		scene->uniformData.view = mCamera.mMatrices.view;
-		scene->uniformData.model = glm::mat4();
 
 		memcpy(scene->uniformBuffer.mapped, &scene->uniformData, sizeof(scene->uniformData));
 	}

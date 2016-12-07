@@ -1,8 +1,5 @@
 #pragma once
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -48,11 +45,11 @@ public:
 	} uniformData;
 
 	struct {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::mat4 normal;
-		glm::mat4 view;
-		glm::vec4 lightPos;
+		Matrix projection;
+		Matrix model;
+		Matrix normal;
+		Matrix view;
+		Vector4 lightPos;
 	} uboVS;
 
 	struct
@@ -70,7 +67,7 @@ public:
 	VkDescriptorSet descriptorSet;
 	VkDescriptorSetLayout descriptorSetLayout;
 
-	glm::vec4 lightPos = glm::vec4(1.0f, 2.0f, 0.0f, 0.0f);
+	Vector4 lightPos = Vector4(1.0f, 2.0f, 0.0f, 0.0f);
 
 	VkScene() : VulkanBase(ENABLE_VALIDATION)
 	{
@@ -78,7 +75,7 @@ public:
 		height = 720;
 		mZoom = -3.75f;
 		rotationSpeed = 0.5f;
-		mRotation = glm::vec3(15.0f, 0.f, 0.0f);
+		mRotation = Vector3(15.0f, 0.f, 0.0f);
 		mEnableTextOverlay = true;
 		title = "Vulkan Demo Scene - (c) 2016 by Sascha Willems";
 	}
@@ -184,7 +181,7 @@ public:
 
 			// Generate vertex buffer (pos, normal, uv, color)
 			std::vector<Vertex> vertexBuffer;
-			glm::vec3 offset(0.0f);
+			Vector3 offset;
 			// Offset on Y (except skypbox)
 			if (meshFiles[i] != "cube.obj")
 			{
@@ -194,16 +191,16 @@ public:
 			{
 				for (size_t v = 0; v < scene.m_Entries[m].Vertices.size(); v++)
 				{
-					glm::vec3 pos = (scene.m_Entries[m].Vertices[v].m_pos + offset) * scale;
-					glm::vec3 normal = scene.m_Entries[m].Vertices[v].m_normal;
-					glm::vec2 uv = scene.m_Entries[m].Vertices[v].m_tex;
-					glm::vec3 col = scene.m_Entries[m].Vertices[v].m_color;
+					Vector3 pos = (scene.m_Entries[m].Vertices[v].m_pos + offset) * scale;
+					Vector3 normal = scene.m_Entries[m].Vertices[v].m_normal;
+					Vector2 uv = scene.m_Entries[m].Vertices[v].m_tex;
+					Vector3 col = scene.m_Entries[m].Vertices[v].m_color;
 					Vertex vert =
 					{
 						{ pos.x, pos.y, pos.z },
 						{ normal.x, -normal.y, normal.z },
-						{ uv.s, uv.t },
-						{ col.r, col.g, col.b }
+						{ uv.x, uv.y },
+						{ col.x, col.y, col.z }
 					};
 
 					vertexBuffer.push_back(vert);
@@ -501,20 +498,30 @@ public:
 
 	void updateUniformBuffers()
 	{
-		uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 256.0f, &uboVS.projection);
+		Matrix::createLookAt(Vector3(0, 0, -mZoom), cameraPos, Vector3(0, 1, 0), &uboVS.view);
+		//uboVS.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//uboVS.view = glm::lookAt(
+		//	glm::vec3(0, 0, -mZoom),
+		//	cameraPos,
+		//	glm::vec3(0, 1, 0)
+		//);
 
-		uboVS.view = glm::lookAt(
-			glm::vec3(0, 0, -mZoom),
-			cameraPos,
-			glm::vec3(0, 1, 0)
-		);
+		//uboVS.model = glm::mat4();
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//uboVS.normal = glm::inverseTranspose(uboVS.view * uboVS.model);
 
-		uboVS.model = glm::mat4();
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		uboVS.model = glm::rotate(uboVS.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		uboVS.model.setIdentity();
+		uboVS.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		uboVS.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		uboVS.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
-		uboVS.normal = glm::inverseTranspose(uboVS.view * uboVS.model);
+		uboVS.normal = uboVS.view * uboVS.model;
+		uboVS.normal.invert();
+		uboVS.normal.transpose();
+		
 
 		uboVS.lightPos = lightPos;
 
