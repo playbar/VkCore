@@ -26,6 +26,7 @@ using namespace vkcore;
 /**
  * Main game class.
  */
+
 class SamplesGame : public Game, Control::Listener
 {
 public:

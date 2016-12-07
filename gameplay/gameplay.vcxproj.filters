@@ -345,9 +345,6 @@
     <ClCompile Include="src\JoystickControl.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Script.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\Sprite.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -380,6 +377,9 @@
     </ClCompile>
     <ClCompile Include="vkcore\vulkantools.cpp">
       <Filter>vkcore</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Script.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -713,9 +713,6 @@
     <ClInclude Include="src\JoystickControl.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Script.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\Sprite.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -913,6 +910,9 @@
     </ClInclude>
     <ClInclude Include="vkcore\vulkantools.h">
       <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Script.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

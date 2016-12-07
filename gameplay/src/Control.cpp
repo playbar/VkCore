@@ -12,7 +12,6 @@ Control::Control()
     _autoSize(AUTO_SIZE_BOTH), _listeners(NULL), _style(NULL), _visible(true), _opacity(0.0f), _zIndex(-1),
     _contactIndex(INVALID_CONTACT_INDEX), _focusIndex(-1), _canFocus(false), _state(NORMAL), _parent(NULL), _styleOverridden(false), _skin(NULL)
 {
-    GP_REGISTER_SCRIPT_EVENTS();
 }
 
 Control::~Control()
@@ -1077,8 +1076,6 @@ void Control::notifyListeners(Control::Listener::EventType eventType)
             }
         }
     }
-
-    fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(Control, controlEvent), dynamic_cast<void*>(this), eventType);
 
     this->release();
 }

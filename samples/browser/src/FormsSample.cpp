@@ -7,7 +7,7 @@
 // Input bit-flags
 #define KEY_BACK 1
 
-FormsSample sample;
+//FormsSample sample;
 
 const static unsigned int __formsCount = 5;
 
@@ -95,34 +95,33 @@ void FormsSample::initialize()
 
 	RadioButton* form5Button = static_cast<RadioButton*>(_formSelect->getControl("form5"));
 	form5Button->addListener(this, Control::Listener::CLICK);
-	return;
 
- //   for (unsigned int i = 0; i < _formFiles.size(); i++)
- //   {
-	//	Form* form = Form::create(_formFiles[i]);
- //       form->setEnabled(false);
- //       _forms.push_back(form);
- //   }
- //   _formIndex = 0;
+    for (unsigned int i = 0; i < _formFiles.size(); i++)
+    {
+		Form* form = Form::create(_formFiles[i]);
+        form->setEnabled(false);
+        _forms.push_back(form);
+    }
+    _formIndex = 0;
 
- //   // Create a form programmatically.
- //   createSampleForm();
+    // Create a form programmatically.
+    createSampleForm();
 
- //   Button* button = static_cast<Button*>(_forms[0]->getControl("testButton"));
- //   button->setFocus();
+    Button* button = static_cast<Button*>(_forms[0]->getControl("testButton"));
+    button->setFocus();
 
- //   // Create a scene with a camera node.
- //   Camera* camera = Camera::createPerspective(45.0f, (float)getWidth() / (float)getHeight(), 0.25f, 100.0f);
- //   _scene = Scene::create();
- //   Node* cameraNode = _scene->addNode("Camera");
- //   cameraNode->setCamera(camera);
- //   _scene->setActiveCamera(camera);
- //   SAFE_RELEASE(camera);
- //   _formNodeParent = _scene->addNode("FormParent");
- //   _formNode = Node::create("Form");
- //   _formNodeParent->addChild(_formNode);
- //   
- //   formChanged();
+    // Create a scene with a camera node.
+    Camera* camera = Camera::createPerspective(45.0f, (float)getWidth() / (float)getHeight(), 0.25f, 100.0f);
+    _scene = Scene::create();
+    Node* cameraNode = _scene->addNode("Camera");
+    cameraNode->setCamera(camera);
+    _scene->setActiveCamera(camera);
+    SAFE_RELEASE(camera);
+    _formNodeParent = _scene->addNode("FormParent");
+    _formNode = Node::create("Form");
+    _formNodeParent->addChild(_formNode);
+    
+    formChanged();
 
     _gamepad = getGamepad(0);
     // This is needed because the virtual gamepad is shared between all samples.
@@ -254,12 +253,12 @@ void FormsSample::render(float elapsedTime)
         _formSelect->draw();
     }
 
-    //if (_activeForm)
-    //{
-    //    _activeForm->draw();
-    //}
+	if (_activeForm)
+	{
+		_activeForm->draw();
+	}
 
-    //_gamepad->draw();
+	_gamepad->draw();
 }
 
 void FormsSample::touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int contactIndex)

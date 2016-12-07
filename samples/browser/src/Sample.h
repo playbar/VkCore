@@ -11,7 +11,7 @@ using namespace vkcore;
  * The goal is to provide an interface that matches the Game class.
  * This way you can easily copy the code from your sample into a game.
  */
-class Sample : public Game
+class Sample
 {
     friend class SamplesGame;
 
