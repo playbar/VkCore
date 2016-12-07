@@ -8,8 +8,6 @@
 #include <algorithm>
 
 #include "define.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
@@ -54,10 +52,10 @@ public:
 	vk::Buffer uniformBufferVS;
 
 	struct uboVS {
-		glm::mat4 projection;
-		glm::mat4 view;
-		glm::mat4 model;
-		glm::vec4 viewPos;
+		Matrix projection;
+		Matrix view;
+		Matrix model;
+		Vector4 viewPos;
 		float lodBias = 0.0f;
 		uint32_t samplerIndex = 2;
 	} uboVS;
@@ -76,8 +74,8 @@ public:
 		mEnableTextOverlay = true;
 		mCamera.type = VkCamera::CameraType::firstperson;
 		mCamera.setPerspective(60.0f, (float)width / (float)height, 0.1f, 1024.0f);
-		mCamera.setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
-		mCamera.setTranslation(glm::vec3(40.75f, 0.0f, 0.0f));
+		mCamera.setRotation(Vector3(0.0f, 90.0f, 0.0f));
+		mCamera.setTranslation(Vector3(40.75f, 0.0f, 0.0f));
 		mCamera.movementSpeed = 2.5f;
 		mCamera.rotationSpeed = 0.5f;
 		timerSpeed *= 0.05f;
@@ -653,8 +651,10 @@ public:
 	{
 		uboVS.projection = mCamera.mMatrices.perspective;
 		uboVS.view = mCamera.mMatrices.view;
-		uboVS.model = glm::rotate(glm::mat4(), glm::radians(timer * 360.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		uboVS.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f);
+		//uboVS.model = glm::rotate(glm::mat4(), glm::radians(timer * 360.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		//uboVS.viewPos = glm::vec4(mCamera.position, 0.0f) * glm::vec4(-1.0f);
+		Matrix::createRotationX(MATH_DEG_TO_RAD(timer * 360.0f), &uboVS.model);
+		uboVS.viewPos = Vector4(-mCamera.position.x, -mCamera.position.y, -mCamera.position.z, 0.0f);
 		VK_CHECK_RESULT(uniformBufferVS.map());
 		memcpy(uniformBufferVS.mapped, &uboVS, sizeof(uboVS));
 		uniformBufferVS.unmap();

@@ -8,9 +8,6 @@
 
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -58,9 +55,9 @@ public:
 	} uniformData;
 
 	struct UBO {
-		glm::mat4 projection;
-		glm::mat4 model;
-		glm::vec4 lightPos = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		Matrix projection;
+		Matrix model;
+		Vector4 lightPos = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 	};
 
 	struct {
@@ -109,8 +106,8 @@ public:
 		VkSemaphore semaphore = VK_NULL_HANDLE;
 	} offscreenPass;
 
-	glm::vec3 meshPos = glm::vec3(0.0f, -1.5f, 0.0f);
-	glm::vec3 meshRot = glm::vec3(0.0f);
+	Vector3 meshPos = Vector3(0.0f, -1.5f, 0.0f);
+	Vector3 meshRot = Vector3(0.0f);
 
 	VkOffScreen() : VulkanBase(ENABLE_VALIDATION)
 	{
@@ -854,15 +851,23 @@ public:
 	void updateUniformBuffers()
 	{
 		// Mesh
-		ubos.vsShared.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//ubos.vsShared.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//ubos.vsShared.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.y + meshRot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubos.vsShared.model = glm::translate(ubos.vsShared.model, meshPos);
 
-		ubos.vsShared.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.y + meshRot.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		ubos.vsShared.model = glm::translate(ubos.vsShared.model, meshPos);
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 256.0f, &ubos.vsShared.projection);
+		viewMatrix.translate(0, 0, mZoom);
+		matTmp.translate(cameraPos);
+		ubos.vsShared.model = viewMatrix * matTmp;
+		ubos.vsShared.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		ubos.vsShared.model.rotateY(MATH_DEG_TO_RAD(mRotation.y + meshRot.y));
+		ubos.vsShared.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+		ubos.vsShared.model.translate(meshPos);
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsShared.memory, 0, sizeof(ubos.vsShared), 0, (void **)&pData));
@@ -870,18 +875,25 @@ public:
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsShared.memory);
 
 		// Mirror
-		ubos.vsShared.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubos.vsShared.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		matTmp.setIdentity();
+		matTmp.translate(cameraPos);
+		ubos.vsShared.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		ubos.vsShared.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		ubos.vsShared.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsMirror.memory, 0, sizeof(ubos.vsShared), 0, (void **)&pData));
 		memcpy(pData, &ubos.vsShared, sizeof(ubos.vsShared));
 		vkUnmapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsMirror.memory);
 
-		// Debug quad
-		ubos.vsShared.projection = glm::ortho(4.0f, 0.0f, 0.0f, 4.0f*(float)height / (float)width, -1.0f, 1.0f);
-		ubos.vsShared.model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 0.0f));
+		//// Debug quad
+		//ubos.vsShared.projection = glm::ortho(4.0f, 0.0f, 0.0f, 4.0f*(float)height / (float)width, -1.0f, 1.0f);
+		//ubos.vsShared.model = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 0.0f));
+		Matrix::createOrthographicOffCenter(4.0f, 0.0f, 0.0f, 4.0f*(float)height / (float)width, -1.0f, 1.0f, &ubos.vsShared.projection);
+		Matrix::createTranslation(Vector3(0, 0, 0), &ubos.vsShared.model);
 
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsDebugQuad.memory, 0, sizeof(ubos.vsShared), 0, (void **)&pData));
 		memcpy(pData, &ubos.vsShared, sizeof(ubos.vsShared));
@@ -890,16 +902,26 @@ public:
 
 	void updateUniformBufferOffscreen()
 	{
-		ubos.vsShared.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//ubos.vsShared.projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 0.1f, 256.0f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+		//ubos.vsShared.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.y + meshRot.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubos.vsShared.model = glm::scale(ubos.vsShared.model, glm::vec3(1.0f, -1.0f, 1.0f));
+		//ubos.vsShared.model = glm::translate(ubos.vsShared.model, meshPos);
 
-		ubos.vsShared.model = viewMatrix * glm::translate(glm::mat4(), cameraPos);
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.y + meshRot.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.vsShared.model = glm::rotate(ubos.vsShared.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), (float)width / (float)height, 0.1f, 256.0f, &ubos.vsShared.projection);
+		Matrix viewMatrix, matTmp;
+		viewMatrix.translate(0, 0, mZoom);
+		matTmp.translate(cameraPos);
+		ubos.vsShared.model = viewMatrix * matTmp;
+		ubos.vsShared.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		ubos.vsShared.model.rotateY(MATH_DEG_TO_RAD(mRotation.y + meshRot.y));
+		ubos.vsShared.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+		ubos.vsShared.model.scale(Vector3(1.0f, -1.0f, 1.0f));
+		ubos.vsShared.model.translate(meshPos);
 
-		ubos.vsShared.model = glm::scale(ubos.vsShared.model, glm::vec3(1.0f, -1.0f, 1.0f));
-		ubos.vsShared.model = glm::translate(ubos.vsShared.model, meshPos);
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vsOffScreen.memory, 0, sizeof(ubos.vsShared), 0, (void **)&pData));

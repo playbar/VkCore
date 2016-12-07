@@ -8,10 +8,6 @@
 
 #include "define.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-
 #include <vulkan/vulkan.h>
 #include "VulkanBase.h"
 
@@ -57,11 +53,11 @@ public:
 	struct {
 
 		struct {
-			glm::mat4 projection;
-			glm::mat4 model;
-			glm::mat4 normal;
-			glm::vec4 lightPos = glm::vec4(0.0f);
-			glm::vec4 cameraPos;
+			Matrix projection;
+			Matrix model;
+			Matrix normal;
+			Vector4 lightPos = Vector4(0.0f);
+			Vector4 cameraPos;
 		} vertexShader;
 
 		struct {
@@ -89,7 +85,7 @@ public:
 	VkParallaxMapping() : VulkanBase(ENABLE_VALIDATION)
 	{
 		mZoom = -2.7f;
-		mRotation = glm::vec3(56.0f, 0.0f, 0.0f);
+		mRotation = Vector3(56.0f, 0.0f, 0.0f);
 		rotationSpeed = 0.25f;
 		mEnableTextOverlay = true;
 		timerSpeed *= 0.25f;
@@ -478,17 +474,28 @@ public:
 	void updateUniformBuffers()
 	{
 		// Vertex shader
-		glm::mat4 viewMatrix = glm::mat4();
-		ubos.vertexShader.projection = glm::perspective(glm::radians(45.0f), (float)(width* ((splitScreen) ? 0.5f : 1.0f)) / (float)height, 0.001f, 256.0f);
-		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
+		//glm::mat4 viewMatrix = glm::mat4();
+		//ubos.vertexShader.projection = glm::perspective(glm::radians(45.0f), (float)(width* ((splitScreen) ? 0.5f : 1.0f)) / (float)height, 0.001f, 256.0f);
+		//viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
+		//ubos.vertexShader.model = glm::mat4();
+		//ubos.vertexShader.model = viewMatrix * glm::translate(ubos.vertexShader.model, cameraPos);
+		//ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		//ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubos.vertexShader.normal = glm::inverseTranspose(ubos.vertexShader.model);
 
-		ubos.vertexShader.model = glm::mat4();
-		ubos.vertexShader.model = viewMatrix * glm::translate(ubos.vertexShader.model, cameraPos);
-		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		ubos.vertexShader.model = glm::rotate(ubos.vertexShader.model, glm::radians(mRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		ubos.vertexShader.normal = glm::inverseTranspose(ubos.vertexShader.model);
+		Matrix viewMatrix, matTmp;
+		Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(45.0f), (float)(width* ((splitScreen) ? 0.5f : 1.0f)) / (float)height, 0.001f, 256.0f, &ubos.vertexShader.projection);
+		viewMatrix.translate(0, 0, mZoom);
+		matTmp.translate(cameraPos);
+		ubos.vertexShader.model = viewMatrix * matTmp;
+		ubos.vertexShader.model.rotateX(MATH_DEG_TO_RAD(mRotation.x));
+		ubos.vertexShader.model.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		ubos.vertexShader.model.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+		
+		ubos.vertexShader.normal = ubos.vertexShader.model;
+		ubos.vertexShader.normal.invert();
+		ubos.vertexShader.normal.transpose();
 
 		if (!paused)
 		{
@@ -496,7 +503,7 @@ public:
 			ubos.vertexShader.lightPos.y = cos(glm::radians(timer * 360.0f)) * 0.5f;
 		}
 
-		ubos.vertexShader.cameraPos = glm::vec4(0.0, 0.0, mZoom, 0.0);
+		ubos.vertexShader.cameraPos = Vector4(0.0, 0.0, mZoom, 0.0);
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, uniformData.vertexShader.memory, 0, sizeof(ubos.vertexShader), 0, (void **)&pData));

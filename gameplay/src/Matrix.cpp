@@ -157,6 +157,9 @@ void Matrix::createPerspectiveVK(float fieldOfView, float aspectRatio,
 	float zNearPlane, float zFarPlane, Matrix* dst)
 {
 	GP_ASSERT(dst);
+	if (zFarPlane - zNearPlane < 0.01) {
+		return;
+	}
 	GP_ASSERT(zFarPlane != zNearPlane);
 
 	float theta = fieldOfView;
