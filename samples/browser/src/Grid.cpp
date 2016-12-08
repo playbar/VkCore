@@ -75,7 +75,7 @@ Mesh* createGridMesh(unsigned int lineCount)
     {
         return NULL;
     }
-    mesh->setPrimitiveType(Mesh::LINES);
+    mesh->setPrimitiveType(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
     mesh->setVertexData(&vertices[0], 0, pointCount);
 
     return mesh;

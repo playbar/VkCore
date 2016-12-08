@@ -16,10 +16,6 @@ class MeshPart;
 class Material;
 class Model;
 
-/**
- * Defines a mesh supporting various vertex formats and 1 or more
- * MeshPart(s) to define how the vertices are connected.
- */
 class Mesh : public Ref
 {
     friend class Model;
@@ -40,14 +36,14 @@ public:
     /**
      * Defines supported primitive types.
      */
-    enum PrimitiveType
-    {
-        TRIANGLES = GL_TRIANGLES,
-        TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
-        LINES = GL_LINES,
-        LINE_STRIP = GL_LINE_STRIP,
-        POINTS = GL_POINTS
-    };
+	enum PrimitiveType
+	{
+		TRIANGLES = GL_TRIANGLES,
+		TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
+		LINES = GL_LINES,
+		LINE_STRIP = GL_LINE_STRIP,
+		POINTS = GL_POINTS
+	};
 
     static Mesh* createMesh( const VertexFormat& vertexFormat, unsigned int vertexCount, bool dynamic = false);
 
@@ -119,25 +115,16 @@ private:
 		std::vector<VkVertexInputAttributeDescription> inputAttributes;
 	} mVertices;
 
-
-	// Index buffer
-	struct
-	{
-		VkDeviceMemory memory;
-		VkBuffer buffer;
-		uint32_t count;
-	} mIndices;
-
     std::string _url;
-    const VertexFormat _vertexFormat;
-    unsigned int _vertexCount;
+    const VertexFormat mVertexFormat;
+    unsigned int mVertexCount;
     //VertexBufferHandle _vertexBuffer;
-	VkPrimitiveTopology _primitiveType;
-    unsigned int _partCount;
-    MeshPart** _parts;
+	VkPrimitiveTopology mPrimitiveType;
+    unsigned int mPartCount;
+    MeshPart** mParts;
     bool _dynamic;
-    BoundingBox _boundingBox;
-    BoundingSphere _boundingSphere;
+    BoundingBox mBoundingBox;
+    BoundingSphere mBoundingSphere;
 };
 
 }

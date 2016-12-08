@@ -113,7 +113,7 @@ void ParticlesSample::addGrid(unsigned int lineCount)
     if (mesh == NULL)
         return;
 
-    mesh->setPrimitiveType(Mesh::LINES);
+    mesh->setPrimitiveType(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
     mesh->setVertexData(&vertices[0], 0, pointCount);
 
     Model* model = Model::create(mesh);

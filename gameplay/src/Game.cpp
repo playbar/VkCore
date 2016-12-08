@@ -20,7 +20,7 @@ namespace vkcore
 static Game* __gameInstance = NULL;
 double Game::_pausedTimeLast = 0.0;
 double Game::_pausedTimeTotal = 0.0;
-VkCoreDevice *mVulkanDevice = NULL;
+
 
 /**
 * @script{ignore}

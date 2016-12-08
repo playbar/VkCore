@@ -35,8 +35,6 @@ class ScriptController;
 
 typedef VkPhysicalDeviceFeatures(*PFN_GetEnabledFeatures)();
 
-extern VkCoreDevice *mVulkanDevice;
-
 class Game
 {
 private:

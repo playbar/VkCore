@@ -12,22 +12,25 @@ namespace vkcore
 {
 
 Mesh::Mesh( const VertexFormat& vertexFormat)
-    : _vertexFormat(vertexFormat), _vertexCount(0), _primitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
-      _partCount(0), _parts(NULL), _dynamic(false)
+    : mVertexFormat(vertexFormat), mVertexCount(0), mPrimitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
+      mPartCount(0), mParts(NULL), _dynamic(false)
 {
 	//_vertexBuffer = 0;
 }
 
 Mesh::~Mesh()
 {
-    if (_parts)
+    if (mParts)
     {
-        for (unsigned int i = 0; i < _partCount; ++i)
+        for (unsigned int i = 0; i < mPartCount; ++i)
         {
-            SAFE_DELETE(_parts[i]);
+            SAFE_DELETE(mParts[i]);
         }
-        SAFE_DELETE_ARRAY(_parts);
+        SAFE_DELETE_ARRAY(mParts);
     }
+
+	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mVertices.buffer, nullptr);
+	vkFreeMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, nullptr);
 
     //if (_vertexBuffer)
     //{
@@ -40,53 +43,28 @@ Mesh* Mesh::createMesh(const VertexFormat& vertexFormat, unsigned int vertexCoun
 {
 	///////////////////////////////////////////
 	Mesh* mesh = new Mesh(vertexFormat);
-	mesh->_vertexCount = vertexCount;
+	mesh->mVertexCount = vertexCount;
 	//mesh->_vertexBuffer = vbo;
 	mesh->_dynamic = dynamic;
 
 	uint32_t vertexBufferSize = vertexFormat.getVertexSize() * vertexCount;
-	std::vector<uint32_t> indexBuffer = { 1, 0, 2, 3 };
-	uint32_t indexBufferSize = static_cast<uint32_t>(indexBuffer.size()) * sizeof(uint32_t);
+
 
 	VkMemoryAllocateInfo memAlloc = {};
 	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	VkMemoryRequirements memReqs;
-	void *data;
 
-	// Vertex buffer
 	VkBufferCreateInfo vertexBufferInfo = {};
 	vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	vertexBufferInfo.size = vertexBufferSize;
 	vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	// Copy vertex data to a buffer visible to the host
 	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &mesh->mVertices.buffer));
-	
-	//vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mesh->mVertices.buffer, &memReqs);
-	//memAlloc.allocationSize = memReqs.size;
-	//memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	//VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mesh->mVertices.memory));
-	//VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mesh->mVertices.memory, 0, memAlloc.allocationSize, 0, &data));
-	//memcpy(data, vertexBuffer.data(), vertexBufferSize);
-	//vkUnmapMemory(mVulkanDevice->mLogicalDevice, mesh->mVertices.memory);
-	//VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mesh->mVertices.buffer, mesh->mVertices.memory, 0));
-	//
-	// Index buffer
-	VkBufferCreateInfo indexbufferInfo = {};
-	indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	indexbufferInfo.size = indexBufferSize;
-	indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-
-	// Copy index data to a buffer visible to the host
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &mesh->mIndices.buffer));
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mesh->mIndices.buffer, &memReqs);
+	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mesh->mVertices.buffer, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mesh->mIndices.memory));
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mesh->mIndices.memory, 0, indexBufferSize, 0, &data));
-	memcpy(data, indexBuffer.data(), indexBufferSize);
-	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mesh->mIndices.memory);
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mesh->mIndices.buffer, mesh->mIndices.memory, 0));
-
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mesh->mVertices.memory));
+	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mesh->mVertices.buffer, mesh->mVertices.memory, 0));
+	
 	// Vertex input binding
 	mesh->mVertices.inputBinding.binding = VERTEX_BUFFER_BIND_ID;
 	mesh->mVertices.inputBinding.stride = vertexFormat.getVertexSize();
@@ -147,7 +125,7 @@ Mesh* Mesh::createQuad(float x, float y, float width, float height, float s1, fl
         return NULL;
     }
 
-    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    mesh->mPrimitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     mesh->setVertexData(vertices, 0, 4);
 
     return mesh;
@@ -180,7 +158,7 @@ Mesh* Mesh::createQuadFullscreen()
         return NULL;
     }
 
-    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    mesh->mPrimitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     mesh->setVertexData(vertices, 0, 4);
 
     return mesh;
@@ -217,7 +195,7 @@ Mesh* Mesh::createQuad(const Vector3& p1, const Vector3& p2, const Vector3& p3, 
         return NULL;
     }
 
-    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    mesh->mPrimitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     mesh->setVertexData(vertices, 0, 4);
 
     return mesh;
@@ -243,7 +221,7 @@ Mesh* Mesh::createLines(Vector3* points, unsigned int pointCount)
         return NULL;
     }
 
-    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+    mesh->mPrimitiveType = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
     mesh->setVertexData(vertices, 0, pointCount);
 
     SAFE_DELETE_ARRAY(vertices);
@@ -288,7 +266,7 @@ Mesh* Mesh::createBoundingBox(const BoundingBox& box)
         return NULL;
     }
 
-    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+    mesh->mPrimitiveType = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
     mesh->setVertexData(vertices, 0, 18);
 
     return mesh;
@@ -301,17 +279,17 @@ const char* Mesh::getUrl() const
 
 const VertexFormat& Mesh::getVertexFormat() const
 {
-    return _vertexFormat;
+    return mVertexFormat;
 }
 
 unsigned int Mesh::getVertexCount() const
 {
-    return _vertexCount;
+    return mVertexCount;
 }
 
 unsigned int Mesh::getVertexSize() const
 {
-    return _vertexFormat.getVertexSize();
+    return mVertexFormat.getVertexSize();
 }
 
 VertexBufferHandle Mesh::getVertexBuffer() const
@@ -327,12 +305,12 @@ bool Mesh::isDynamic() const
 
 VkPrimitiveTopology Mesh::getPrimitiveType() const
 {
-    return _primitiveType;
+    return mPrimitiveType;
 }
 
 void Mesh::setPrimitiveType(VkPrimitiveTopology type)
 {
-    _primitiveType = type;
+    mPrimitiveType = type;
 }
 
 void* Mesh::mapVertexBuffer()
@@ -340,15 +318,8 @@ void* Mesh::mapVertexBuffer()
     //return (void*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	GP_ASSERT(false);
 	void *data;
-	VkMemoryRequirements memReqs;	
-	VkMemoryAllocateInfo memAlloc = {};
-	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mVertices.buffer, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mVertices.memory));
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, 0, memAlloc.allocationSize, 0, &data));
+	uint32_t vertexBufferSize = mVertexFormat.getVertexSize() * mVertexCount;
+	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, 0, vertexBufferSize, 0, &data));
 	return data;
 }
 
@@ -357,7 +328,7 @@ bool Mesh::unmapVertexBuffer()
 	GP_ASSERT(false);
     //return glUnmapBuffer(GL_ARRAY_BUFFER);
 	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory);
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mIndices.buffer, mIndices.memory, 0));
+	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
 	return true;
 }
 
@@ -365,19 +336,9 @@ void Mesh::setVertexData(const void* vertexData, unsigned int vertexStart, unsig
 {
 
 	void *data;
-	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo memAlloc = {};
-	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mVertices.buffer, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mVertices.memory));
-	
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, vertexStart * _vertexFormat.getVertexSize(), vertexCount * _vertexFormat.getVertexSize(), 0, &data));
-	memcpy(data, vertexData, vertexCount * _vertexFormat.getVertexSize());
+	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, vertexStart * mVertexFormat.getVertexSize(), vertexCount * mVertexFormat.getVertexSize(), 0, &data));
+	memcpy(data, vertexData, vertexCount * mVertexFormat.getVertexSize());
 	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory);
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
 
     //GL_ASSERT( glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer) );
 
@@ -398,19 +359,19 @@ void Mesh::setVertexData(const void* vertexData, unsigned int vertexStart, unsig
 
 MeshPart* Mesh::addPart(VkPrimitiveTopology primitiveType, IndexFormat indexFormat, unsigned int indexCount, bool dynamic)
 {
-    MeshPart* part = MeshPart::create(this, _partCount, primitiveType, indexFormat, indexCount, dynamic);
+    MeshPart* part = MeshPart::create(this, mPartCount, primitiveType, indexFormat, indexCount, dynamic);
     if (part)
     {
         // Increase size of part array and copy old subets into it.
-        MeshPart** oldParts = _parts;
-        _parts = new MeshPart*[_partCount + 1];
-        for (unsigned int i = 0; i < _partCount; ++i)
+        MeshPart** oldParts = mParts;
+        mParts = new MeshPart*[mPartCount + 1];
+        for (unsigned int i = 0; i < mPartCount; ++i)
         {
-            _parts[i] = oldParts[i];
+            mParts[i] = oldParts[i];
         }
 
         // Add new part to array.
-        _parts[_partCount++] = part;
+        mParts[mPartCount++] = part;
 
         // Delete old part array.
         SAFE_DELETE_ARRAY(oldParts);
@@ -421,33 +382,33 @@ MeshPart* Mesh::addPart(VkPrimitiveTopology primitiveType, IndexFormat indexForm
 
 unsigned int Mesh::getPartCount() const
 {
-    return _partCount;
+    return mPartCount;
 }
 
 MeshPart* Mesh::getPart(unsigned int index)
 {
-    GP_ASSERT(_parts);
-    return _parts[index];
+    GP_ASSERT(mParts);
+    return mParts[index];
 }
 
 const BoundingBox& Mesh::getBoundingBox() const
 {
-    return _boundingBox;
+    return mBoundingBox;
 }
 
 void Mesh::setBoundingBox(const BoundingBox& box)
 {
-    _boundingBox = box;
+    mBoundingBox = box;
 }
 
 const BoundingSphere& Mesh::getBoundingSphere() const
 {
-    return _boundingSphere;
+    return mBoundingSphere;
 }
 
 void Mesh::setBoundingSphere(const BoundingSphere& sphere)
 {
-    _boundingSphere = sphere;
+    mBoundingSphere = sphere;
 }
 
 }

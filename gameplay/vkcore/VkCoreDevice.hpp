@@ -158,3 +158,6 @@ public:
 
 };
 
+
+extern VkCoreDevice *mVulkanDevice;
+

@@ -1406,8 +1406,8 @@ Mesh* Bundle::loadMesh(const char* id, const char* nodeId)
 
     mesh->setVertexData((float*)meshData->vertexData, 0, meshData->vertexCount);
 
-    mesh->_boundingBox.set(meshData->boundingBox);
-    mesh->_boundingSphere.set(meshData->boundingSphere);
+    mesh->mBoundingBox.set(meshData->boundingBox);
+    mesh->mBoundingSphere.set(meshData->boundingSphere);
 
     // Create mesh parts.
     for (unsigned int i = 0; i < meshData->parts.size(); ++i)

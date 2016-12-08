@@ -1,30 +1,34 @@
 #include "Base.h"
 #include "MeshPart.h"
+#include "vulkantools.h"
 
 namespace vkcore
 {
 
 MeshPart::MeshPart() :
-    _mesh(NULL), _meshIndex(0), _primitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST), 
-	_indexCount(0), _indexBuffer(0), _dynamic(false)
+    mMesh(NULL), mMeshIndex(0), mPrimitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST), 
+	mIndexCount(0), mIndexSize(0), mDynamic(false)
 {
 }
 
 MeshPart::~MeshPart()
 {
-    if (_indexBuffer)
-    {
-        glDeleteBuffers(1, &_indexBuffer);
-    }
+    //if (_indexBuffer)
+    //{
+    //    glDeleteBuffers(1, &_indexBuffer);
+    //}
+
+	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mIndices.mVKBuffer, nullptr);
+	vkFreeMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory, nullptr);
 }
 
-MeshPart* MeshPart::create(Mesh* mesh, unsigned int meshIndex, Mesh::PrimitiveType primitiveType,
+MeshPart* MeshPart::create(Mesh* mesh, unsigned int meshIndex, VkPrimitiveTopology primitiveType,
     Mesh::IndexFormat indexFormat, unsigned int indexCount, bool dynamic)
 {
     // Create a VBO for our index buffer.
-    GLuint vbo;
-    GL_ASSERT( glGenBuffers(1, &vbo) );
-    GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo) );
+    //GLuint vbo;
+    //GL_ASSERT( glGenBuffers(1, &vbo) );
+    //GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo) );
 
     unsigned int indexSize = 0;
     switch (indexFormat)
@@ -39,101 +43,96 @@ MeshPart* MeshPart::create(Mesh* mesh, unsigned int meshIndex, Mesh::PrimitiveTy
         indexSize = 4;
         break;
     default:
-        GP_ERROR("Unsupported index format (%d).", indexFormat);
-        glDeleteBuffers(1, &vbo);
         return NULL;
     }
 
-    GL_ASSERT( glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize * indexCount, NULL, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW) );
+    //GL_ASSERT( glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize * indexCount, NULL, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW) );
 
     MeshPart* part = new MeshPart();
-    part->_mesh = mesh;
-    part->_meshIndex = meshIndex;
-    part->_primitiveType = primitiveType;
-    part->_indexFormat = indexFormat;
-    part->_indexCount = indexCount;
-    part->_indexBuffer = vbo;
-    part->_dynamic = dynamic;
+    part->mMesh = mesh;
+    part->mMeshIndex = meshIndex;
+    part->mPrimitiveType = primitiveType;
+    part->mIndexFormat = indexFormat;
+    part->mIndexCount = indexCount;
+	part->mIndexSize = indexSize;
+    //part->_indexBuffer = vbo;
+    part->mDynamic = dynamic;
+	uint32_t indexBufferSize = indexCount * indexSize;
+
+	// Index buffer
+	VkMemoryAllocateInfo memAlloc = {};
+	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	VkMemoryRequirements memReqs;
+	VkBufferCreateInfo indexbufferInfo = {};
+	indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	indexbufferInfo.size = indexBufferSize;
+	indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+
+	// Copy index data to a buffer visible to the host
+	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &part->mIndices.mVKBuffer));
+	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, part->mIndices.mVKBuffer, &memReqs);
+	memAlloc.allocationSize = memReqs.size;
+	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &part->mIndices.mVKMemory));
+	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, part->mIndices.mVKBuffer, part->mIndices.mVKMemory, 0));
 
     return part;
 }
 
 unsigned int MeshPart::getMeshIndex() const
 {
-    return _meshIndex;
+    return mMeshIndex;
 }
 
-Mesh::PrimitiveType MeshPart::getPrimitiveType() const
+VkPrimitiveTopology MeshPart::getPrimitiveType() const
 {
-    return _primitiveType;
+    return mPrimitiveType;
 }
 
 unsigned int MeshPart::getIndexCount() const
 {
-    return _indexCount;
+    return mIndexCount;
 }
 
 Mesh::IndexFormat MeshPart::getIndexFormat() const
 {
-    return _indexFormat;
+    return mIndexFormat;
 }
 
 IndexBufferHandle MeshPart::getIndexBuffer() const
 {
-    return _indexBuffer;
+	GP_ASSERT(false);
+    return 0;
 }
 
 void* MeshPart::mapIndexBuffer()
 {
-    GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer) );
+	uint32_t indexBufferSize = mIndexCount * mIndexSize;
+	void *data;
 
-    return (void*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory, 0, indexBufferSize, 0, &data));
+	return data;
 }
 
 bool MeshPart::unmapIndexBuffer()
 {
-    return glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+    //return glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory);
+	return true;
 }
 
 void MeshPart::setIndexData(const void* indexData, unsigned int indexStart, unsigned int indexCount)
 {
-    GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer) );
-
-    unsigned int indexSize = 0;
-    switch (_indexFormat)
-    {
-    case Mesh::INDEX8:
-        indexSize = 1;
-        break;
-    case Mesh::INDEX16:
-        indexSize = 2;
-        break;
-    case Mesh::INDEX32:
-        indexSize = 4;
-        break;
-    default:
-        GP_ERROR("Unsupported index format (%d).", _indexFormat);
-        return;
-    }
-
-    if (indexStart == 0 && indexCount == 0)
-    {
-        GL_ASSERT( glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize * _indexCount, indexData, _dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW) );
-    }
-    else
-    {
-        if (indexCount == 0)
-        {
-            indexCount = _indexCount - indexStart;
-        }
-
-        GL_ASSERT( glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexStart * indexSize, indexCount * indexSize, indexData) );
-    }
+	uint32_t indexBufferSize = indexCount * mIndexSize;
+	void *data;
+	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory, indexStart * mIndexSize, indexBufferSize, 0, &data));
+	memcpy(data, indexData, indexBufferSize);
+	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory);
 }
 
 bool MeshPart::isDynamic() const
 {
-    return _dynamic;
+    return mDynamic;
 }
 
 }

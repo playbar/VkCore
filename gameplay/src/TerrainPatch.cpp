@@ -284,7 +284,7 @@ void TerrainPatch::addLOD(float* heights, unsigned int width, unsigned int heigh
         GP_ASSERT(indexCount <= USHRT_MAX);
     }
 
-    MeshPart* part = mesh->addPart(Mesh::TRIANGLE_STRIP, Mesh::INDEX16, indexCount);
+    MeshPart* part = mesh->addPart(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, Mesh::INDEX16, indexCount);
     unsigned short* indices = new unsigned short[indexCount];
     index = 0;
     for (unsigned int z = 0; z < patchHeight-1; ++z)

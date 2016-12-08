@@ -18,7 +18,7 @@ class MeshPart
 public:
     ~MeshPart();
     unsigned int getMeshIndex() const;
-    Mesh::PrimitiveType getPrimitiveType() const;
+	VkPrimitiveTopology getPrimitiveType() const;
     unsigned int getIndexCount() const;
     Mesh::IndexFormat getIndexFormat() const;
     IndexBufferHandle getIndexBuffer() const;
@@ -31,15 +31,23 @@ private:
    
     MeshPart();
     MeshPart(const MeshPart& copy);
-    static MeshPart* create(Mesh* mesh, unsigned int meshIndex, Mesh::PrimitiveType primitiveType, Mesh::IndexFormat indexFormat, unsigned int indexCount, bool dynamic = false);
+    static MeshPart* create(Mesh* mesh, unsigned int meshIndex, VkPrimitiveTopology primitiveType, Mesh::IndexFormat indexFormat, unsigned int indexCount, bool dynamic = false);
 
-    Mesh* _mesh;
-    unsigned int _meshIndex;
-	VkPrimitiveTopology _primitiveType;
-    Mesh::IndexFormat _indexFormat;
-    unsigned int _indexCount;
-    IndexBufferHandle _indexBuffer;
-    bool _dynamic;
+	// Index buffer
+	struct
+	{
+		VkDeviceMemory mVKMemory;
+		VkBuffer mVKBuffer;
+	} mIndices;
+
+    Mesh* mMesh;
+    unsigned int mMeshIndex;
+	VkPrimitiveTopology mPrimitiveType;
+    Mesh::IndexFormat mIndexFormat;
+    unsigned int mIndexCount;
+	unsigned int mIndexSize;
+    //IndexBufferHandle _indexBuffer;
+    bool mDynamic;
 };
 
 }

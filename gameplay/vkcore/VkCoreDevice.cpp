@@ -1,5 +1,7 @@
 #include "VkCoreDevice.hpp"
 
+VkCoreDevice *mVulkanDevice = NULL;
+
 VkCoreDevice::VkCoreDevice(VkPhysicalDevice phyDevice)
 {
 	assert(phyDevice);
