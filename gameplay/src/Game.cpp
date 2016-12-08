@@ -20,6 +20,7 @@ namespace vkcore
 static Game* __gameInstance = NULL;
 double Game::_pausedTimeLast = 0.0;
 double Game::_pausedTimeTotal = 0.0;
+VkCoreDevice *mVulkanDevice = NULL;
 
 /**
 * @script{ignore}
@@ -947,7 +948,6 @@ void Game::InitVulkan(bool enableValidation)
 {
 	VkResult err;
 
-	// Vulkan instance
 	err = createInstance(enableValidation);
 	if (err)
 	{
@@ -958,22 +958,15 @@ void Game::InitVulkan(bool enableValidation)
 	loadVulkanFunctions(mInstance);
 #endif
 
-	// If requested, we enable the default validation layers for debugging
 	if (enableValidation)
 	{
-		// The report flags determine what type of messages for the layers will be displayed
-		// For validating (debugging) an appplication the error and warning bits should suffice
 		VkDebugReportFlagsEXT debugReportFlags = VK_DEBUG_REPORT_ERROR_BIT_EXT; // | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-																				// Additional flags include performance info, loader and layer debug messages, etc.
 		vkDebug::setupDebugging(mInstance, debugReportFlags, VK_NULL_HANDLE);
 	}
 
-	// Physical device
 	uint32_t gpuCount = 0;
-	// Get number of available physical devices
 	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(mInstance, &gpuCount, nullptr));
 	assert(gpuCount > 0);
-	// Enumerate devices
 	std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
 	err = vkEnumeratePhysicalDevices(mInstance, &gpuCount, physicalDevices.data());
 	if (err)
@@ -981,15 +974,6 @@ void Game::InitVulkan(bool enableValidation)
 		vkTools::exitFatal("Could not enumerate phyiscal devices : \n" + vkTools::errorString(err), "Fatal error");
 	}
 
-	// Note :
-	// This example will always use the first physical device reported,
-	// change the vector index if you have multiple Vulkan devices installed
-	// and want to use another one
-	//mPhysicalDevice = physicalDevices[0];
-
-	// Vulkan device creation
-	// This is handled by a separate class that gets a logical device representation
-	// and encapsulates functions related to a device
 	mVulkanDevice = new VkCoreDevice(physicalDevices[0]);
 	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(enabledFeatures));
 

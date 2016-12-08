@@ -6,8 +6,9 @@
 #include "vulkantools.h"
 #include "vulkanbuffer.hpp"
 
-struct VkCoreDevice
+class VkCoreDevice
 {
+public:
 	VkPhysicalDevice mPhysicalDevice;
 	VkDevice mLogicalDevice;
 	VkPhysicalDeviceProperties mProperties;

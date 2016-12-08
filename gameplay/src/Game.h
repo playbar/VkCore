@@ -35,6 +35,8 @@ class ScriptController;
 
 typedef VkPhysicalDeviceFeatures(*PFN_GetEnabledFeatures)();
 
+extern VkCoreDevice *mVulkanDevice;
+
 class Game
 {
 private:
@@ -60,7 +62,6 @@ protected:
 	uint32_t lastFPS = 0;
 	// Vulkan instance, stores all per-application states
 	VkInstance mInstance;
-	VkCoreDevice *mVulkanDevice;
 
 	// Device features enabled by the example
 	// If not set, no additional features are enabled (may result in validation layer errors)
@@ -326,7 +327,6 @@ public:
 	// Submit the frames' workload 
 	// - Submits the text overlay (if enabled)
 	void submitFrame();
-
 
 public:
 	////////////////////////////////////////////////////

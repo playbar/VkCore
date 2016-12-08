@@ -896,7 +896,7 @@ int Platform::enterMessagePump()
             break;
     }
 	// Flush device to make sure all resources can be freed 
-	vkDeviceWaitIdle(_game->mVulkanDevice->mLogicalDevice);
+	vkDeviceWaitIdle( mVulkanDevice->mLogicalDevice);
     return 0;
 }
 
