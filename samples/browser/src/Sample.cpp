@@ -19,7 +19,6 @@ Sample::Sample() : Game(true, NULL)
 
 Sample::~Sample()
 {
-	enableScriptCamera(false);
 }
 
 bool Sample::isVsync()

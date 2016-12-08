@@ -335,6 +335,11 @@ LRESULT CALLBACK __WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static vkcore::Game* game = vkcore::Game::getInstance();
 
+	if (game != nullptr)
+	{
+		game->handleMessages(hwnd, msg, wParam, lParam);
+		return DefWindowProc(hwnd, msg, wParam, lParam);
+	}
     if ((!game->isInitialized()) ||( hwnd != __hwnd))
     {
         // Ignore messages that are not for our game window.
@@ -805,167 +810,18 @@ Platform* Platform::create(Game* game)
     // Get the application module handle.
     __hinstance = ::GetModuleHandle(NULL);
 
-    // Read window settings from config.
-    WindowCreationParams params;
-    params.fullscreen = false;
-    params.resizable = false;
-    params.rect.left = 0;
-    params.rect.top = 0;
-    params.rect.right = 0;
-    params.rect.bottom = 0;
-    params.samples = 0;
-    if (game->getConfig())
-    {
-        Properties* config = game->getConfig()->getNamespace("window", true);
-        if (config)
-        {
-            // Read window title.
-            const char* title = config->getString("title");
-            if (title)
-            { 
-                params.windowName = title;
-            }
-
-            // Read fullscreen state.
-            params.fullscreen = config->getBool("fullscreen");
-            // Read resizable state.
-            params.resizable = config->getBool("resizable");
-            // Read multisampling state.
-            params.samples = config->getInt("samples");
-
-            // Read window rect.
-            int x = config->getInt("x");
-            if (x != 0)
-                params.rect.left = x;
-            int y = config->getInt("y");
-            if (y != 0)
-                params.rect.top = y;
-            int width = config->getInt("width");
-            int height = config->getInt("height");
-
-            if (width == 0 && height == 0 && params.fullscreen)
-                getDesktopResolution(width, height);
-
-            if (width != 0)
-                params.rect.right = params.rect.left + width;
-            if (height != 0)
-                params.rect.bottom = params.rect.top + height;
-        }
-    }
-
-    // If window size was not specified, set it to a default value
-    if (params.rect.right == 0)
-        params.rect.right = params.rect.left + DEFAULT_RESOLUTION_X;
-    if (params.rect.bottom == 0)
-        params.rect.bottom = params.rect.top + DEFAULT_RESOLUTION_Y;
-    int width = params.rect.right - params.rect.left;
-    int height = params.rect.bottom - params.rect.top;
-
-    if (params.fullscreen)
-    {
-        // Enumerate all supposed display settings
-        bool modeSupported = false;
-        DWORD modeNum = 0;
-        DEVMODE devMode;
-        memset(&devMode, 0, sizeof(DEVMODE));
-        devMode.dmSize = sizeof(DEVMODE);
-        devMode.dmDriverExtra = 0;
-        while (EnumDisplaySettings(NULL, modeNum++, &devMode) != 0)
-        {
-            // Is mode supported?
-            if (devMode.dmPelsWidth == width &&
-                devMode.dmPelsHeight == height &&
-                devMode.dmBitsPerPel == DEFAULT_COLOR_BUFFER_SIZE)
-            {
-                modeSupported = true;
-                break;
-            }
-        }
-
-        // If the requested mode is not supported, fall back to a safe default
-        if (!modeSupported)
-        {
-            width = DEFAULT_RESOLUTION_X;
-            height = DEFAULT_RESOLUTION_Y;
-            params.rect.right = params.rect.left + width;
-            params.rect.bottom = params.rect.top + height;
-        }
-    }
-
-
-    // Register our window class.
-    WNDCLASSEX wc;
-    wc.cbSize = sizeof(WNDCLASSEX);
-    wc.style          = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    wc.lpfnWndProc    = (WNDPROC)__WndProc;
-    wc.cbClsExtra     = 0;
-    wc.cbWndExtra     = 0;
-    wc.hInstance      = __hinstance;
-    wc.hIcon          = LoadIcon(NULL, IDI_APPLICATION);
-    wc.hIconSm        = NULL;
-    wc.hCursor        = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground  = NULL;  // No brush - we are going to paint our own background
-    wc.lpszMenuName   = NULL;  // No default menu
-    wc.lpszClassName  = "gameplay";
-
-    if (!::RegisterClassEx(&wc))
-    {
-        GP_ERROR("Failed to register window class.");
-        goto error;
-    }
-
-    if (params.fullscreen)
-    {
-        DEVMODE dm;
-        memset(&dm, 0, sizeof(dm));
-        dm.dmSize= sizeof(dm);
-        dm.dmPelsWidth  = width;
-        dm.dmPelsHeight = height;
-        dm.dmBitsPerPel = DEFAULT_COLOR_BUFFER_SIZE;
-        dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-
-        // Try to set selected mode and get results. NOTE: CDS_FULLSCREEN gets rid of start bar.
-        if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-        {
-            params.fullscreen = false;
-            GP_ERROR("Failed to start game in full-screen mode with resolution %dx%d.", width, height);
-            goto error;
-        }
-    }
-
-    if (!initializeGL(&params))
-        goto error;
-
-    // Show the window.
-    ShowWindow(__hwnd, SW_SHOW);
-
-#ifdef GP_USE_GAMEPAD
-    // Initialize XInputGamepads.
-    for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
-    {
-        if (XInputGetState(i, &__xInputState) == NO_ERROR)
-        {
-            if (!__connectedXInput[i])
-            {
-                // Gamepad is connected.
-                Platform::gamepadEventConnectedInternal(i, XINPUT_BUTTON_COUNT, XINPUT_JOYSTICK_COUNT, XINPUT_TRIGGER_COUNT, "Microsoft XBox360 Controller");
-                __connectedXInput[i] = true;
-            }
-        }
-    }
-#endif
-
-    return platform;
-
-error:
-
-    exit(0);
-    return NULL;
+	game->setupWindow(__hinstance, __WndProc);
+	game->initSwapchain();
+	game->prepare();
+	return platform;
 }
 
 int Platform::enterMessagePump()
 {
     GP_ASSERT(_game);
+
+	_game->destWidth = _game->width;
+	_game->destHeight = _game->height;
 
     // Get the initial time.
     LARGE_INTEGER tps;
@@ -976,7 +832,6 @@ int Platform::enterMessagePump()
     GP_ASSERT(__timeTicksPerMillis);
     __timeStart = queryTime.QuadPart / __timeTicksPerMillis;
 
-    SwapBuffers(__hdc);
 
     if (_game->getState() != Game::RUNNING)
         _game->run();
@@ -985,45 +840,63 @@ int Platform::enterMessagePump()
     MSG msg;
     while (true)
     {
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		auto tStart = std::chrono::high_resolution_clock::now();
+		if (_game->viewUpdated)
+		{
+			_game->viewUpdated = false;
+			_game->viewChanged();
+		}
+
+        while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
-
-            if (msg.message == WM_QUIT)
-            {
-                vkcore::Platform::shutdownInternal();
-                return msg.wParam;
-            }
         }
-        else
-        {
-#ifdef GP_USE_GAMEPAD
-            // Check for connected XInput gamepads.
-            for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
-            {
-                if (XInputGetState(i, &__xInputState) == NO_ERROR && !__connectedXInput[i])
-                {
-                    // Gamepad was just connected.
-                    Platform::gamepadEventConnectedInternal(i, XINPUT_BUTTON_COUNT, XINPUT_JOYSTICK_COUNT, XINPUT_TRIGGER_COUNT, "Microsoft XBox360 Controller");
-                    __connectedXInput[i] = true;
-                }
-                else if (XInputGetState(i, &__xInputState) != NO_ERROR && __connectedXInput[i])
-                {
-                    // Gamepad was just disconnected.
-                    __connectedXInput[i] = false;
-                    Platform::gamepadEventDisconnectedInternal(i);
-                }
-            }
-#endif
-            _game->frame();
-            SwapBuffers(__hdc);
-        }
+		if (msg.message == WM_QUIT)
+		{
+			vkcore::Platform::shutdownInternal();
+			break;
+		}
+		_game->frame();
 
+		_game->frameCounter++;
+		auto tEnd = std::chrono::high_resolution_clock::now();
+		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+		_game->frameTimer = (float)tDiff / 1000.0f;
+		_game->mCamera.update(_game->frameTimer);
+		if (_game->mCamera.moving())
+		{
+			_game->viewUpdated = true;
+		}
+		// Convert to clamped timer value
+		if (!_game->paused)
+		{
+			_game->timer += _game->timerSpeed * _game->frameTimer;
+			if (_game->timer > 1.0)
+			{
+				_game->timer -= 1.0f;
+			}
+		}
+		_game->fpsTimer += (float)tDiff;
+		if (_game->fpsTimer > 1000.0f)
+		{
+			if (!_game->mEnableTextOverlay)
+			{
+				std::string windowTitle = _game->getWindowTitle();
+				SetWindowText(_game->mHwndWinow, windowTitle.c_str());
+			}
+			_game->lastFPS = roundf(1.0f / _game->frameTimer);
+			_game->updateTextOverlay();
+			_game->fpsTimer = 0.0f;
+			_game->frameCounter = 0;
+		}
+        
         // If we are done, then exit.
         if (_game->getState() == Game::UNINITIALIZED)
             break;
     }
+	// Flush device to make sure all resources can be freed 
+	vkDeviceWaitIdle(_game->mVulkanDevice->mLogicalDevice);
     return 0;
 }
 

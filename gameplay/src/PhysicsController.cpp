@@ -450,9 +450,11 @@ void PhysicsController::initialize()
     _world->getPairCache()->setInternalGhostPairCallback(_ghostPairCallback);
     _world->getDispatchInfo().m_allowedCcdPenetration = 0.0001f;
 
+
     // Set up debug drawing.
-    _debugDrawer = new DebugDrawer();
-    _world->setDebugDrawer(_debugDrawer);
+	// todo 
+    //_debugDrawer = new DebugDrawer();
+    //_world->setDebugDrawer(_debugDrawer);
 }
 
 void PhysicsController::finalize()

@@ -43,16 +43,23 @@ static Mesh* createTriangleMesh()
     return mesh;
 }
 
-TriangleSample::TriangleSample()
-    : _font(NULL), _model(NULL), _spinDirection(-1.0f)
+TriangleSample::TriangleSample() :
+	_model(NULL),
+	_spinDirection(-1.0f)
 {
-    
+	//_font = NULL;
+	Init();
+}
+
+TriangleSample::~TriangleSample()
+{
+	UnInit();
 }
 
 void TriangleSample::initialize()
 {
     // Create the font for drawing the framerate.
-    _font = Font::create("res/ui/arial.gpb");
+    //_font = Font::create("res/ui/arial.gpb");
 
     // Create an orthographic projection matrix.
     float width = getWidth() / (float)getHeight();
@@ -76,7 +83,7 @@ void TriangleSample::finalize()
 {
     // Model and font are reference counted and should be released before closing this sample.
     SAFE_RELEASE(_model);
-    SAFE_RELEASE(_font);
+    //SAFE_RELEASE(_font);
 }
 
 void TriangleSample::update(float elapsedTime)

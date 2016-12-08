@@ -55,15 +55,15 @@ void FrameBuffer::initialize()
     _defaultFrameBuffer = new FrameBuffer(FRAMEBUFFER_ID_DEFAULT, 0, 0, (FrameBufferHandle)fbo);
     _currentFrameBuffer = _defaultFrameBuffer;
 
-    // Query the max supported color attachments. This glGet operation is not supported
-    // on GL ES 2.x, so if the define does not exist, assume a value of 1.
-#ifdef GL_MAX_COLOR_ATTACHMENTS
-        GLint val;
-        GL_ASSERT( glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &val) );
-        _maxRenderTargets = (unsigned int)std::max(1, val);
-#else
-        _maxRenderTargets = 1;
-#endif
+//    // Query the max supported color attachments. This glGet operation is not supported
+//    // on GL ES 2.x, so if the define does not exist, assume a value of 1.
+//#ifdef GL_MAX_COLOR_ATTACHMENTS
+//        GLint val;
+//        GL_ASSERT( glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &val) );
+//        _maxRenderTargets = (unsigned int)std::max(1, val);
+//#else
+//        _maxRenderTargets = 1;
+//#endif
 }
 
 void FrameBuffer::finalize()

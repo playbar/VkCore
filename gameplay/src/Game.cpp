@@ -759,6 +759,7 @@ void Game::renderLoop()
 #endif
 	// Flush device to make sure all resources can be freed 
 	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
+
 }
 
 void Game::updateTextOverlay()
@@ -1934,7 +1935,8 @@ bool Game::startup()
     _scriptController->initialize();
 
     // Load any gamepads, ui or physical.
-    loadGamepads();
+	// todo
+    //loadGamepads();
 
     // Set script handler
     if (_properties)
@@ -2109,7 +2111,7 @@ void Game::exit()
 
 
 void Game::frame()
-{
+{	
     if (!_initialized)
     {
         // Perform lazy first time initialization
@@ -2130,77 +2132,79 @@ void Game::frame()
 
     if (_state == Game::RUNNING)
     {
-        GP_ASSERT(_animationController);
-        GP_ASSERT(_audioController);
-        GP_ASSERT(_physicsController);
-        GP_ASSERT(_aiController);
+        //GP_ASSERT(_animationController);
+        //GP_ASSERT(_audioController);
+        //GP_ASSERT(_physicsController);
+        //GP_ASSERT(_aiController);
 
-        // Update Time.
-        float elapsedTime = (frameTime - lastFrameTime);
-        lastFrameTime = frameTime;
+        //// Update Time.
+        //float elapsedTime = (frameTime - lastFrameTime);
+        //lastFrameTime = frameTime;
 
-        // Update the scheduled and running animations.
-        _animationController->update(elapsedTime);
+        //// Update the scheduled and running animations.
+        //_animationController->update(elapsedTime);
 
-        // Update the physics.
-        _physicsController->update(elapsedTime);
+        //// Update the physics.
+        //_physicsController->update(elapsedTime);
 
-        // Update AI.
-        _aiController->update(elapsedTime);
+        //// Update AI.
+        //_aiController->update(elapsedTime);
 
-        // Update gamepads.
-        Gamepad::updateInternal(elapsedTime);
+        //// Update gamepads.
+        //Gamepad::updateInternal(elapsedTime);
 
-        // Application Update.
-        update(elapsedTime);
+        //// Application Update.
+        //update(elapsedTime);
 
-        // Update forms.
-        Form::updateInternal(elapsedTime);
+        //// Update forms.
+        //Form::updateInternal(elapsedTime);
 
-        // Run script update.
-        if (_scriptTarget)
-            _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, update), elapsedTime);
+        //// Run script update.
+        //if (_scriptTarget)
+        //    _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, update), elapsedTime);
 
-        // Audio Rendering.
-        _audioController->update(elapsedTime);
+        //// Audio Rendering.
+        //_audioController->update(elapsedTime);
 
-        // Graphics Rendering.
-        render(elapsedTime);
+		render();
+        //// Graphics Rendering.
+        //render(elapsedTime);
+	
+        //// Run script render.
+        //if (_scriptTarget)
+        //    _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, render), elapsedTime);
 
-        // Run script render.
-        if (_scriptTarget)
-            _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, render), elapsedTime);
-
-        // Update FPS.
-        ++_frameCount;
-        if ((Game::getGameTime() - _frameLastFPS) >= 1000)
-        {
-            _frameRate = _frameCount;
-            _frameCount = 0;
-            _frameLastFPS = getGameTime();
-        }
+        //// Update FPS.
+        //++_frameCount;
+        //if ((Game::getGameTime() - _frameLastFPS) >= 1000)
+        //{
+        //    _frameRate = _frameCount;
+        //    _frameCount = 0;
+        //    _frameLastFPS = getGameTime();
+        //}
     }
 	else if (_state == Game::PAUSED)
     {
-        // Update gamepads.
-        Gamepad::updateInternal(0);
+        //// Update gamepads.
+        //Gamepad::updateInternal(0);
 
-        // Application Update.
-        update(0);
+        //// Application Update.
+        //update(0);
 
-        // Update forms.
-        Form::updateInternal(0);
+        //// Update forms.
+        //Form::updateInternal(0);
 
-        // Script update.
-        if (_scriptTarget)
-            _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, update), 0);
+        //// Script update.
+        //if (_scriptTarget)
+        //    _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, update), 0);
 
-        // Graphics Rendering.
-        render(0);
+		render();
+        //// Graphics Rendering.
+        //render(0);
 
-        // Script render.
-        if (_scriptTarget)
-            _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, render), 0);
+        //// Script render.
+        //if (_scriptTarget)
+        //    _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, render), 0);
     }
 }
 
