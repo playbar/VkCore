@@ -1167,15 +1167,15 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_F2:
+		case Keyboard::KEY_F2:
 			useMSAA = !useMSAA;
 			reBuildCommandBuffers();
 			break;
-		case KEY_F3:
+		case Keyboard::KEY_F3:
 			useSampleShading = !useSampleShading;
 			reBuildCommandBuffers();
 			break;
-		case KEY_F4:
+		case Keyboard::KEY_F4:
 		case GAMEPAD_BUTTON_A:
 			toggleDebugDisplay();
 			updateTextOverlay();

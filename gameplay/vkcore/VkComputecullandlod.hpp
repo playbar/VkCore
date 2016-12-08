@@ -823,7 +823,7 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_F:
+		case Keyboard::KEY_F:
 		case GAMEPAD_BUTTON_A:
 			fixedFrustum = !fixedFrustum;
 			updateUniformBuffer(true);

@@ -645,7 +645,7 @@ unsigned int TerrainPatch::computeLOD(Camera* camera, const BoundingBox& worldBo
 
     // Compute LOD to use based on very simple distance metric. TODO: Optimize me.
     Game* game = Game::getInstance();
-    Rectangle vp(0, 0, game->getWidth(), game->getHeight());
+    VRectangle vp(0, 0, game->getWidth(), game->getHeight());
     Vector3 corners[8];
     Vector2 min(FLT_MAX, FLT_MAX);
     Vector2 max(-FLT_MAX, -FLT_MAX);

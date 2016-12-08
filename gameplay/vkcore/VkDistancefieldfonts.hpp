@@ -712,11 +712,11 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_S:
+		case Keyboard::KEY_S:
 		case GAMEPAD_BUTTON_X:
 			toggleSplitScreen();
 			break;
-		case KEY_O:
+		case Keyboard::KEY_O:
 		case GAMEPAD_BUTTON_A:
 			toggleFontOutline();
 			break;

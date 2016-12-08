@@ -195,7 +195,7 @@ void Font::lazyStart()
         return; // already started
 
     // Update the projection matrix for our batch to match the current viewport
-    const Rectangle& vp = Game::getInstance()->getViewport();
+    const VRectangle& vp = Game::getInstance()->getViewport();
     if (!vp.isEmpty())
     {
         Game* game = Game::getInstance();
@@ -392,7 +392,7 @@ void Font::drawText(const char* text, int x, int y, float red, float green, floa
     drawText(text, x, y, Vector4(red, green, blue, alpha), size, rightToLeft);
 }
 
-void Font::drawText(const char* text, const Rectangle& area, const Vector4& color, unsigned int size, Justify justify, bool wrap, bool rightToLeft, const Rectangle& clip)
+void Font::drawText(const char* text, const VRectangle& area, const Vector4& color, unsigned int size, Justify justify, bool wrap, bool rightToLeft, const VRectangle& clip)
 {
     GP_ASSERT(text);
     GP_ASSERT(_size);
@@ -532,7 +532,7 @@ void Font::drawText(const char* text, const Rectangle& area, const Vector4& colo
                             // TODO: Fix me so that smaller font are much smoother
                             _cutoffParam->setVector2(Vector2(1.0, 1.0));
                         }
-                        if (clip != Rectangle(0, 0, 0, 0))
+                        if (clip != VRectangle(0, 0, 0, 0))
                         {
                             _batch->draw(xPos + (int)(g.bearingX * scale), yPos, g.width * scale, size, g.uvs[0], g.uvs[1], g.uvs[2], g.uvs[3], color, clip);
                         }
@@ -666,7 +666,7 @@ void Font::measureText(const char* text, unsigned int size, unsigned int* width,
     }
 }
 
-void Font::measureText(const char* text, const Rectangle& clip, unsigned int size, Rectangle* out, Justify justify, bool wrap, bool ignoreClip)
+void Font::measureText(const char* text, const VRectangle& clip, unsigned int size, VRectangle* out, Justify justify, bool wrap, bool ignoreClip)
 {
     GP_ASSERT(_size);
     GP_ASSERT(text);
@@ -1012,7 +1012,7 @@ void Font::measureText(const char* text, const Rectangle& clip, unsigned int siz
     }
 }
 
-void Font::getMeasurementInfo(const char* text, const Rectangle& area, unsigned int size, Justify justify, bool wrap, bool rightToLeft,
+void Font::getMeasurementInfo(const char* text, const VRectangle& area, unsigned int size, Justify justify, bool wrap, bool rightToLeft,
         std::vector<int>* xPositions, int* yPosition, std::vector<unsigned int>* lineLengths)
 {
     GP_ASSERT(_size);
@@ -1209,19 +1209,19 @@ void Font::setCharacterSpacing(float spacing)
     _spacing = spacing;
 }
 
-int Font::getIndexAtLocation(const char* text, const Rectangle& area, unsigned int size, const Vector2& inLocation, Vector2* outLocation,
+int Font::getIndexAtLocation(const char* text, const VRectangle& area, unsigned int size, const Vector2& inLocation, Vector2* outLocation,
                                       Justify justify, bool wrap, bool rightToLeft)
 {
     return getIndexOrLocation(text, area, size, inLocation, outLocation, -1, justify, wrap, rightToLeft);
 }
 
-void Font::getLocationAtIndex(const char* text, const Rectangle& clip, unsigned int size, Vector2* outLocation, const unsigned int destIndex,
+void Font::getLocationAtIndex(const char* text, const VRectangle& clip, unsigned int size, Vector2* outLocation, const unsigned int destIndex,
                               Justify justify, bool wrap, bool rightToLeft)
 {
     getIndexOrLocation(text, clip, size, *outLocation, outLocation, (const int)destIndex, justify, wrap, rightToLeft);
 }
 
-int Font::getIndexOrLocation(const char* text, const Rectangle& area, unsigned int size, const Vector2& inLocation, Vector2* outLocation,
+int Font::getIndexOrLocation(const char* text, const VRectangle& area, unsigned int size, const Vector2& inLocation, Vector2* outLocation,
                                       const int destIndex, Justify justify, bool wrap, bool rightToLeft)
 {
     GP_ASSERT(_size);
@@ -1612,7 +1612,7 @@ int Font::handleDelimiters(const char** token, const unsigned int size, const in
     return 1;
 }
 
-void Font::addLineInfo(const Rectangle& area, int lineWidth, int lineLength, Justify hAlign,
+void Font::addLineInfo(const VRectangle& area, int lineWidth, int lineLength, Justify hAlign,
                        std::vector<int>* xPositions, std::vector<unsigned int>* lineLengths, bool rightToLeft)
 {
     int hWhitespace = area.width - lineWidth;

@@ -60,7 +60,7 @@ Material* PostProcessSample::Compositor::getMaterial() const
     return _material;
 }
 
-void PostProcessSample::Compositor::blit(const Rectangle& dst)
+void PostProcessSample::Compositor::blit(const VRectangle& dst)
 {
     if (_compositorMaterial != _material)
     {
@@ -166,10 +166,10 @@ void PostProcessSample::update(float elapsedTime)
 
 void PostProcessSample::render(float elapsedTime)
 {
-    Rectangle defaultViewport = Game::getInstance()->getViewport();
+    VRectangle defaultViewport = Game::getInstance()->getViewport();
     
     // Draw into the framebuffer
-    Game::getInstance()->setViewport(Rectangle(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT));
+    Game::getInstance()->setViewport(VRectangle(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT));
     FrameBuffer* previousFrameBuffer = _frameBuffer->bind();
     clear(CLEAR_COLOR_DEPTH, Vector4::zero(), 1.0f, 0);
     _scene->visit(this, &PostProcessSample::drawScene);
@@ -199,7 +199,7 @@ void PostProcessSample::render(float elapsedTime)
     // Draw the pass through compositor at index 0 at quarter of the size and bottom right. dont clear the dest just draw last on top
     float quarterWidth = getWidth() / 4;
     float quarterHeight = getHeight() / 4;
-    Rectangle offsetViewport = Rectangle(getWidth() - quarterWidth, 0, quarterWidth, quarterHeight);
+    VRectangle offsetViewport = VRectangle(getWidth() - quarterWidth, 0, quarterWidth, quarterHeight);
     Game::getInstance()->setViewport(offsetViewport);
     compositor = _compositors[0];
     compositor->blit(offsetViewport);
@@ -220,7 +220,7 @@ void PostProcessSample::drawTechniqueId(const char* techniqueId)
     char buffer[128];
     sprintf(buffer, "%s", techniqueId);
     _font->start();
-    _font->drawText(buffer, Rectangle(0, 10, getWidth(), getHeight()), Vector4::one(), 18, Font::ALIGN_TOP_HCENTER);
+    _font->drawText(buffer, VRectangle(0, 10, getWidth(), getHeight()), Vector4::one(), 18, Font::ALIGN_TOP_HCENTER);
     _font->finish();
 }
 

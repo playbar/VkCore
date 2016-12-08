@@ -55,7 +55,7 @@ void FlowLayout::setSpacing(int horizontalSpacing, int verticalSpacing)
 void FlowLayout::update(const Container* container)
 {
     GP_ASSERT(container);
-    const Rectangle& containerBounds = container->getBounds();
+    const VRectangle& containerBounds = container->getBounds();
     const Theme::Border& containerBorder = container->getBorder(container->getState());
     const Theme::Padding& containerPadding = container->getPadding();
 
@@ -76,7 +76,7 @@ void FlowLayout::update(const Container* container)
         if (!control->isVisible())
             continue;
 
-        const Rectangle& bounds = control->getBounds();
+        const VRectangle& bounds = control->getBounds();
         const Theme::Margin& margin = control->getMargin();
 
         xPosition += margin.left;

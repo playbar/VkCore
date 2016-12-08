@@ -8,7 +8,7 @@ namespace vkcore
 /**
  * Defines a rectangle.
  */
-class Rectangle
+class VRectangle
 {
 public:
 
@@ -35,7 +35,7 @@ public:
     /**
      * Constructs a new rectangle initialized to all zeros.
      */
-    Rectangle();
+    VRectangle();
 
     /**
      * Constructs a new rectangle with the x = 0, y = 0 and the specified width and height.
@@ -43,7 +43,7 @@ public:
      * @param width The width of the rectangle.
      * @param height The height of the rectangle.
      */
-    Rectangle(float width, float height);
+    VRectangle(float width, float height);
 
     /**
      * Constructs a new rectangle with the specified x, y, width and height.
@@ -53,26 +53,26 @@ public:
      * @param width The width of the rectangle.
      * @param height The height of the rectangle.
      */
-    Rectangle(float x, float y, float width, float height);
+    VRectangle(float x, float y, float width, float height);
 
     /**
      * Constructs a new rectangle that is a copy of the specified rectangle.
      *
      * @param copy The rectangle to copy.
      */
-    Rectangle(const Rectangle& copy);
+    VRectangle(const VRectangle& copy);
 
     /**
      * Destructor.
      */
-    ~Rectangle();
+    ~VRectangle();
 
     /**
      * Returns a rectangle with all of its values set to zero.
      *
      * @return The empty rectangle with all of its values set to zero.
      */
-    static const Rectangle& empty();
+    static const VRectangle& empty();
 
     /**
      * Gets a value that indicates whether the rectangle is empty.
@@ -96,7 +96,7 @@ public:
      *
      * @param r The rectangle to copy.
      */
-    void set(const Rectangle& r);
+    void set(const VRectangle& r);
 
     /**
      * Sets the x-coordinate and y-coordinate values of this rectangle to the specified values.
@@ -165,7 +165,7 @@ public:
      * @return true if the rectangle contains the specified rectangle, false
      * otherwise.
      */
-    bool contains(const Rectangle& r) const;
+    bool contains(const VRectangle& r) const;
 
     /**
      * Determines whether a specified rectangle intersects with this rectangle.
@@ -188,7 +188,7 @@ public:
      * @return true if the specified rectangle intersects with this one, false
      * otherwise.
      */
-    bool intersects(const Rectangle& r) const;
+    bool intersects(const VRectangle& r) const;
 
     /**
      * Computes the intersection of two rectangles and returns the result.
@@ -199,7 +199,7 @@ public:
      *
      * @return True if the two rectangles intersect, false otherwise.
      */
-    static bool intersect(const Rectangle& r1, const Rectangle& r2, Rectangle* dst);
+    static bool intersect(const VRectangle& r1, const VRectangle& r2, VRectangle* dst);
 
     /**
      * Returns a new rectangle that exactly contains two other rectangles.
@@ -208,7 +208,7 @@ public:
      * @param r2 The second rectangle to contain.
      * @param dst A rectangle to store the union of the two rectangle parameters.
      */
-    static void combine(const Rectangle& r1, const Rectangle& r2, Rectangle* dst);
+    static void combine(const VRectangle& r1, const VRectangle& r2, VRectangle* dst);
 
     /**
      * Pushes the edges of the Rectangle out by the horizontal and vertical values specified.
@@ -225,17 +225,17 @@ public:
     /**
      * operator =
      */
-    Rectangle& operator = (const Rectangle& r);
+    VRectangle& operator = (const VRectangle& r);
 
     /**
      * operator ==
      */
-    bool operator == (const Rectangle& r) const;
+    bool operator == (const VRectangle& r) const;
 
     /**
      * operator !=
      */
-    bool operator != (const Rectangle& r) const;
+    bool operator != (const VRectangle& r) const;
 };
 
 }

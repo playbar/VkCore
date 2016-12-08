@@ -138,7 +138,7 @@ protected:
     /**
      * @see Control::drawImages
      */
-    unsigned int drawImages(Form* form, const Rectangle& clip);
+    unsigned int drawImages(Form* form, const VRectangle& clip);
 
     /**
      * Clear the _selected flag of all radio buttons in the given group.

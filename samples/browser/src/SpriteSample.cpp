@@ -26,19 +26,19 @@ void SpriteSample::initialize()
 
     // Idle [0] - Set at load time
     // Walk [1 - 11]
-    _playerSprite->setFrameSource(1, Rectangle( 0, 0, 72, 92));
-    _playerSprite->setFrameSource(2, Rectangle(73, 0, 72, 97));
-    _playerSprite->setFrameSource(3, Rectangle(146, 0, 72, 97));
-    _playerSprite->setFrameSource(4, Rectangle(0, 98, 72, 97));
-    _playerSprite->setFrameSource(5, Rectangle(73, 98, 72, 97));
-    _playerSprite->setFrameSource(6, Rectangle(146, 98, 72, 97));
-    _playerSprite->setFrameSource(7, Rectangle(219, 0, 72, 97));
-    _playerSprite->setFrameSource(8, Rectangle(292, 0, 72, 97));
-    _playerSprite->setFrameSource(9, Rectangle(219, 98, 72, 97));
-    _playerSprite->setFrameSource(10, Rectangle(365, 0, 72, 97));
-    _playerSprite->setFrameSource(11, Rectangle(292, 98, 72, 97));
+    _playerSprite->setFrameSource(1, VRectangle( 0, 0, 72, 92));
+    _playerSprite->setFrameSource(2, VRectangle(73, 0, 72, 97));
+    _playerSprite->setFrameSource(3, VRectangle(146, 0, 72, 97));
+    _playerSprite->setFrameSource(4, VRectangle(0, 98, 72, 97));
+    _playerSprite->setFrameSource(5, VRectangle(73, 98, 72, 97));
+    _playerSprite->setFrameSource(6, VRectangle(146, 98, 72, 97));
+    _playerSprite->setFrameSource(7, VRectangle(219, 0, 72, 97));
+    _playerSprite->setFrameSource(8, VRectangle(292, 0, 72, 97));
+    _playerSprite->setFrameSource(9, VRectangle(219, 98, 72, 97));
+    _playerSprite->setFrameSource(10, VRectangle(365, 0, 72, 97));
+    _playerSprite->setFrameSource(11, VRectangle(292, 98, 72, 97));
     // Jump[12]
-    _playerSprite->setFrameSource(12, Rectangle(438, 93, 67, 94));
+    _playerSprite->setFrameSource(12, VRectangle(438, 93, 67, 94));
 
     // The player animation clips
     unsigned int keyTimes[4] = {0, 1, 11, 12};

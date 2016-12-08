@@ -257,7 +257,7 @@ unsigned int TileSet::draw(bool wireframe)
             if (_tiles[row * _columnCount + col].x >= 0 &&
                 _tiles[row * _columnCount + col].y >= 0)
             {
-                Rectangle source = Rectangle(_tiles[row * _columnCount + col].x,
+                VRectangle source = VRectangle(_tiles[row * _columnCount + col].x,
                                              _tiles[row * _columnCount + col].y, _tileWidth, _tileHeight);
                 _batch->draw(position, source, scale, Vector4(_color.x, _color.y, _color.z, _color.w * _opacity),
                              Vector2(0.5f, 0.5f), 0);

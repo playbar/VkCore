@@ -69,14 +69,14 @@ public:
      *
      * @param region The new source region.
      */
-    void setRegionSrc(const Rectangle& region);
+    void setRegionSrc(const VRectangle& region);
 
     /**
      * Get the source region of this ImageControl.
      *
      * @return The source region of this ImageControl.
      */
-    const Rectangle& getRegionSrc() const;
+    const VRectangle& getRegionSrc() const;
 
     /**
      * Sets the destination region of this ImageControl.  This is the region
@@ -95,14 +95,14 @@ public:
      *
      * @param region The new destination region.
      */
-    void setRegionDst(const Rectangle& region);
+    void setRegionDst(const VRectangle& region);
 
     /**
      * Get the destination region of this ImageControl.
      *
      * @return The destination region of this ImageControl.
      */
-    const Rectangle& getRegionDst() const;
+    const VRectangle& getRegionDst() const;
 
 protected:
 
@@ -127,7 +127,7 @@ protected:
     /**
      * @see Control::drawImages
      */
-    unsigned int drawImages(Form* form, const Rectangle& clip);
+    unsigned int drawImages(Form* form, const VRectangle& clip);
 
     /**
      * @see Control::updateBounds
@@ -139,9 +139,9 @@ private:
     ImageControl(const ImageControl& copy);
 
     // Source region.
-    Rectangle _srcRegion;
+    VRectangle _srcRegion;
     // Destination region.
-    Rectangle _dstRegion;
+    VRectangle _dstRegion;
     SpriteBatch* _batch;
 
     // One over texture width and height, for use when calculating UVs from a new source region.

@@ -1058,7 +1058,7 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_D:
+		case Keyboard::KEY_D:
 		case GAMEPAD_BUTTON_A:
 			toggleCubeMapDisplay();
 			break;

@@ -633,7 +633,7 @@ public:
      * @param frameCoords A rectangle for each frame representing its position and size
      *  within the texture image, measured in pixels.
      */
-    void setSpriteFrameCoords(unsigned int frameCount, Rectangle* frameCoords);
+    void setSpriteFrameCoords(unsigned int frameCount, VRectangle* frameCoords);
 
     /**
      * Calculates and sets the sprite's texture coordinates based on the width and

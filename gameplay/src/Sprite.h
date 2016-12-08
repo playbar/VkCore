@@ -118,7 +118,7 @@ public:
      * @return The new sprite.
      */
     static Sprite* create(const char* imagePath, float width, float height,
-                          const Rectangle& source, unsigned int frameCount = 1,
+                          const VRectangle& source, unsigned int frameCount = 1,
                           Effect* effect = NULL);
     
     /**
@@ -197,7 +197,7 @@ public:
      * @param frameIndex The frame index to specify the source region for.
      * @param source The source clip region from the source image.
      */
-    void setFrameSource(unsigned int frameIndex, const Rectangle& source);
+    void setFrameSource(unsigned int frameIndex, const VRectangle& source);
     
     /**
      * Gets the source region from the source image.
@@ -205,7 +205,7 @@ public:
      * @param frameIndex The frame index to get the source region from.
      * @return The source clip region from the source image.
      */
-    const Rectangle& getFrameSource(unsigned int frameIndex) const;
+    const VRectangle& getFrameSource(unsigned int frameIndex) const;
     
     /**
      * Computes the source frames for sprites with frameCount > 1.
@@ -385,7 +385,7 @@ private:
     Offset _offset;
     Vector2 _anchor;
     int _flipFlags;
-    Rectangle* _frames;
+    VRectangle* _frames;
     unsigned int _frameCount;
     unsigned int _frameStride;
     unsigned int _framePadding;

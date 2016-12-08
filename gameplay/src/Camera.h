@@ -260,7 +260,7 @@ public:
      *
      * @script{ignore}
      */
-    void project(const Rectangle& viewport, const Vector3& position, float* x, float* y, float* depth = NULL) const;
+    void project(const VRectangle& viewport, const Vector3& position, float* x, float* y, float* depth = NULL) const;
 
     /**
      * Projects the specified world position into the viewport coordinates.
@@ -269,7 +269,7 @@ public:
      * @param position The world space position.
      * @param out Populated with the resulting screen-space position.
      */
-    void project(const Rectangle& viewport, const Vector3& position, Vector2* out) const;
+    void project(const VRectangle& viewport, const Vector3& position, Vector2* out) const;
 
     /**
      * Projects the specified world position into the viewport coordinates.
@@ -278,7 +278,7 @@ public:
      * @param position The world space position.
      * @param out Populated with the resulting screen-space position, with the pixel depth in the Z coordinate.
      */
-    void project(const Rectangle& viewport, const Vector3& position, Vector3* out) const;
+    void project(const VRectangle& viewport, const Vector3& position, Vector3* out) const;
 
     /**
      * Converts a viewport-space coordinate to a world-space position for the given depth value.
@@ -292,7 +292,7 @@ public:
      * @param depth The depth range.
      * @param dst The world space position.
      */
-    void unproject(const Rectangle& viewport, float x, float y, float depth, Vector3* dst) const;
+    void unproject(const VRectangle& viewport, float x, float y, float depth, Vector3* dst) const;
 
     /**
      * Picks a ray that can be used for picking given the specified viewport-space coordinates.
@@ -302,7 +302,7 @@ public:
      * @param y The viewport y-coordinate.
      * @param dst The computed pick ray.
      */
-    void pickRay(const Rectangle& viewport, float x, float y, Ray* dst) const;
+    void pickRay(const VRectangle& viewport, float x, float y, Ray* dst) const;
 
     /**
     * Adds a camera listener.

@@ -111,7 +111,7 @@ public:
      * @param src The source rectangle.
      * @param color The color to tint the sprite. Use white for no tint.
      */
-    void draw(const Rectangle& dst, const Rectangle& src, const Vector4& color = Vector4::one());
+    void draw(const VRectangle& dst, const VRectangle& src, const Vector4& color = Vector4::one());
 
     /**
      * Draws a single sprite.
@@ -121,7 +121,7 @@ public:
      * @param scale The X and Y scale.
      * @param color The color to tint the sprite. Use white for no tint.
      */
-    void draw(const Vector3& dst, const Rectangle& src, const Vector2& scale, const Vector4& color = Vector4::one());
+    void draw(const Vector3& dst, const VRectangle& src, const Vector2& scale, const Vector4& color = Vector4::one());
 
     /**
      * Draws a single sprite, rotated around rotationPoint by rotationAngle.
@@ -134,7 +134,7 @@ public:
      *                      (e.g. Use Vector2(0.5f, 0.5f) to rotate around the quad's center.)
      * @param rotationAngle The rotation angle in radians.
      */
-    void draw(const Vector3& dst, const Rectangle& src, const Vector2& scale, const Vector4& color,
+    void draw(const Vector3& dst, const VRectangle& src, const Vector2& scale, const Vector4& color,
               const Vector2& rotationPoint, float rotationAngle);
 
     /**
@@ -226,7 +226,7 @@ public:
      * @param color The color to tint the sprite. Use white for no tint.
      * @param clip The clip rectangle.
      */
-    void draw(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const Rectangle& clip);
+    void draw(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const VRectangle& clip);
 
     /**
      * Draws a single sprite, clipped within a rectangle.
@@ -243,7 +243,7 @@ public:
      * @param color The color to tint the sprite. Use white for no tint.
      * @param clip The clip rectangle.
      */
-    void draw(float x, float y, float z, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const Rectangle& clip);
+    void draw(float x, float y, float z, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const VRectangle& clip);
 
     /**
      * Draws a single sprite.
@@ -398,9 +398,9 @@ private:
      * @param clip The clip rectangle.
      * @param vertices The vertices to draw.
      */
-    void addSprite(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const Rectangle& clip, SpriteBatch::SpriteVertex* vertices);
+    void addSprite(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const VRectangle& clip, SpriteBatch::SpriteVertex* vertices);
 
-    bool clipSprite(const Rectangle& clip, float& x, float& y, float& width, float& height, float& u1, float& v1, float& u2, float& v2);
+    bool clipSprite(const VRectangle& clip, float& x, float& y, float& width, float& height, float& u1, float& v1, float& u2, float& v2);
 
     MeshBatch* _batch;
     Texture::Sampler* _sampler;

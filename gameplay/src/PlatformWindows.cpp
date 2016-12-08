@@ -335,7 +335,7 @@ LRESULT CALLBACK __WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static vkcore::Game* game = vkcore::Game::getInstance();
 
-    if (!game->isInitialized() || hwnd != __hwnd)
+    if ((!game->isInitialized()) ||( hwnd != __hwnd))
     {
         // Ignore messages that are not for our game window.
         return DefWindowProc(hwnd, msg, wParam, lParam);

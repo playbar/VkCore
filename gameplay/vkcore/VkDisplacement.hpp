@@ -560,19 +560,19 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_KPADD:
+		case Keyboard::KEY_KPADD:
 		case GAMEPAD_BUTTON_R1:
 			changeTessellationStrength(0.025);
 			break;
-		case KEY_KPSUB:
+		case Keyboard::KEY_KPSUB:
 		case GAMEPAD_BUTTON_L1:
 			changeTessellationStrength(-0.025);
 			break;
-		case KEY_D:
+		case Keyboard::KEY_D:
 		case GAMEPAD_BUTTON_A:
 			toggleDisplacement();
 			break;
-		case KEY_S:
+		case Keyboard::KEY_S:
 		case GAMEPAD_BUTTON_X:
 			toggleSplitScreen();
 			break;

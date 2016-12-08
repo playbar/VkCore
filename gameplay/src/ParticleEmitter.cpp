@@ -238,7 +238,7 @@ void ParticleEmitter::setTexture(Texture* texture, BlendMode blendMode)
     _spriteTextureHeightRatio = 1.0f / (float)texture->getHeight();
 
     // By default assume only one frame which uses the entire texture.
-    Rectangle texCoord((float)texture->getWidth(), (float)texture->getHeight());
+    VRectangle texCoord((float)texture->getWidth(), (float)texture->getHeight());
     setSpriteFrameCoords(1, &texCoord);
 }
 
@@ -662,7 +662,7 @@ void ParticleEmitter::setSpriteTexCoords(unsigned int frameCount, float* texCoor
     memcpy(_spriteTextureCoords, texCoords, frameCount * 4 * sizeof(float));
 }
 
-void ParticleEmitter::setSpriteFrameCoords(unsigned int frameCount, Rectangle* frameCoords)
+void ParticleEmitter::setSpriteFrameCoords(unsigned int frameCount, VRectangle* frameCoords)
 {
     GP_ASSERT(frameCount);
     GP_ASSERT(frameCoords);
@@ -688,7 +688,7 @@ void ParticleEmitter::setSpriteFrameCoords(unsigned int frameCount, int width, i
     GP_ASSERT(width);
     GP_ASSERT(height);
 
-    Rectangle* frameCoords = new Rectangle[frameCount];
+    VRectangle* frameCoords = new VRectangle[frameCount];
     unsigned int cols = _spriteTextureWidth / width;
     unsigned int rows = _spriteTextureHeight / height;
 
@@ -699,7 +699,7 @@ void ParticleEmitter::setSpriteFrameCoords(unsigned int frameCount, int width, i
         for (unsigned int j = 0; j < cols; ++j)
         {
             int x = j * width;
-            frameCoords[i*cols + j] = Rectangle(x, y, width, height);
+            frameCoords[i*cols + j] = VRectangle(x, y, width, height);
             if (++n == frameCount)
             {
                 break;

@@ -48,7 +48,7 @@ void Container::clearContacts()
 Container::Container()
     : _layout(NULL), _activeControl(NULL), _scrollBarTopCap(NULL), _scrollBarVertical(NULL), _scrollBarBottomCap(NULL),
       _scrollBarLeftCap(NULL), _scrollBarHorizontal(NULL), _scrollBarRightCap(NULL),
-      _scroll(SCROLL_NONE), _scrollBarBounds(Rectangle::empty()), _scrollPosition(Vector2::zero()),
+      _scroll(SCROLL_NONE), _scrollBarBounds(VRectangle::empty()), _scrollPosition(Vector2::zero()),
       _scrollBarsAutoHide(false), _scrollBarOpacity(1.0f), _scrolling(false),
       _scrollingVeryFirstX(0), _scrollingVeryFirstY(0), _scrollingFirstX(0), _scrollingFirstY(0), _scrollingLastX(0), _scrollingLastY(0),
       _scrollingStartTimeX(0), _scrollingStartTimeY(0), _scrollingLastTime(0),
@@ -652,7 +652,7 @@ bool Container::updateChildBounds()
     return result;
 }
 
-unsigned int Container::draw(Form* form, const Rectangle& clip)
+unsigned int Container::draw(Form* form, const VRectangle& clip)
 {
     if (!_visible)
         return 0;
@@ -674,31 +674,31 @@ unsigned int Container::draw(Form* form, const Rectangle& clip)
     if (_scroll != SCROLL_NONE && (_scrollBarOpacity > 0.0f))
     {
         // Draw scroll bars.
-        Rectangle clipRegion(_absoluteClipBounds);
+        VRectangle clipRegion(_absoluteClipBounds);
 
         SpriteBatch* batch = _style->getTheme()->getSpriteBatch();
         startBatch(form, batch);
 
         if (_scrollBarBounds.height > 0 && ((_scroll & SCROLL_VERTICAL) == SCROLL_VERTICAL))
         {
-            const Rectangle& topRegion = _scrollBarTopCap->getRegion();
+            const VRectangle& topRegion = _scrollBarTopCap->getRegion();
             const Theme::UVs& topUVs = _scrollBarTopCap->getUVs();
             Vector4 topColor = _scrollBarTopCap->getColor();
             topColor.w *= _scrollBarOpacity * _opacity;
 
-            const Rectangle& verticalRegion = _scrollBarVertical->getRegion();
+            const VRectangle& verticalRegion = _scrollBarVertical->getRegion();
             const Theme::UVs& verticalUVs = _scrollBarVertical->getUVs();
             Vector4 verticalColor = _scrollBarVertical->getColor();
             verticalColor.w *= _scrollBarOpacity * _opacity;
 
-            const Rectangle& bottomRegion = _scrollBarBottomCap->getRegion();
+            const VRectangle& bottomRegion = _scrollBarBottomCap->getRegion();
             const Theme::UVs& bottomUVs = _scrollBarBottomCap->getUVs();
             Vector4 bottomColor = _scrollBarBottomCap->getColor();
             bottomColor.w *= _scrollBarOpacity * _opacity;
 
             clipRegion.width += verticalRegion.width;
 
-            Rectangle bounds(_viewportBounds.right() + (_absoluteBounds.right() - _viewportBounds.right())*0.5f - topRegion.width*0.5f, _viewportBounds.y + _scrollBarBounds.y, topRegion.width, topRegion.height);
+            VRectangle bounds(_viewportBounds.right() + (_absoluteBounds.right() - _viewportBounds.right())*0.5f - topRegion.width*0.5f, _viewportBounds.y + _scrollBarBounds.y, topRegion.width, topRegion.height);
             batch->draw(bounds.x, bounds.y, bounds.width, bounds.height, topUVs.u1, topUVs.v1, topUVs.u2, topUVs.v2, topColor, clipRegion);
 
             bounds.y += topRegion.height;
@@ -714,24 +714,24 @@ unsigned int Container::draw(Form* form, const Rectangle& clip)
 
         if (_scrollBarBounds.width > 0 && ((_scroll & SCROLL_HORIZONTAL) == SCROLL_HORIZONTAL))
         {
-            const Rectangle& leftRegion = _scrollBarLeftCap->getRegion();
+            const VRectangle& leftRegion = _scrollBarLeftCap->getRegion();
             const Theme::UVs& leftUVs = _scrollBarLeftCap->getUVs();
             Vector4 leftColor = _scrollBarLeftCap->getColor();
             leftColor.w *= _scrollBarOpacity * _opacity;
 
-            const Rectangle& horizontalRegion = _scrollBarHorizontal->getRegion();
+            const VRectangle& horizontalRegion = _scrollBarHorizontal->getRegion();
             const Theme::UVs& horizontalUVs = _scrollBarHorizontal->getUVs();
             Vector4 horizontalColor = _scrollBarHorizontal->getColor();
             horizontalColor.w *= _scrollBarOpacity * _opacity;
 
-            const Rectangle& rightRegion = _scrollBarRightCap->getRegion();
+            const VRectangle& rightRegion = _scrollBarRightCap->getRegion();
             const Theme::UVs& rightUVs = _scrollBarRightCap->getUVs();
             Vector4 rightColor = _scrollBarRightCap->getColor();
             rightColor.w *= _scrollBarOpacity * _opacity;
 
             clipRegion.height += horizontalRegion.height;
         
-            Rectangle bounds(_viewportBounds.x + _scrollBarBounds.x, _viewportBounds.bottom() + (_absoluteBounds.bottom() - _viewportBounds.bottom())*0.5f - leftRegion.height*0.5f, leftRegion.width, leftRegion.height);
+            VRectangle bounds(_viewportBounds.x + _scrollBarBounds.x, _viewportBounds.bottom() + (_absoluteBounds.bottom() - _viewportBounds.bottom())*0.5f - leftRegion.height*0.5f, leftRegion.width, leftRegion.height);
             batch->draw(bounds.x, bounds.y, bounds.width, bounds.height, leftUVs.u1, leftUVs.v1, leftUVs.u2, leftUVs.v2, leftColor, clipRegion);
 
             bounds.x += leftRegion.width;
@@ -902,7 +902,7 @@ bool Container::moveFocusDirectional(Direction direction)
 	if (startControl == NULL)
 		return false;
 
-	const Rectangle& startBounds = startControl->_absoluteBounds;
+	const VRectangle& startBounds = startControl->_absoluteBounds;
 
 	Control* next = NULL;
 	Vector2 vStart, vNext;
@@ -930,7 +930,7 @@ bool Container::moveFocusDirectional(Direction direction)
 		if (!canReceiveFocus(ctrl))
 			continue;
 
-		const Rectangle& nextBounds = ctrl->getAbsoluteBounds();
+		const VRectangle& nextBounds = ctrl->getAbsoluteBounds();
 		switch (direction)
 		{
 		case UP:
@@ -1091,7 +1091,7 @@ void Container::updateScroll()
         if (!control->isVisible())
             continue;
 
-        const Rectangle& bounds = control->getBounds();
+        const VRectangle& bounds = control->getBounds();
         const Theme::Margin& margin = control->getMargin();
 
         float newWidth = bounds.x + bounds.width + margin.right;
@@ -1371,7 +1371,7 @@ bool Container::mouseEventScroll(Mouse::MouseEvent evt, int x, int y, int wheelD
                 float rightPadding = _absoluteBounds.right() - _viewportBounds.right();
                 float topPadding = _viewportBounds.y - _absoluteBounds.y;
                 float localVpRight = _bounds.width - rightPadding;
-                Rectangle vBounds(
+                VRectangle vBounds(
                     localVpRight + rightPadding*0.5f - vWidth*0.5f,
                     topPadding + _scrollBarBounds.y,
                     vWidth, _scrollBarBounds.height);
@@ -1403,7 +1403,7 @@ bool Container::mouseEventScroll(Mouse::MouseEvent evt, int x, int y, int wheelD
                 float bottomPadding = _absoluteBounds.bottom() - _viewportBounds.bottom();
                 float leftPadding = _viewportBounds.x - _absoluteBounds.x;
                 float localVpBottom = _bounds.height - bottomPadding;
-                Rectangle hBounds(
+                VRectangle hBounds(
                     leftPadding + _scrollBarBounds.x,
                     localVpBottom + bottomPadding*0.5f - hHeight*0.5f,
                     _scrollBarBounds.width, hHeight);

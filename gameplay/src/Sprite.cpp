@@ -25,11 +25,11 @@ Sprite& Sprite::operator=(const Sprite& sprite)
     
 Sprite* Sprite::create(const char* imagePath, float width, float height, Effect* effect)
 {
-    return Sprite::create(imagePath, width, height, Rectangle(0, 0, -1, -1), 1, effect);
+    return Sprite::create(imagePath, width, height, VRectangle(0, 0, -1, -1), 1, effect);
 }
     
 Sprite* Sprite::create(const char* imagePath, float width, float height,
-                       const Rectangle& source, unsigned int frameCount, Effect* effect)
+                       const VRectangle& source, unsigned int frameCount, Effect* effect)
 {
     GP_ASSERT(imagePath != NULL);
     GP_ASSERT(width >= -1 && height >= -1);
@@ -54,7 +54,7 @@ Sprite* Sprite::create(const char* imagePath, float width, float height,
     sprite->_height = height;
     sprite->_batch = batch;
     sprite->_frameCount = frameCount;
-    sprite->_frames = new Rectangle[frameCount];
+    sprite->_frames = new VRectangle[frameCount];
     sprite->_frames[0] = source;
     if (sprite->_frames[0].width == -1.0f)
         sprite->_frames[0].width = imageWidth;
@@ -273,7 +273,7 @@ Sprite* Sprite::create(Properties* properties)
     if (properties->exists("source"))
     {
         // Get source frame
-        Rectangle source;
+        VRectangle source;
         properties->getVector4("source", (Vector4*)&source);
 
         // Get frame count
@@ -408,14 +408,14 @@ int Sprite::getFlip() const
     return _flipFlags;
 }
 
-void Sprite::setFrameSource(unsigned int frameIndex, const Rectangle& source)
+void Sprite::setFrameSource(unsigned int frameIndex, const VRectangle& source)
 {
     GP_ASSERT(frameIndex < _frameCount);
     
     _frames[frameIndex] = source;
 }
 
-const Rectangle& Sprite::getFrameSource(unsigned int frameIndex) const
+const VRectangle& Sprite::getFrameSource(unsigned int frameIndex) const
 {
     GP_ASSERT(frameIndex < _frameCount);
     
@@ -671,8 +671,8 @@ Drawable* Sprite::clone(NodeCloneContext& context)
     spriteClone->_opacity = _opacity;
     spriteClone->_color = _color;
     spriteClone->_blendMode = _blendMode;
-    spriteClone->_frames = new Rectangle[_frameCount];
-    memcpy(spriteClone->_frames, _frames, sizeof(Rectangle) * _frameCount);
+    spriteClone->_frames = new VRectangle[_frameCount];
+    memcpy(spriteClone->_frames, _frames, sizeof(VRectangle) * _frameCount);
     spriteClone->_frameCount = _frameCount;
     spriteClone->_frameStride = _frameStride;
     spriteClone->_framePadding = _framePadding;

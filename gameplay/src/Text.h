@@ -159,7 +159,7 @@ public:
      *
      * @param clip The clipping region for this text.
      */
-    void setClip(const Rectangle& clip);
+    void setClip(const VRectangle& clip);
     
     /**
      * Gets the local clipping region for this text.
@@ -170,7 +170,7 @@ public:
      *
      * @return clip The clipping region for this text.
      */
-    const Rectangle& getClip() const;
+    const VRectangle& getClip() const;
     
     /**
      * Sets the opacity for the sprite.
@@ -262,7 +262,7 @@ private:
     bool _wrap;
     bool _rightToLeft;
     Font::Justify _align;
-    Rectangle _clip;
+    VRectangle _clip;
     float _opacity;
     Vector4 _color;
 };

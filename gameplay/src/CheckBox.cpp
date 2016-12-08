@@ -106,12 +106,12 @@ void CheckBox::updateBounds()
     Vector2 size;
     if (_checked)
     {
-        const Rectangle& selectedRegion = getImageRegion("checked", NORMAL);
+        const VRectangle& selectedRegion = getImageRegion("checked", NORMAL);
         size.set(selectedRegion.width, selectedRegion.height);
     }
     else
     {
-        const Rectangle& unselectedRegion = getImageRegion("unchecked", NORMAL);
+        const VRectangle& unselectedRegion = getImageRegion("unchecked", NORMAL);
         size.set(unselectedRegion.width, unselectedRegion.height);
     }
 
@@ -137,7 +137,7 @@ void CheckBox::updateAbsoluteBounds(const Vector2& offset)
     _textBounds.x += _bounds.height + 5;
 }
 
-unsigned int CheckBox::drawImages(Form* form, const Rectangle& clip)
+unsigned int CheckBox::drawImages(Form* form, const VRectangle& clip)
 {
     if (!_image)
         return 0;
@@ -145,7 +145,7 @@ unsigned int CheckBox::drawImages(Form* form, const Rectangle& clip)
     // Left, v-center.
     // TODO: Set an alignment for icons.
 
-    const Rectangle& region = _image->getRegion();
+    const VRectangle& region = _image->getRegion();
     const Theme::UVs& uvs = _image->getUVs();
     Vector4 color = _image->getColor();
     color.w *= _opacity;

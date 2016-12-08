@@ -731,9 +731,6 @@
     <ClInclude Include="vkcore\frustum.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>
-    <ClInclude Include="vkcore\keycodes.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
     <ClInclude Include="vkcore\threadpool.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>

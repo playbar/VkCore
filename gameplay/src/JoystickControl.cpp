@@ -236,7 +236,7 @@ Vector2 JoystickControl::getPixelSize(const Vector2& region, const int regionBou
 
 Vector2 JoystickControl::getPixelSize(const Theme::ThemeImage* image) const
 {
-    Rectangle rect = image->getRegion();
+    VRectangle rect = image->getRegion();
     rect.width = isWidthPercentage() ? (_absoluteBounds.width / rect.width) * rect.width : rect.width;
     rect.height = isHeightPercentage() ? (_absoluteBounds.height / rect.height) * rect.height : rect.height;
     return Vector2(rect.width, rect.height);
@@ -416,7 +416,7 @@ bool JoystickControl::touchEvent(Touch::TouchEvent evt, int x, int y, unsigned i
     return Control::touchEvent(evt, x, y, contactIndex);
 }
 
-unsigned int JoystickControl::drawImages(Form* form, const Rectangle& clip)
+unsigned int JoystickControl::drawImages(Form* form, const VRectangle& clip)
 {
     const Control::State state = getState();
 

@@ -13,7 +13,7 @@ const Game::ClearFlags& Sample::CLEAR_COLOR_STENCIL = Game::CLEAR_COLOR_STENCIL;
 const Game::ClearFlags& Sample::CLEAR_DEPTH_STENCIL = Game::CLEAR_DEPTH_STENCIL;
 const Game::ClearFlags& Sample::CLEAR_COLOR_DEPTH_STENCIL = Game::CLEAR_COLOR_DEPTH_STENCIL;
 
-Sample::Sample()
+Sample::Sample() : Game(true, NULL)
 {
 }
 
@@ -77,12 +77,12 @@ unsigned int Sample::getFrameRate() const
     return Game::getInstance()->getFrameRate();
 }
 
-const Rectangle& Sample::getViewport() const
+const VRectangle& Sample::getViewport() const
 {
     return Game::getInstance()->getViewport();
 }
 
-void Sample::setViewport(const Rectangle& viewport)
+void Sample::setViewport(const VRectangle& viewport)
 {
 	Game::getInstance()->setViewport(viewport);
 }

@@ -8,7 +8,7 @@ namespace vkcore
   
 Text::Text() :
     _font(NULL), _drawFont(NULL), _text(""), _size(0), _width(0), _height(0), _wrap(true), _rightToLeft(false),
-    _align(Font::ALIGN_TOP_LEFT), _clip(Rectangle(0, 0, 0, 0)),
+    _align(Font::ALIGN_TOP_LEFT), _clip(VRectangle(0, 0, 0, 0)),
     _opacity(1.0f), _color(Vector4::one())
 {
 }
@@ -180,12 +180,12 @@ Font::Justify Text::getJustify() const
     return _align;
 }
     
-void Text::setClip(const Rectangle& clip)
+void Text::setClip(const VRectangle& clip)
 {
     _clip = clip;
 }
 
-const Rectangle& Text::getClip() const
+const VRectangle& Text::getClip() const
 {
     return _clip;
 }
@@ -232,13 +232,13 @@ Drawable* Text::clone(NodeCloneContext& context)
 unsigned int Text::draw(bool wireframe)
 {
     // Apply scene camera projection and translation offsets
-    Rectangle viewport = Game::getInstance()->getViewport();
+    VRectangle viewport = Game::getInstance()->getViewport();
     Vector3 position = Vector3::zero();
     
     // Font is always using a offset projection matrix to top-left. So we need to adjust it back to cartesian
     position.x += viewport.width / 2;
     position.y += viewport.height / 2;
-    Rectangle clipViewport = _clip;
+    VRectangle clipViewport = _clip;
     if (_node && _node->getScene())
     {
         Camera* activeCamera = _node->getScene()->getActiveCamera();
@@ -265,7 +265,7 @@ unsigned int Text::draw(bool wireframe)
         }
     }
     _drawFont->start();
-    _drawFont->drawText(_text.c_str(), Rectangle(position.x, position.y, _width, _height),
+    _drawFont->drawText(_text.c_str(), VRectangle(position.x, position.y, _width, _height),
                     Vector4(_color.x, _color.y, _color.z, _color.w * _opacity), _size,
                     _align, _wrap, _rightToLeft, clipViewport);
     _drawFont->finish();

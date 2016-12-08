@@ -744,19 +744,19 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_S:
+		case Keyboard::KEY_S:
 		case GAMEPAD_BUTTON_A:
 			toggleSkyBox();
 			break;
-		case KEY_SPACE:
+		case Keyboard::KEY_SPACE:
 		case GAMEPAD_BUTTON_X:
 			toggleObject();
 			break;
-		case KEY_KPADD:
+		case Keyboard::KEY_KPADD:
 		case GAMEPAD_BUTTON_R1:
 			changeLodBias(0.1f);
 			break;
-		case KEY_KPSUB:
+		case Keyboard::KEY_KPSUB:
 		case GAMEPAD_BUTTON_L1:
 			changeLodBias(-0.1f);
 			break;

@@ -659,7 +659,7 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_A:
+		case Keyboard::KEY_A:
 		case GAMEPAD_BUTTON_A:
 			toggleAnimation();
 			break;

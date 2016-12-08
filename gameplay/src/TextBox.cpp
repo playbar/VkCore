@@ -338,14 +338,14 @@ void TextBox::updateState(State state)
     _caretImage = getImage("textCaret", state);
 }
 
-unsigned int TextBox::drawImages(Form* form, const Rectangle& clip)
+unsigned int TextBox::drawImages(Form* form, const VRectangle& clip)
 {
     Control::State state = getState();
 
     if (_caretImage && (state == ACTIVE || hasFocus()))
     {
         // Draw the cursor at its current location.
-        const Rectangle& region = _caretImage->getRegion();
+        const VRectangle& region = _caretImage->getRegion();
         if (!region.isEmpty())
         {
             const Theme::UVs& uvs = _caretImage->getUVs();
@@ -372,7 +372,7 @@ unsigned int TextBox::drawImages(Form* form, const Rectangle& clip)
     return 0;
 }
 
-unsigned int TextBox::drawText(Form* form, const Rectangle& clip)
+unsigned int TextBox::drawText(Form* form, const VRectangle& clip)
 {
     if (_text.size() <= 0)
         return 0;
@@ -424,7 +424,7 @@ void TextBox::setCaretLocation(int x, int y)
     if (index == -1)
     {
         // Attempt to find the nearest valid caret location.
-        Rectangle textBounds;
+        VRectangle textBounds;
         font->measureText(displayedText.c_str(), _textBounds, fontSize, &textBounds, textAlignment, true, true);
 
         if (point.x > textBounds.x + textBounds.width &&

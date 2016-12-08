@@ -239,7 +239,7 @@ unsigned int Form::draw(bool wireframe)
         return 0;
 
     Game* game = Game::getInstance();
-    Rectangle viewport = game->getViewport();
+    VRectangle viewport = game->getViewport();
 
     // If we're drawing in 2D (i.e. not attached to a node), we need to clear the depth buffer
     if (_node)
@@ -257,7 +257,7 @@ unsigned int Form::draw(bool wireframe)
         Game::getInstance()->clear(Game::CLEAR_DEPTH, Vector4::zero(), 1, 0);
 
         // Setup an ortho matrix that maps to the current viewport
-        const Rectangle& viewport = Game::getInstance()->getViewport();
+        const VRectangle& viewport = Game::getInstance()->getViewport();
         Matrix::createOrthographicOffCenter(0, viewport.width, viewport.height, 0, 0, 1, &_projectionMatrix);
     }
 
@@ -1091,7 +1091,7 @@ void Form::setFocusControl(Control* control)
         // scroll the container so that it is.
         if (parent && parent->_scroll != SCROLL_NONE && !parent->_viewportBounds.isEmpty())
         {
-            const Rectangle& bounds = __focusControl->getBounds();
+            const VRectangle& bounds = __focusControl->getBounds();
             if (bounds.x < parent->_scrollPosition.x)
             {
                 // Control is to the left of the scrolled viewport.

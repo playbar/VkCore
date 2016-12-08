@@ -232,7 +232,7 @@ void TerrainSample::touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int
         {
             // Ray sample
             Ray pickRay;
-            _scene->getActiveCamera()->pickRay(Rectangle (0, 0, getWidth(), getHeight()), x, y, &pickRay);
+            _scene->getActiveCamera()->pickRay(VRectangle (0, 0, getWidth(), getHeight()), x, y, &pickRay);
 
             PhysicsController::HitResult hitResult;
             TerrainHitFilter hitFilter(_terrain);

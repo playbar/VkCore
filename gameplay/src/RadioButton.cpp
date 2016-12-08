@@ -150,12 +150,12 @@ void RadioButton::updateBounds()
     Vector2 size;
     if (_selected)
     {
-        const Rectangle& selectedRegion = getImageRegion("selected", NORMAL);
+        const VRectangle& selectedRegion = getImageRegion("selected", NORMAL);
         size.set(selectedRegion.width, selectedRegion.height);
     }
     else
     {
-        const Rectangle& unselectedRegion = getImageRegion("unselected", NORMAL);
+        const VRectangle& unselectedRegion = getImageRegion("unselected", NORMAL);
         size.set(unselectedRegion.width, unselectedRegion.height);
     }
 
@@ -181,14 +181,14 @@ void RadioButton::updateAbsoluteBounds(const Vector2& offset)
     _textBounds.x += _bounds.height + 5;
 }
 
-unsigned int RadioButton::drawImages(Form* form, const Rectangle& clip)
+unsigned int RadioButton::drawImages(Form* form, const VRectangle& clip)
 {
     if (!_image)
         return 0;
 
     // Left, v-center.
     // TODO: Set an alignment for radio button images.   
-    const Rectangle& region = _image->getRegion();
+    const VRectangle& region = _image->getRegion();
     const Theme::UVs& uvs = _image->getUVs();
     Vector4 color = _image->getColor();
     color.w *= _opacity;

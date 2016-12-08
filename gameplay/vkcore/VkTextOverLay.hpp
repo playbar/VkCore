@@ -572,8 +572,8 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_KPADD:
-		case KEY_SPACE:
+		case Keyboard::KEY_KPADD:
+		case Keyboard::KEY_SPACE:
 			mTextOverlay->mVisible = !mTextOverlay->mVisible;
 		}
 	}

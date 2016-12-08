@@ -139,7 +139,7 @@ void FormsSample::formChanged()
     _activeForm->setFocus();
 
     // Add the form to a node to allow it to be placed in 3D space.
-    const Rectangle& bounds = _activeForm->getBounds();
+    const VRectangle& bounds = _activeForm->getBounds();
     float scale;
     if (bounds.width >= bounds.height)
     {

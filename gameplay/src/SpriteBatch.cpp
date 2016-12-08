@@ -150,7 +150,7 @@ bool SpriteBatch::isStarted() const
     return _batch->isStarted();
 }
 
-void SpriteBatch::draw(const Rectangle& dst, const Rectangle& src, const Vector4& color)
+void SpriteBatch::draw(const VRectangle& dst, const VRectangle& src, const Vector4& color)
 {
     // Calculate uvs.
     float u1 = _textureWidthRatio * src.x;
@@ -161,7 +161,7 @@ void SpriteBatch::draw(const Rectangle& dst, const Rectangle& src, const Vector4
     draw(dst.x, dst.y, dst.width, dst.height, u1, v1, u2, v2, color);
 }
 
-void SpriteBatch::draw(const Vector3& dst, const Rectangle& src, const Vector2& scale, const Vector4& color)
+void SpriteBatch::draw(const Vector3& dst, const VRectangle& src, const Vector2& scale, const Vector4& color)
 {
     // Calculate uvs.
     float u1 = _textureWidthRatio * src.x;
@@ -172,7 +172,7 @@ void SpriteBatch::draw(const Vector3& dst, const Rectangle& src, const Vector2& 
     draw(dst.x, dst.y, dst.z, scale.x, scale.y, u1, v1, u2, v2, color);
 }
 
-void SpriteBatch::draw(const Vector3& dst, const Rectangle& src, const Vector2& scale, const Vector4& color,
+void SpriteBatch::draw(const Vector3& dst, const VRectangle& src, const Vector2& scale, const Vector4& color,
                        const Vector2& rotationPoint, float rotationAngle)
 {
     // Calculate uvs.
@@ -305,12 +305,12 @@ void SpriteBatch::draw(float x, float y, float width, float height, float u1, fl
     draw(x, y, 0, width, height, u1, v1, u2, v2, color);
 }
 
-void SpriteBatch::draw(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const Rectangle& clip)
+void SpriteBatch::draw(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const VRectangle& clip)
 {
     draw(x, y, 0, width, height, u1, v1, u2, v2, color, clip);
 }
 
-void SpriteBatch::draw(float x, float y, float z, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const Rectangle& clip)
+void SpriteBatch::draw(float x, float y, float z, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const VRectangle& clip)
 {
     // TODO: Perform software clipping instead of culling the entire sprite.
 
@@ -331,7 +331,7 @@ void SpriteBatch::addSprite(float x, float y, float width, float height, float u
     SPRITE_ADD_VERTEX(vertices[3], x2, y2, 0, u2, v2, color.x, color.y, color.z, color.w);
 }
 
-void SpriteBatch::addSprite(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const Rectangle& clip, SpriteBatch::SpriteVertex* vertices)
+void SpriteBatch::addSprite(float x, float y, float width, float height, float u1, float v1, float u2, float v2, const Vector4& color, const VRectangle& clip, SpriteBatch::SpriteVertex* vertices)
 {
     GP_ASSERT(vertices);
 
@@ -410,7 +410,7 @@ const Matrix& SpriteBatch::getProjectionMatrix() const
     return _projectionMatrix;
 }
 
-bool SpriteBatch::clipSprite(const Rectangle& clip, float& x, float& y, float& width, float& height, float& u1, float& v1, float& u2, float& v2)
+bool SpriteBatch::clipSprite(const VRectangle& clip, float& x, float& y, float& width, float& height, float& u1, float& v1, float& u2, float& v2)
 {
     // Clip the rectangle given by { x, y, width, height } into clip.
     // We need to scale the uvs accordingly as we do this.

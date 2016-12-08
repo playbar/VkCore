@@ -1,7 +1,7 @@
 #include "VulkanBase.h"
 
-std::vector<const char*> VulkanBase::args;
 
+std::vector<const char*> VulkanBase::args;
 VkResult VulkanBase::createInstance(bool enableValidation)
 {
 	this->mEnableValidation = enableValidation;
@@ -1012,16 +1012,16 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case KEY_P:
+		case Keyboard::KEY_P:
 			paused = !paused;
 			break;
-		case KEY_F1:
+		case Keyboard::KEY_F1:
 			if (mEnableTextOverlay)
 			{
 				mTextOverlay->mVisible = !mTextOverlay->mVisible;
 			}
 			break;
-		case KEY_ESCAPE:
+		case Keyboard::KEY_ESCAPE:
 			PostQuitMessage(0);
 			break;
 		}
@@ -1030,16 +1030,16 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		{
 			switch (wParam)
 			{
-			case KEY_W:
+			case Keyboard::KEY_W:
 				mCamera.keys.up = true;
 				break;
-			case KEY_S:
+			case Keyboard::KEY_S:
 				mCamera.keys.down = true;
 				break;
-			case KEY_A:
+			case Keyboard::KEY_A:
 				mCamera.keys.left = true;
 				break;
-			case KEY_D:
+			case Keyboard::KEY_D:
 				mCamera.keys.right = true;
 				break;
 			}
@@ -1052,16 +1052,16 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		{
 			switch (wParam)
 			{
-			case KEY_W:
+			case Keyboard::KEY_W:
 				mCamera.keys.up = false;
 				break;
-			case KEY_S:
+			case Keyboard::KEY_S:
 				mCamera.keys.down = false;
 				break;
-			case KEY_A:
+			case Keyboard::KEY_A:
 				mCamera.keys.left = false;
 				break;
-			case KEY_D:
+			case Keyboard::KEY_D:
 				mCamera.keys.right = false;
 				break;
 			}

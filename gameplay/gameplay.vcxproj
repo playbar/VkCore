@@ -254,7 +254,6 @@
     <ClInclude Include="src\VerticalLayout.h" />
     <ClInclude Include="vkcore\define.h" />
     <ClInclude Include="vkcore\frustum.hpp" />
-    <ClInclude Include="vkcore\keycodes.hpp" />
     <ClInclude Include="vkcore\threadpool.hpp" />
     <ClInclude Include="vkcore\VDeleter.hpp" />
     <ClInclude Include="vkcore\VkBloom.hpp" />

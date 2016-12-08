@@ -38,8 +38,8 @@ void SpriteBatchSample::render(float elapsedTime)
     // Clear the color and depth buffers
     clear(CLEAR_COLOR_DEPTH, Vector4::zero(), 1.0f, 0);
 
-    Rectangle dst(0, 0, 64, 64);
-    Rectangle src(0, 0, 256, 256);
+    VRectangle dst(0, 0, 64, 64);
+    VRectangle src(0, 0, 256, 256);
 
     _spriteBatch->start();
 
@@ -47,21 +47,21 @@ void SpriteBatchSample::render(float elapsedTime)
     _spriteBatch->draw(dst, src);
 
     // Color tint
-    _spriteBatch->draw(Rectangle( 64, 0, 64, 64), src, Vector4::fromColor(0xF68B28FF));
-    _spriteBatch->draw(Rectangle(128, 0, 64, 64), src, Vector4::fromColor(0xDA2128FF));
-    _spriteBatch->draw(Rectangle(192, 0, 64, 64), src, Vector4::fromColor(0xE21B52FF));
-    _spriteBatch->draw(Rectangle(256, 0, 64, 64), src, Vector4::fromColor(0xE12991FF));
-    _spriteBatch->draw(Rectangle(320, 0, 64, 64), src, Vector4::fromColor(0x9A258FFF));
-    _spriteBatch->draw(Rectangle(384, 0, 64, 64), src, Vector4::fromColor(0x4D3F99FF));
-    _spriteBatch->draw(Rectangle(448, 0, 64, 64), src, Vector4::fromColor(0x0073BCFF));
-    _spriteBatch->draw(Rectangle(512, 0, 64, 64), src, Vector4::fromColor(0x00A8DFFF));
-    _spriteBatch->draw(Rectangle(576, 0, 64, 64), src, Vector4::fromColor(0x00AFADFF));
-    _spriteBatch->draw(Rectangle(640, 0, 64, 64), src, Vector4::fromColor(0x00A95CFF));
-    _spriteBatch->draw(Rectangle(704, 0, 64, 64), src, Vector4::fromColor(0x8CC747FF));
-    _spriteBatch->draw(Rectangle(768, 0, 64, 64), src, Vector4::fromColor(0xFFE710FF));
+    _spriteBatch->draw(VRectangle( 64, 0, 64, 64), src, Vector4::fromColor(0xF68B28FF));
+    _spriteBatch->draw(VRectangle(128, 0, 64, 64), src, Vector4::fromColor(0xDA2128FF));
+    _spriteBatch->draw(VRectangle(192, 0, 64, 64), src, Vector4::fromColor(0xE21B52FF));
+    _spriteBatch->draw(VRectangle(256, 0, 64, 64), src, Vector4::fromColor(0xE12991FF));
+    _spriteBatch->draw(VRectangle(320, 0, 64, 64), src, Vector4::fromColor(0x9A258FFF));
+    _spriteBatch->draw(VRectangle(384, 0, 64, 64), src, Vector4::fromColor(0x4D3F99FF));
+    _spriteBatch->draw(VRectangle(448, 0, 64, 64), src, Vector4::fromColor(0x0073BCFF));
+    _spriteBatch->draw(VRectangle(512, 0, 64, 64), src, Vector4::fromColor(0x00A8DFFF));
+    _spriteBatch->draw(VRectangle(576, 0, 64, 64), src, Vector4::fromColor(0x00AFADFF));
+    _spriteBatch->draw(VRectangle(640, 0, 64, 64), src, Vector4::fromColor(0x00A95CFF));
+    _spriteBatch->draw(VRectangle(704, 0, 64, 64), src, Vector4::fromColor(0x8CC747FF));
+    _spriteBatch->draw(VRectangle(768, 0, 64, 64), src, Vector4::fromColor(0xFFE710FF));
 
     // Negative height draw over top of the first one
-    _spriteBatch->draw(Rectangle(0, 0 , 64 * 2.0f, 64 * -2.0f), src);
+    _spriteBatch->draw(VRectangle(0, 0 , 64 * 2.0f, 64 * -2.0f), src);
 
     // Scale
     _spriteBatch->draw(Vector3(0, 64, 0), src, Vector2(dst.width * 2.0f, dst.height * 2.0f));
@@ -80,7 +80,7 @@ void SpriteBatchSample::render(float elapsedTime)
     {
         for (unsigned int j = 0; j < pointCount; j++)
         {
-            _spriteBatch->draw(Rectangle(x, y, 32, 32), src); 
+            _spriteBatch->draw(VRectangle(x, y, 32, 32), src); 
             x += 32;    
         }
         x = 0;
@@ -92,7 +92,7 @@ void SpriteBatchSample::render(float elapsedTime)
     _spriteBatch->start();
 
     // 50% transparent
-    _spriteBatch->draw(Rectangle(x + 512, y - 512, 512, 512), src, Vector4(1, 1, 1, 0.5f)); 
+    _spriteBatch->draw(VRectangle(x + 512, y - 512, 512, 512), src, Vector4(1, 1, 1, 0.5f)); 
     _spriteBatch->finish();
 
     drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());

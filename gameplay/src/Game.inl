@@ -34,7 +34,7 @@ inline float Game::getAspectRatio() const
     return (float)_width / (float)_height;
 }
 
-inline const Rectangle& Game::getViewport() const
+inline const VRectangle& Game::getViewport() const
 {
     return _viewport;
 }

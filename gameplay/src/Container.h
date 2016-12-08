@@ -388,7 +388,7 @@ protected:
     /**
      * @see Control::draw
      */
-    virtual unsigned int draw(Form* form, const Rectangle& clip);
+    virtual unsigned int draw(Form* form, const VRectangle& clip);
 
     /**
      * Update scroll position and velocity.
@@ -482,7 +482,7 @@ protected:
     /** 
      * Scroll bar bounds.
      */
-    Rectangle _scrollBarBounds;
+    VRectangle _scrollBarBounds;
     /** 
      * How far this layout has been scrolled in each direction.
      */

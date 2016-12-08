@@ -819,7 +819,7 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_N:
+		case Keyboard::KEY_N:
 		case GAMEPAD_BUTTON_A:
 			if (!regenerateNoise)
 			{

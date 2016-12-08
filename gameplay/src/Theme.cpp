@@ -77,7 +77,7 @@ Theme* Theme::getDefault()
             __defaultTheme = new Theme();
             unsigned int color = 0x00000000;
             __defaultTheme->_texture = Texture::create(Texture::RGBA, 1, 1, (unsigned char*)&color, false);
-            __defaultTheme->_emptyImage = new Theme::ThemeImage(1.0f, 1.0f, Rectangle::empty(), Vector4::zero());
+            __defaultTheme->_emptyImage = new Theme::ThemeImage(1.0f, 1.0f, VRectangle::empty(), Vector4::zero());
             __defaultTheme->_spriteBatch = SpriteBatch::create(__defaultTheme->_texture);
             __defaultTheme->_spriteBatch->getSampler()->setFilterMode(Texture::LINEAR_MIPMAP_LINEAR, Texture::LINEAR);
             __defaultTheme->_spriteBatch->getSampler()->setWrapMode(Texture::CLAMP, Texture::CLAMP);
@@ -146,7 +146,7 @@ Theme* Theme::create(const char* url)
     float tw = 1.0f / theme->_texture->getWidth();
     float th = 1.0f / theme->_texture->getHeight();
 
-    theme->_emptyImage = new Theme::ThemeImage(tw, th, Rectangle::empty(), Vector4::zero());
+    theme->_emptyImage = new Theme::ThemeImage(tw, th, VRectangle::empty(), Vector4::zero());
 
     Properties* space = themeProperties->getNextNamespace();
     while (space != NULL)
@@ -180,7 +180,7 @@ Theme* Theme::create(const char* url)
 
             Vector4 regionVector;
             space->getVector4("region", &regionVector);
-            const Rectangle region(regionVector.x, regionVector.y, regionVector.z, regionVector.w);
+            const VRectangle region(regionVector.x, regionVector.y, regionVector.z, regionVector.w);
 
             Vector4 color(1, 1, 1, 1);
             if (space->exists("color"))
@@ -584,7 +584,7 @@ const Theme::SideRegions& Theme::SideRegions::empty()
 /*********************
  * Theme::ThemeImage *
  *********************/
-Theme::ThemeImage::ThemeImage(float tw, float th, const Rectangle& region, const Vector4& color)
+Theme::ThemeImage::ThemeImage(float tw, float th, const VRectangle& region, const Vector4& color)
     : _region(region), _color(color)
 {
     generateUVs(tw, th, region.x, region.y, region.width, region.height, &_uvs);
@@ -600,7 +600,7 @@ Theme::ThemeImage* Theme::ThemeImage::create(float tw, float th, Properties* pro
 
     Vector4 regionVector;                
     properties->getVector4("region", &regionVector);
-    const Rectangle region(regionVector.x, regionVector.y, regionVector.z, regionVector.w);
+    const VRectangle region(regionVector.x, regionVector.y, regionVector.z, regionVector.w);
 
     Vector4 color;
     if (properties->exists("color"))
@@ -632,7 +632,7 @@ const Theme::UVs& Theme::ThemeImage::getUVs() const
     return _uvs;
 }
 
-const Rectangle& Theme::ThemeImage::getRegion() const
+const VRectangle& Theme::ThemeImage::getRegion() const
 {
     return _region;
 }
@@ -727,7 +727,7 @@ Theme::ThemeImage* Theme::ImageList::getImage(const char* imageId) const
 /***************
  * Theme::Skin *
  ***************/
-Theme::Skin* Theme::Skin::create(const char* id, float tw, float th, const Rectangle& region, const Theme::Border& border, const Vector4& color)
+Theme::Skin* Theme::Skin::create(const char* id, float tw, float th, const VRectangle& region, const Theme::Border& border, const Vector4& color)
 {
     Skin* skin = new Skin(tw, th, region, border, color);
 
@@ -739,7 +739,7 @@ Theme::Skin* Theme::Skin::create(const char* id, float tw, float th, const Recta
     return skin;
 }
 
-Theme::Skin::Skin(float tw, float th, const Rectangle& region, const Theme::Border& border, const Vector4& color)
+Theme::Skin::Skin(float tw, float th, const VRectangle& region, const Theme::Border& border, const Vector4& color)
     : _border(border), _color(color), _region(region)
 {
     setRegion(region, tw, th);
@@ -759,12 +759,12 @@ const Theme::Border& Theme::Skin::getBorder() const
     return _border;
 }
 
-const Rectangle& Theme::Skin::getRegion() const
+const VRectangle& Theme::Skin::getRegion() const
 {
     return _region;
 }
 
-void Theme::Skin::setRegion(const Rectangle& region, float tw, float th)
+void Theme::Skin::setRegion(const VRectangle& region, float tw, float th)
 {
     // Can calculate all measurements in advance.
     float leftEdge = region.x * tw;

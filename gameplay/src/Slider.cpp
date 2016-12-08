@@ -170,9 +170,9 @@ void Slider::updateValue(int x, int y)
     // Horizontal case.
     const Theme::Border& border = getBorder(state);
     const Theme::Padding& padding = getPadding();
-    const Rectangle& minCapRegion = _minImage->getRegion();
-    const Rectangle& maxCapRegion = _maxImage->getRegion();
-    const Rectangle& markerRegion = _markerImage->getRegion();
+    const VRectangle& minCapRegion = _minImage->getRegion();
+    const VRectangle& maxCapRegion = _maxImage->getRegion();
+    const VRectangle& markerRegion = _markerImage->getRegion();
 
     float markerPosition = (x - markerRegion.width * 0.5f) / (_viewportBounds.width - markerRegion.width);
             
@@ -356,7 +356,7 @@ void Slider::updateBounds()
     }
 }
 
-unsigned int Slider::drawImages(Form* form, const Rectangle& clip)
+unsigned int Slider::drawImages(Form* form, const VRectangle& clip)
 {
     if (!(_minImage && _maxImage && _markerImage && _trackImage))
         return 0;
@@ -366,10 +366,10 @@ unsigned int Slider::drawImages(Form* form, const Rectangle& clip)
     // The slider is drawn in the center of the control (perpendicular to orientation).
     // The track is stretched according to orientation.
     // Caps and marker are not stretched.
-    const Rectangle& minCapRegion = _minImage->getRegion();
-    const Rectangle& maxCapRegion = _maxImage->getRegion();
-    const Rectangle& markerRegion = _markerImage->getRegion();
-    const Rectangle& trackRegion = _trackImage->getRegion();
+    const VRectangle& minCapRegion = _minImage->getRegion();
+    const VRectangle& maxCapRegion = _maxImage->getRegion();
+    const VRectangle& markerRegion = _markerImage->getRegion();
+    const VRectangle& trackRegion = _trackImage->getRegion();
 
     const Theme::UVs& minCap = _minImage->getUVs();
     const Theme::UVs& maxCap = _maxImage->getUVs();
@@ -471,7 +471,7 @@ unsigned int Slider::drawImages(Form* form, const Rectangle& clip)
     return 4;
 }
 
-unsigned int Slider::drawText(Form* form, const Rectangle& clip)
+unsigned int Slider::drawText(Form* form, const VRectangle& clip)
 {
     unsigned int drawCalls = Label::drawText(form, clip);
 

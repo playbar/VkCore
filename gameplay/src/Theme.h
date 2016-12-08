@@ -169,7 +169,7 @@ public:
         /** 
          * Gets the Rectangle region of the ThemeImage.
          */
-        const Rectangle& getRegion() const;
+        const VRectangle& getRegion() const;
 
         /** 
          * Gets the color of the ThemeImage in a Vector4.
@@ -178,7 +178,7 @@ public:
 
     private:
 
-        ThemeImage(float tw, float th, const Rectangle& region, const Vector4& color);
+        ThemeImage(float tw, float th, const VRectangle& region, const Vector4& color);
 
         ~ThemeImage();
 
@@ -186,7 +186,7 @@ public:
 
         std::string _id;
         UVs _uvs;
-        Rectangle _region;
+        VRectangle _region;
         Vector4 _color;
     };
 
@@ -307,7 +307,7 @@ private:
          *
          * @return The skin region.
          */
-        const Rectangle& getRegion() const;
+        const VRectangle& getRegion() const;
 
         /**
          * Gets this skin's UVs.
@@ -325,7 +325,7 @@ private:
 
     private:
 
-        Skin(float tw, float th, const Rectangle& region, const Theme::Border& border, const Vector4& color);
+        Skin(float tw, float th, const VRectangle& region, const Theme::Border& border, const Vector4& color);
         
         ~Skin();
 
@@ -334,15 +334,15 @@ private:
          */
         Skin& operator=(const Skin&);
 
-        static Skin* create(const char* id, float tw, float th, const Rectangle& region, const Theme::Border& border, const Vector4& color);
+        static Skin* create(const char* id, float tw, float th, const VRectangle& region, const Theme::Border& border, const Vector4& color);
 
-        void setRegion(const Rectangle& region, float tw, float th);
+        void setRegion(const VRectangle& region, float tw, float th);
     
         std::string _id;
         Theme::Border _border;
         UVs _uvs[9];
         Vector4 _color;
-        Rectangle _region;
+        VRectangle _region;
         float _tw, _th;
     };
 

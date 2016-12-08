@@ -1152,12 +1152,12 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_F1:
+		case Keyboard::KEY_F1:
 		case GAMEPAD_BUTTON_A:
 			toggleDebugDisplay();
 			updateTextOverlay();
 			break;
-		case KEY_F2:
+		case Keyboard::KEY_F2:
 		case GAMEPAD_BUTTON_X:
 			toggleShadows();
 			updateTextOverlay();

@@ -94,9 +94,9 @@ private:
 
         const Vector4& getSkinColor() const;
 
-        void setSkinRegion(const Rectangle& region, float tw, float th);
+        void setSkinRegion(const VRectangle& region, float tw, float th);
 
-        const Rectangle& getSkinRegion() const;
+        const VRectangle& getSkinRegion() const;
 
         const Theme::UVs& getSkinUVs(Theme::Skin::SkinArea area) const;
 
@@ -120,9 +120,9 @@ private:
 
         void setTextColor(const Vector4& color); 
 
-        const Rectangle& getImageRegion(const char* id) const;
+        const VRectangle& getImageRegion(const char* id) const;
 
-        void setImageRegion(const char* id, const Rectangle& region, float tw, float th);
+        void setImageRegion(const char* id, const VRectangle& region, float tw, float th);
 
         const Vector4& getImageColor(const char* id) const;
 
@@ -130,9 +130,9 @@ private:
 
         const Theme::UVs& getImageUVs(const char* id) const;
 
-        const Rectangle& getCursorRegion() const;
+        const VRectangle& getCursorRegion() const;
 
-        void setCursorRegion(const Rectangle& region, float tw, float th);
+        void setCursorRegion(const VRectangle& region, float tw, float th);
 
         const Vector4& getCursorColor() const;
 

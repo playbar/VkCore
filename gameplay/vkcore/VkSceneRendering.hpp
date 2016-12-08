@@ -821,27 +821,27 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_SPACE:
+		case Keyboard::KEY_SPACE:
 		case GAMEPAD_BUTTON_A:
 			wireframe = !wireframe;
 			reBuildCommandBuffers();
 			break;
-		case KEY_P:
+		case Keyboard::KEY_P:
 			scene->renderSingleScenePart = !scene->renderSingleScenePart;
 			reBuildCommandBuffers();
 			updateTextOverlay();
 			break;
-		case KEY_KPADD:
+		case Keyboard::KEY_KPADD:
 			scene->scenePartIndex = (scene->scenePartIndex < static_cast<uint32_t>(scene->meshes.size())) ? scene->scenePartIndex + 1 : 0;
 			reBuildCommandBuffers();
 			updateTextOverlay();
 			break;
-		case KEY_KPSUB:
+		case Keyboard::KEY_KPSUB:
 			scene->scenePartIndex = (scene->scenePartIndex > 0) ? scene->scenePartIndex - 1 : static_cast<uint32_t>(scene->meshes.size()) - 1;
 			updateTextOverlay();
 			reBuildCommandBuffers();
 			break;
-		case KEY_L:
+		case Keyboard::KEY_L:
 			attachLight = !attachLight;
 			updateUniformBuffers();
 			break;

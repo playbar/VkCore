@@ -121,7 +121,7 @@ void Label::updateAbsoluteBounds(const Vector2& offset)
     _textBounds.set((int)_viewportBounds.x, (int)_viewportBounds.y, _viewportBounds.width, _viewportBounds.height);
 }
 
-unsigned int Label::drawText(Form* form, const Rectangle& clip)
+unsigned int Label::drawText(Form* form, const VRectangle& clip)
 {
     // Draw the text.
     if (_text.size() > 0 && _font)

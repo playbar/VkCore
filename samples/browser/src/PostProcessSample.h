@@ -48,7 +48,7 @@ public:
 
         Material* getMaterial() const;
 
-        void blit(const Rectangle& dst);
+        void blit(const VRectangle& dst);
 
     private:
 

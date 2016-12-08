@@ -39,8 +39,8 @@ public:
     void exit();
     void frame();
     unsigned int getFrameRate() const;
-    const Rectangle& getViewport() const;
-	void setViewport(const Rectangle& viewport);
+    const VRectangle& getViewport() const;
+	void setViewport(const VRectangle& viewport);
     unsigned int getWidth() const;
     unsigned int getHeight() const;
     float getAspectRatio() const;

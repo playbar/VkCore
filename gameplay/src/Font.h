@@ -153,9 +153,9 @@ public:
      * @param rightToLeft Whether to draw text from right to left.
      * @param clip A region to clip text within after applying justification to the viewport area.
      */
-    void drawText(const char* text, const Rectangle& area, const Vector4& color, unsigned int size = 0,
+    void drawText(const char* text, const VRectangle& area, const Vector4& color, unsigned int size = 0,
                   Justify justify = ALIGN_TOP_LEFT, bool wrap = true, bool rightToLeft = false,
-                  const Rectangle& clip = Rectangle(0, 0, 0, 0));
+                  const VRectangle& clip = VRectangle(0, 0, 0, 0));
 
     /**
      * Finishes text batching for this font and renders all drawn text.
@@ -184,7 +184,7 @@ public:
      * @param ignoreClip Whether to clip 'out' to the viewport.  Set false for the bounds of what would actually be drawn
      *                within the given viewport; true for bounds that are guaranteed to fit the entire string of text.
      */
-    void measureText(const char* text, const Rectangle& clip, unsigned int size, Rectangle* out,
+    void measureText(const char* text, const VRectangle& clip, unsigned int size, VRectangle* out,
                      Justify justify = ALIGN_TOP_LEFT, bool wrap = true, bool ignoreClip = false);
 
     /**
@@ -211,13 +211,13 @@ public:
     /**
      * Get an character index into a string corresponding to the character nearest the given location within the clip region.
      */
-    int getIndexAtLocation(const char* text, const Rectangle& clip, unsigned int size, const Vector2& inLocation,
+    int getIndexAtLocation(const char* text, const VRectangle& clip, unsigned int size, const Vector2& inLocation,
                            Vector2* outLocation, Justify justify = ALIGN_TOP_LEFT, bool wrap = true, bool rightToLeft = false);
 
     /**
      * Get the location of the character at the given index.
      */
-    void getLocationAtIndex(const char* text, const Rectangle& clip, unsigned int size, Vector2* outLocation,
+    void getLocationAtIndex(const char* text, const VRectangle& clip, unsigned int size, Vector2* outLocation,
                             const unsigned int destIndex, Justify justify = ALIGN_TOP_LEFT, bool wrap = true,
                             bool rightToLeft = false);
 
@@ -312,10 +312,10 @@ private:
      */
     static Font* create(const char* family, Style style, unsigned int size, Glyph* glyphs, int glyphCount, Texture* texture, Font::Format format);
 
-    void getMeasurementInfo(const char* text, const Rectangle& area, unsigned int size, Justify justify, bool wrap, bool rightToLeft,
+    void getMeasurementInfo(const char* text, const VRectangle& area, unsigned int size, Justify justify, bool wrap, bool rightToLeft,
                             std::vector<int>* xPositions, int* yPosition, std::vector<unsigned int>* lineLengths);
 
-    int getIndexOrLocation(const char* text, const Rectangle& clip, unsigned int size, const Vector2& inLocation, Vector2* outLocation,
+    int getIndexOrLocation(const char* text, const VRectangle& clip, unsigned int size, const Vector2& inLocation, Vector2* outLocation,
                            const int destIndex = -1, Justify justify = ALIGN_TOP_LEFT, bool wrap = true, bool rightToLeft = false);
 
     unsigned int getTokenWidth(const char* token, unsigned length, unsigned int size, float scale);
@@ -326,7 +326,7 @@ private:
                          std::vector<int>::const_iterator* xPositionsIt, std::vector<int>::const_iterator xPositionsEnd, unsigned int* charIndex = NULL,
                          const Vector2* stopAtPosition = NULL, const int currentIndex = -1, const int destIndex = -1);
 
-    void addLineInfo(const Rectangle& area, int lineWidth, int lineLength, Justify hAlign,
+    void addLineInfo(const VRectangle& area, int lineWidth, int lineLength, Justify hAlign,
                      std::vector<int>* xPositions, std::vector<unsigned int>* lineLengths, bool rightToLeft);
 
     Font* findClosestSize(int size);
@@ -345,7 +345,7 @@ private:
     unsigned int _glyphCount;
     Texture* _texture;
     SpriteBatch* _batch;
-    Rectangle _viewport;
+    VRectangle _viewport;
     MaterialParameter* _cutoffParam;
 };
 

@@ -189,20 +189,20 @@ const Vector4& Theme::Style::Overlay::getSkinColor() const
     return Vector4::one();
 }
 
-void Theme::Style::Overlay::setSkinRegion(const Rectangle& region, float tw, float th)
+void Theme::Style::Overlay::setSkinRegion(const VRectangle& region, float tw, float th)
 {
     GP_ASSERT(_skin);
     _skin->setRegion(region, tw, th);
 }
 
-const Rectangle& Theme::Style::Overlay::getSkinRegion() const
+const VRectangle& Theme::Style::Overlay::getSkinRegion() const
 {
     if (_skin)
     {
         return _skin->getRegion();
     }
 
-    return Rectangle::empty();
+    return VRectangle::empty();
 }
 
 const Theme::UVs& Theme::Style::Overlay::getSkinUVs(Theme::Skin::SkinArea area) const
@@ -275,11 +275,11 @@ void Theme::Style::Overlay::setTextColor(const Vector4& color)
     _textColor = color;
 }
 
-const Rectangle& Theme::Style::Overlay::getImageRegion(const char* id) const
+const VRectangle& Theme::Style::Overlay::getImageRegion(const char* id) const
 {
     if (!_imageList)
     {
-        return Rectangle::empty();
+        return VRectangle::empty();
     }
 
     ThemeImage* image = _imageList->getImage(id);
@@ -289,11 +289,11 @@ const Rectangle& Theme::Style::Overlay::getImageRegion(const char* id) const
     }
     else
     {
-        return Rectangle::empty();
+        return VRectangle::empty();
     }
 }
     
-void Theme::Style::Overlay::setImageRegion(const char* id, const Rectangle& region, float tw, float th)
+void Theme::Style::Overlay::setImageRegion(const char* id, const VRectangle& region, float tw, float th)
 {
     GP_ASSERT(_imageList);
     ThemeImage* image = _imageList->getImage(id);
@@ -338,7 +338,7 @@ const Theme::UVs& Theme::Style::Overlay::getImageUVs(const char* id) const
     }
 }
 
-const Rectangle& Theme::Style::Overlay::getCursorRegion() const
+const VRectangle& Theme::Style::Overlay::getCursorRegion() const
 {
     if (_cursor)
     {
@@ -346,11 +346,11 @@ const Rectangle& Theme::Style::Overlay::getCursorRegion() const
     }
     else
     {
-        return Rectangle::empty();
+        return VRectangle::empty();
     }
 }
     
-void Theme::Style::Overlay::setCursorRegion(const Rectangle& region, float tw, float th)
+void Theme::Style::Overlay::setCursorRegion(const VRectangle& region, float tw, float th)
 {
     GP_ASSERT(_cursor);
     _cursor->_region.set(region);

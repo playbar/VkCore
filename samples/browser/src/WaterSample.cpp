@@ -153,8 +153,8 @@ void WaterSample::render(float elapsedTime)
     
     // Update the refract buffer
     FrameBuffer* defaultBuffer = _refractBuffer->bind();
-    Rectangle defaultViewport = getViewport();
-    setViewport(Rectangle(BUFFER_SIZE, BUFFER_SIZE));
+    VRectangle defaultViewport = getViewport();
+    setViewport(VRectangle(BUFFER_SIZE, BUFFER_SIZE));
     _clipPlane.y = -1.f;
     _clipPlane.w = _waterHeight + WATER_OFFSET;
     clear(CLEAR_COLOR_DEPTH, clearColour, 1.0f, 0);
@@ -184,10 +184,10 @@ void WaterSample::render(float elapsedTime)
     if (_showBuffers)
     {
         _refractBatch->start();
-        _refractBatch->draw(Vector3(0.f, 4.f, 0.f), Rectangle(BUFFER_SIZE, BUFFER_SIZE), Vector2(426.f, 240.f));
+        _refractBatch->draw(Vector3(0.f, 4.f, 0.f), VRectangle(BUFFER_SIZE, BUFFER_SIZE), Vector2(426.f, 240.f));
         _refractBatch->finish();
         _reflectBatch->start();
-        _reflectBatch->draw(Vector3(430.f, 4.f, 0.f), Rectangle(BUFFER_SIZE, BUFFER_SIZE), Vector2(426.f, 240.f));
+        _reflectBatch->draw(Vector3(430.f, 4.f, 0.f), VRectangle(BUFFER_SIZE, BUFFER_SIZE), Vector2(426.f, 240.f));
         _reflectBatch->finish();
     }
 

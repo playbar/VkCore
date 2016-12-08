@@ -716,15 +716,15 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_KPADD:
+		case Keyboard::KEY_KPADD:
 		case GAMEPAD_BUTTON_R1:
 			changeLodBias(0.1f);
 			break;
-		case KEY_KPSUB:
+		case Keyboard::KEY_KPSUB:
 		case GAMEPAD_BUTTON_L1:
 			changeLodBias(-0.1f);
 			break;
-		case KEY_F:
+		case Keyboard::KEY_F:
 		case GAMEPAD_BUTTON_A:
 			toggleSampler();
 			break;

@@ -183,12 +183,12 @@ protected:
     /**
      * @see Control::drawImages
      */
-    unsigned int drawImages(Form* form, const Rectangle& clip);
+    unsigned int drawImages(Form* form, const VRectangle& clip);
 
     /**
      * @see Control::drawText
      */
-    unsigned int drawText(Form* form, const Rectangle& clip);
+    unsigned int drawText(Form* form, const VRectangle& clip);
 
     /**
      * Gets an InputMode by string.

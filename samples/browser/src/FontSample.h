@@ -40,7 +40,7 @@ private:
     unsigned int _fontsCount;
     unsigned int _fontIndex;
     Font* _font;
-    Rectangle _viewport;
+    VRectangle _viewport;
     std::string _sampleString;
 
 };

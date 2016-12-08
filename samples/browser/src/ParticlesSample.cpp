@@ -1145,7 +1145,7 @@ void ParticlesSample::drawFrameRate(Font* font, const Vector4& color, unsigned i
 
 void ParticlesSample::resizeEvent(unsigned int width, unsigned int height)
 {
-    setViewport(vkcore::Rectangle(width, height));
+    setViewport(vkcore::VRectangle(width, height));
     _form->setSize(width, height);
     _scene->getActiveCamera()->setAspectRatio((float)getWidth() / (float)getHeight());
 }

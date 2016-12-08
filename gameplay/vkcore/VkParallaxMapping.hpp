@@ -584,15 +584,15 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_O:
+		case Keyboard::KEY_O:
 		case GAMEPAD_BUTTON_A:
 			toggleParallaxOffset();
 			break;
-		case KEY_N:
+		case Keyboard::KEY_N:
 		case GAMEPAD_BUTTON_X:
 			toggleNormalMapDisplay();
 			break;
-		case KEY_S:
+		case Keyboard::KEY_S:
 		case GAMEPAD_BUTTON_Y:
 			toggleSplitScreen();
 			break;

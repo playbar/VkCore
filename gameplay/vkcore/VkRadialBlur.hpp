@@ -855,11 +855,11 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_B:
+		case Keyboard::KEY_B:
 		case GAMEPAD_BUTTON_A:
 			toggleBlur();
 			break;
-		case KEY_T:
+		case Keyboard::KEY_T:
 		case GAMEPAD_BUTTON_X:
 			toggleTextureDisplay();
 			break;

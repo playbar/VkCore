@@ -718,7 +718,7 @@ public:
 	{
 		switch (keyCode)
 		{
-		case KEY_S:
+		case Keyboard::KEY_S:
 		case GAMEPAD_BUTTON_A:
 			toggleSampleShading();
 			break;
