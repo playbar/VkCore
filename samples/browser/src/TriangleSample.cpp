@@ -6,7 +6,7 @@
 #endif
 
 
-//TriangleSample game;
+TriangleSample game;
 
 /**
  * Creates a triangle mesh with vertex colors.
@@ -94,7 +94,7 @@ void TriangleSample::render(float elapsedTime)
     _model->getMaterial()->getParameter("u_worldViewProjectionMatrix")->setValue(_worldViewProjectionMatrix);
     _model->draw();
 
-    drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());
+    //drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());
 }
 
 void TriangleSample::touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int contactIndex)

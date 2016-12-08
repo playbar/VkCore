@@ -14,11 +14,7 @@ namespace vkcore
 
 class Game;
 
-/**
- * Defines a platform abstraction.
- *
- * This class has only a few public methods for creating a platform
- */
+
 class Platform
 {
 public:
@@ -28,123 +24,30 @@ public:
     friend class ScreenDisplayer;
     friend class FileSystem;
 
-    /**
-     * Destructor.
-     */
+   
     ~Platform();
-
-    /**
-     * Creates a platform for the specified game which it will interact with.
-     *
-     * @param game The game to create a platform for.
-     *
-     * @return The created platform interface.
-     * @script{ignore}
-     */
+ 
     static Platform* create(Game* game);
-
-    /**
-     * Begins processing the platform messages.
-     *
-     * This method handles all OS window messages and drives the game loop.
-     * It normally does not return until the application is closed.
-     *
-     * If a attachToWindow is passed to Platform::create the message pump will instead attach
-     * to or allow the attachToWindow to drive the game loop on the platform.
-     *
-     * @return The platform message pump return code.
-     */
+ 
     int enterMessagePump();
 
-    /**
-     * Swaps the frame buffer on the device.
-     */
     static void swapBuffers();
 
 private:
 
-    /**
-     * This method informs the platform that the game is shutting down
-     * and anything platform specific should be shutdown as well or halted
-     * This function is called automatically when the game shutdown function is called
-     */
     static void signalShutdown();
-
-    /**
-     * Indicates whether a programmatic exit is allowed on this platform.
-     * Some platforms (eg. iOS) do not allow apps to exit programmatically.
-     *
-     * @return whether a programmatic exit is allowed on this platform.
-     */
     static bool canExit();
-
-    /**
-     * Gets the display width.
-     *
-     * @return The display width.
-     */
     static unsigned int getDisplayWidth();
-
-    /**
-     * Gets the display height.
-     *
-     * @return The display height.
-     */
     static unsigned int getDisplayHeight();
-
-    /**
-     * Gets the absolute platform time starting from when the message pump was started.
-     *
-     * @return The absolute platform time. (in milliseconds)
-     */
     static double getAbsoluteTime();
-
-    /**
-     * Sets the absolute platform time since the start of the message pump.
-     *
-     * @param time The time to set (in milliseconds).
-     */
     static void setAbsoluteTime(double time);
-
-    /**
-     * Gets whether vertical sync is enabled for the game display.
-     *
-     * @return true if vsync is enabled; false if not.
-     */
     static bool isVsync();
 
-    /**
-     * Sets whether vertical sync is enable for the game display.
-     *
-     * @param enable true if vsync is enabled; false if not.
-     */
     static void setVsync(bool enable);
-
-    /**
-     * Sleeps synchronously for the given amount of time (in milliseconds).
-     *
-     * @param ms How long to sleep (in milliseconds).
-     */
     static void sleep(long ms);
-
-    /**
-     * Set if multi-sampling is enabled on the platform.
-     *
-     * @param enabled true sets multi-sampling to be enabled, false to be disabled.
-     */
     static void setMultiSampling(bool enabled);
-
-   /**
-    * Is multi-sampling mode enabled.
-    */
     static bool isMultiSampling();
 
-    /**
-     * Set if multi-touch is enabled on the platform.
-     *
-     * Note that this method does nothing on platforms that do not
-     * support multi-touch.
-     */
     static void setMultiTouch(bool enabled);
 
    /**
@@ -157,25 +60,6 @@ private:
      */
     static bool hasMouse();
 
-    /**
-     * Enables or disabled mouse capture.
-     *
-     * When mouse capture is enabled, the platform cursor is hidden
-     * and mouse event points are delivered as position deltas instead
-     * of absolute positions.
-     *
-     * This is useful for games that wish to provide uninhibited mouse
-     * movement, such as when implementing free/mouse look in an FPS
-     * game.
-     *
-     * Disabling mouse capture moves the mouse back to the center of the
-     * screen and shows the platform cursor.
-     *
-     * Note that this method does nothing on platforms that do not
-     * support a mouse.
-     *
-     * @param captured True to enable mouse capture, false to disable it.
-     */
     static void setMouseCaptured(bool captured);
 
     /**
