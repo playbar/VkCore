@@ -74,9 +74,9 @@ public:
 
     bool isDynamic() const;
 
-    PrimitiveType getPrimitiveType() const;
+	VkPrimitiveTopology getPrimitiveType() const;
 
-    void setPrimitiveType(Mesh::PrimitiveType type);
+    void setPrimitiveType(VkPrimitiveTopology type);
 
     void* mapVertexBuffer();
 
@@ -84,7 +84,7 @@ public:
 
     void setVertexData(const void* vertexData, unsigned int vertexStart = 0, unsigned int vertexCount = 0);
 
-    MeshPart* addPart(PrimitiveType primitiveType, Mesh::IndexFormat indexFormat, unsigned int indexCount, bool dynamic = false);
+    MeshPart* addPart(VkPrimitiveTopology primitiveType, Mesh::IndexFormat indexFormat, unsigned int indexCount, bool dynamic = false);
 
     unsigned int getPartCount() const;
 
@@ -132,7 +132,7 @@ private:
     const VertexFormat _vertexFormat;
     unsigned int _vertexCount;
     //VertexBufferHandle _vertexBuffer;
-    PrimitiveType _primitiveType;
+	VkPrimitiveTopology _primitiveType;
     unsigned int _partCount;
     MeshPart** _parts;
     bool _dynamic;

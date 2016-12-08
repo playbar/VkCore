@@ -12,7 +12,7 @@ namespace vkcore
 {
 
 Mesh::Mesh( const VertexFormat& vertexFormat)
-    : _vertexFormat(vertexFormat), _vertexCount(0), _primitiveType(TRIANGLES), 
+    : _vertexFormat(vertexFormat), _vertexCount(0), _primitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
       _partCount(0), _parts(NULL), _dynamic(false)
 {
 	//_vertexBuffer = 0;
@@ -147,7 +147,7 @@ Mesh* Mesh::createQuad(float x, float y, float width, float height, float s1, fl
         return NULL;
     }
 
-    mesh->_primitiveType = TRIANGLE_STRIP;
+    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     mesh->setVertexData(vertices, 0, 4);
 
     return mesh;
@@ -180,7 +180,7 @@ Mesh* Mesh::createQuadFullscreen()
         return NULL;
     }
 
-    mesh->_primitiveType = TRIANGLE_STRIP;
+    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     mesh->setVertexData(vertices, 0, 4);
 
     return mesh;
@@ -217,7 +217,7 @@ Mesh* Mesh::createQuad(const Vector3& p1, const Vector3& p2, const Vector3& p3, 
         return NULL;
     }
 
-    mesh->_primitiveType = TRIANGLE_STRIP;
+    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     mesh->setVertexData(vertices, 0, 4);
 
     return mesh;
@@ -243,7 +243,7 @@ Mesh* Mesh::createLines(Vector3* points, unsigned int pointCount)
         return NULL;
     }
 
-    mesh->_primitiveType = LINE_STRIP;
+    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
     mesh->setVertexData(vertices, 0, pointCount);
 
     SAFE_DELETE_ARRAY(vertices);
@@ -288,7 +288,7 @@ Mesh* Mesh::createBoundingBox(const BoundingBox& box)
         return NULL;
     }
 
-    mesh->_primitiveType = LINE_STRIP;
+    mesh->_primitiveType = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
     mesh->setVertexData(vertices, 0, 18);
 
     return mesh;
@@ -325,12 +325,12 @@ bool Mesh::isDynamic() const
     return _dynamic;
 }
 
-Mesh::PrimitiveType Mesh::getPrimitiveType() const
+VkPrimitiveTopology Mesh::getPrimitiveType() const
 {
     return _primitiveType;
 }
 
-void Mesh::setPrimitiveType(PrimitiveType type)
+void Mesh::setPrimitiveType(VkPrimitiveTopology type)
 {
     _primitiveType = type;
 }
@@ -396,7 +396,7 @@ void Mesh::setVertexData(const void* vertexData, unsigned int vertexStart, unsig
     //}
 }
 
-MeshPart* Mesh::addPart(PrimitiveType primitiveType, IndexFormat indexFormat, unsigned int indexCount, bool dynamic)
+MeshPart* Mesh::addPart(VkPrimitiveTopology primitiveType, IndexFormat indexFormat, unsigned int indexCount, bool dynamic)
 {
     MeshPart* part = MeshPart::create(this, _partCount, primitiveType, indexFormat, indexCount, dynamic);
     if (part)

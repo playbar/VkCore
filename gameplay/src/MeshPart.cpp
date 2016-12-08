@@ -5,7 +5,8 @@ namespace vkcore
 {
 
 MeshPart::MeshPart() :
-    _mesh(NULL), _meshIndex(0), _primitiveType(Mesh::TRIANGLES), _indexCount(0), _indexBuffer(0), _dynamic(false)
+    _mesh(NULL), _meshIndex(0), _primitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST), 
+	_indexCount(0), _indexBuffer(0), _dynamic(false)
 {
 }
 

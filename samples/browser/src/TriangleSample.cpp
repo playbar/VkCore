@@ -38,7 +38,7 @@ static Mesh* createTriangleMesh()
         GP_ERROR("Failed to create mesh.");
         return NULL;
     }
-    mesh->setPrimitiveType(Mesh::TRIANGLES);
+    mesh->setPrimitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
     mesh->setVertexData(vertices, 0, vertexCount);
     return mesh;
 }
@@ -713,7 +713,7 @@ void TriangleSample::prepare()
 {
 	Game::prepare();
 	prepareSynchronizationPrimitives();
-	prepareVertices(true);
+	//prepareVertices(true);
 	prepareUniformBuffers();
 	setupDescriptorSetLayout();
 	preparePipelines();

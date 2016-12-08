@@ -54,7 +54,7 @@ static Mesh* createCubeMesh(float size = 1.0f)
         return NULL;
     }
     mesh->setVertexData(vertices, 0, vertexCount);
-    MeshPart* meshPart = mesh->addPart(Mesh::TRIANGLES, Mesh::INDEX16, indexCount, false);
+    MeshPart* meshPart = mesh->addPart(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, Mesh::INDEX16, indexCount, false);
     meshPart->setIndexData(indices, 0, indexCount);
     return mesh;
 }

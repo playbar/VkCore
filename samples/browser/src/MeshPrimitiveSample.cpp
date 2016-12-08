@@ -35,7 +35,7 @@ static Mesh* createTriangleMesh()
         GP_ERROR("Failed to create mesh.");
         return NULL;
     }
-    mesh->setPrimitiveType(Mesh::TRIANGLES);
+    mesh->setPrimitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     mesh->setVertexData(vertices, 0, vertexCount);
     return mesh;
 }
@@ -77,7 +77,7 @@ static Mesh* createTriangleStripMesh()
         GP_ERROR("Failed to create mesh.");
         return NULL;
     }
-    mesh->setPrimitiveType(Mesh::TRIANGLE_STRIP);
+    mesh->setPrimitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
     // 
     mesh->setVertexData(&vertices[0], 0, vertexCount);
     return mesh;
@@ -107,7 +107,7 @@ static Mesh* createLineStripMesh()
         GP_ERROR("Failed to create mesh.");
         return NULL;
     }
-    mesh->setPrimitiveType(Mesh::LINE_STRIP);
+    mesh->setPrimitiveType(VK_PRIMITIVE_TOPOLOGY_LINE_STRIP);
     mesh->setVertexData(vertices, 0, vertexCount);
     return mesh;
 }
@@ -141,7 +141,7 @@ static Mesh* createLinesMesh()
         GP_ERROR("Failed to create mesh.");
         return NULL;
     }
-    mesh->setPrimitiveType(Mesh::LINES);
+    mesh->setPrimitiveType(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
     // 
     mesh->setVertexData(&vertices[0], 0, vertexCount);
     return mesh;
