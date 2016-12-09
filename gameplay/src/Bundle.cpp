@@ -1549,7 +1549,7 @@ Bundle::MeshData* Bundle::readMeshData()
         MeshPartData* partData = new MeshPartData();
         meshData->parts.push_back(partData);
 
-        partData->primitiveType = (Mesh::PrimitiveType)pType;
+        partData->primitiveType = (VkPrimitiveTopology)pType;
         partData->indexFormat = (Mesh::IndexFormat)iFormat;
 
         unsigned int indexSize = 0;
@@ -1871,7 +1871,8 @@ Bundle::Reference::~Reference()
 }
 
 Bundle::MeshPartData::MeshPartData() :
-		primitiveType(Mesh::TRIANGLES), indexFormat(Mesh::INDEX32), indexCount(0), indexData(NULL)
+	primitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST), indexFormat(Mesh::INDEX32), 
+	indexCount(0), indexData(NULL)
 {
 }
 

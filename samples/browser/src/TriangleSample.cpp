@@ -712,14 +712,14 @@ void TriangleSample::prepareUniformBuffers()
 void TriangleSample::prepare()
 {
 	Game::prepare();
-	prepareSynchronizationPrimitives();
-	//prepareVertices(true);
-	prepareUniformBuffers();
-	setupDescriptorSetLayout();
-	preparePipelines();
-	setupDescriptorPool();
-	setupDescriptorSet();
-	buildCommandBuffers();
+	//prepareSynchronizationPrimitives();
+	////prepareVertices(true);
+	//prepareUniformBuffers();
+	//setupDescriptorSetLayout();
+	//preparePipelines();
+	//setupDescriptorPool();
+	//setupDescriptorSet();
+	//buildCommandBuffers();
 	prepared = true;
 }
 
@@ -762,13 +762,9 @@ void TriangleSample::initialize()
     // Create the triangle mesh.
     Mesh* mesh = createTriangleMesh();
 
-    // Create a model for the triangle mesh. A model is an instance of a Mesh that can be drawn with a specified material.
     _model = Model::create(mesh);
     SAFE_RELEASE(mesh);
 
-    // Create a material from the built-in "colored-unlit" vertex and fragment shaders.
-    // This sample doesn't use lighting so the unlit shader is used.
-    // This sample uses vertex color so VERTEX_COLOR is defined. Look at the shader source files to see the supported defines.
     _model->setMaterial("res/shaders/colored.vert", "res/shaders/colored.frag", "VERTEX_COLOR");
 }
 

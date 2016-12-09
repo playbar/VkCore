@@ -38,77 +38,44 @@ typedef VkPhysicalDeviceFeatures(*PFN_GetEnabledFeatures)();
 class Game
 {
 private:
-	// Set to true when example is created with enabled validation layers
 	bool mEnableValidation = false;
-	// Set to true if v-sync will be forced for the swapchain
 	bool enableVSync = false;
-	// fps timer (one second interval)
 	float fpsTimer = 0.0f;
-
-	/** brief Indicates that the view (position, rotation) has changed and */
 	bool viewUpdated = false;
-	// Destination dimensions for resizing the window
 	uint32_t destWidth;
 	uint32_t destHeight;
 	bool resizing = false;
 
 protected:
-	// Last frame time, measured using a high performance timer (if available)
 	float frameTimer = 1.0f;
-	// Frame counter to display fps
 	uint32_t frameCounter = 0;
 	uint32_t lastFPS = 0;
-	// Vulkan instance, stores all per-application states
 	VkInstance mInstance;
 
-	// Device features enabled by the example
-	// If not set, no additional features are enabled (may result in validation layer errors)
 	VkPhysicalDeviceFeatures enabledFeatures = {};
-
-	// Handle to the device graphics queue that command buffers are submitted to
 	VkQueue mQueue;
-	// Color buffer format
 	VkFormat mColorformat = VK_FORMAT_B8G8R8A8_UNORM;
-	// Depth buffer format
-	// Depth format is selected during Vulkan initialization
 	VkFormat mDepthFormat;
-	// Command buffer pool
 	VkCommandPool mCmdPool;
-	// Command buffer used for setup
 	VkCommandBuffer setupCmdBuffer = VK_NULL_HANDLE;
-	/** @brief Pipeline stages used to wait at for graphics queue submissions */
 	VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	// Contains command buffers and semaphores to be presented to the queue
 	VkSubmitInfo mSubmitInfo;
-	// Command buffers used for rendering
 	std::vector<VkCommandBuffer> mDrawCmdBuffers;
-	// Global render pass for frame buffer writes
 	VkRenderPass mRenderPass;
-	// List of available frame buffers (same as number of swap chain images)
 	std::vector<VkFramebuffer>mFrameBuffers;
-	// Active frame buffer index
 	uint32_t mCurrentBuffer = 0;
-	// Descriptor set pool
 	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-	// List of shader modules created (stored for cleanup)
 	std::vector<VkShaderModule> shaderModules;
-	// Pipeline cache object
 	VkPipelineCache pipelineCache;
-	// Wraps the swap chain to present images (framebuffers) to the windowing system
 	VulkanSwapChain mSwapChain;
-	// Synchronization semaphores
+
 	struct
 	{
-		// Swap chain image presentation
 		VkSemaphore presentComplete;
-		// Command buffer submission and execution
 		VkSemaphore renderComplete;
-		// Text overlay submission and execution
 		VkSemaphore textOverlayComplete;
 	} semaphores;
-	// Simple texture loader
 	vkTools::VulkanTextureLoader *textureLoader = nullptr;
-	// Returns the base asset path (for shaders, models, textures) depending on the os
 
 public:
 	bool prepared = false;
@@ -325,6 +292,17 @@ public:
 	// Submit the frames' workload 
 	// - Submits the text overlay (if enabled)
 	void submitFrame();
+
+	////////////////////////
+
+	virtual void prepareSynchronizationPrimitives();
+	virtual void prepareUniformBuffers();
+	virtual void setupDescriptorSetLayout();
+	virtual void preparePipelines();
+	virtual void setupDescriptorPool();
+	virtual void setupDescriptorSet();
+
+	///////////////////////////////
 
 public:
 	////////////////////////////////////////////////////

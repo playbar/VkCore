@@ -24,9 +24,10 @@ namespace vkcore
 {
 
 Node::Node(const char* id)
-    : _scene(NULL), _firstChild(NULL), _nextSibling(NULL), _prevSibling(NULL), _parent(NULL), _childCount(0), _enabled(true), _tags(NULL),
-    _drawable(NULL), _camera(NULL), _light(NULL), _audioSource(NULL), _collisionObject(NULL), _agent(NULL), _userObject(NULL),
-      _dirtyBits(NODE_DIRTY_ALL)
+    : _scene(NULL), _firstChild(NULL), _nextSibling(NULL), _prevSibling(NULL), _parent(NULL),
+	_childCount(0), _enabled(true), _tags(NULL), _drawable(NULL), _camera(NULL),
+	_light(NULL), _audioSource(NULL), _collisionObject(NULL), _agent(NULL),
+	_userObject(NULL), _dirtyBits(NODE_DIRTY_ALL)
 {
     GP_REGISTER_SCRIPT_EVENTS();
     if (id)

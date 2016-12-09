@@ -259,45 +259,26 @@ public:
 
     /**
      * Returns the name of this uniform.
-     * 
-     * @return The name of the uniform.
      */
     const char* getName() const;
 
     /**
      * Returns the OpenGL uniform type.
-     * 
-     * @return The OpenGL uniform type.
      */
     const GLenum getType() const;
 
     /**
      * Returns the effect for this uniform.
-     *
-     * @return The uniform's effect.
      */
     Effect* getEffect() const;
 
 private:
-
-    /**
-     * Constructor.
-     */
     Uniform();
 
-    /**
-     * Copy constructor.
-     */
     Uniform(const Uniform& copy);
-
-    /**
-     * Destructor.
-     */
+    
     ~Uniform();
 
-    /**
-     * Hidden copy assignment operator.
-     */
     Uniform& operator=(const Uniform&);
 
     std::string _name;

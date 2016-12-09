@@ -118,7 +118,6 @@ Material* Material::create(const char* vshPath, const char* fshPath, const char*
     GP_ASSERT(vshPath);
     GP_ASSERT(fshPath);
 
-    // Create a new material with a single technique and pass for the given effect
     Material* material = new Material();
 
     Technique* technique = new Technique(NULL, material);

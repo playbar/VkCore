@@ -146,7 +146,7 @@ private:
         MeshPartData();
         ~MeshPartData();
 
-        Mesh::PrimitiveType primitiveType;
+		VkPrimitiveTopology primitiveType;
         Mesh::IndexFormat indexFormat;
         unsigned int indexCount;
         unsigned char* indexData;

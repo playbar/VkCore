@@ -833,6 +833,25 @@ void Game::submitFrame()
 	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
 }
 
+void Game::prepareSynchronizationPrimitives()
+{
+}
+void Game::prepareUniformBuffers()
+{
+}
+void Game::setupDescriptorSetLayout()
+{
+}
+void Game::preparePipelines()
+{
+}
+void Game::setupDescriptorPool()
+{
+}
+void Game::setupDescriptorSet()
+{
+}
+
 void Game::InitVulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 {
 	// Parse command line arguments
@@ -2099,7 +2118,17 @@ void Game::frame()
     if (!_initialized)
     {
         // Perform lazy first time initialization
-        initialize();
+		prepare();
+		prepareSynchronizationPrimitives();
+		initialize();
+		//prepareVertices(true);
+		prepareUniformBuffers();
+		setupDescriptorSetLayout();
+		preparePipelines();
+		setupDescriptorPool();
+		setupDescriptorSet();
+		buildCommandBuffers();
+      
         if (_scriptTarget)
             _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, initialize));
         _initialized = true;

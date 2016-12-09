@@ -226,7 +226,8 @@ static void writeShaderToErrorFile(const char* filePath, const char* source)
     }
 }
 
-Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, const char* fshPath, const char* fshSource, const char* defines)
+Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, const char* fshPath,
+	const char* fshSource, const char* defines)
 {
     GP_ASSERT(vshSource);
     GP_ASSERT(fshSource);
