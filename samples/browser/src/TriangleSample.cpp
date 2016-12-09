@@ -70,40 +70,6 @@ void TriangleSample::UnInit()
 	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
 	vkFreeMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
 
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, presentCompleteSemaphore, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, renderCompleteSemaphore, nullptr);
-
-	for (auto& fence : mWaitFences)
-	{
-		vkDestroyFence(mVulkanDevice->mLogicalDevice, fence, nullptr);
-	}
-}
-
-
-// Create the Vulkan synchronization primitives used in this example
-void TriangleSample::prepareSynchronizationPrimitives()
-{
-	// Semaphores (Used for correct command ordering)
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	semaphoreCreateInfo.pNext = nullptr;
-
-	// Semaphore used to ensures that image presentation is complete before starting to submit again
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
-
-	// Semaphore used to ensures that all commands submitted have been finished before submitting the image to the queue
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
-
-	// Fences (Used to check draw command buffer completion)
-	VkFenceCreateInfo fenceCreateInfo = {};
-	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	// Create in signaled state so we don't wait on first render of each command buffer
-	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	mWaitFences.resize(mDrawCmdBuffers.size());
-	for (auto& fence : mWaitFences)
-	{
-		VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
-	}
 }
 
 // Get a new command buffer from the command pool
@@ -242,33 +208,33 @@ void TriangleSample::buildCommandBuffers()
 
 void TriangleSample::draw()
 {
-	// Get next image in the swap chain (back/front buffer)
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(presentCompleteSemaphore, &mCurrentBuffer));
+	//// Get next image in the swap chain (back/front buffer)
+	//VK_CHECK_RESULT(mSwapChain.acquireNextImage(presentCompleteSemaphore, &mCurrentBuffer));
 
-	// Use a fence to wait until the command buffer has finished execution before using it again
-	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
-	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
+	//// Use a fence to wait until the command buffer has finished execution before using it again
+	//VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
+	//VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
 
-	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	// The submit info structure specifices a command buffer queue submission batch
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pWaitDstStageMask = &waitStageMask;									// Pointer to the list of pipeline stages that the semaphore waits will occur at
-	submitInfo.pWaitSemaphores = &presentCompleteSemaphore;							// Semaphore(s) to wait upon before the submitted command buffer starts executing
-	submitInfo.waitSemaphoreCount = 1;												// One wait semaphore																				
-	submitInfo.pSignalSemaphores = &renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
-	submitInfo.signalSemaphoreCount = 1;											// One signal semaphore
-	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];					// Command buffers(s) to execute in this batch (submission)
-	submitInfo.commandBufferCount = 1;												// One command buffer
+	//// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+	//VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	//// The submit info structure specifices a command buffer queue submission batch
+	//VkSubmitInfo submitInfo = {};
+	//submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	//submitInfo.pWaitDstStageMask = &waitStageMask;									// Pointer to the list of pipeline stages that the semaphore waits will occur at
+	//submitInfo.pWaitSemaphores = &presentCompleteSemaphore;							// Semaphore(s) to wait upon before the submitted command buffer starts executing
+	//submitInfo.waitSemaphoreCount = 1;												// One wait semaphore																				
+	//submitInfo.pSignalSemaphores = &renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
+	//submitInfo.signalSemaphoreCount = 1;											// One signal semaphore
+	//submitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];					// Command buffers(s) to execute in this batch (submission)
+	//submitInfo.commandBufferCount = 1;												// One command buffer
 
-																					// Submit to the graphics queue passing a wait fence
-	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
+	//																				// Submit to the graphics queue passing a wait fence
+	//VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
 
-	// Present the current buffer to the swap chain
-	// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
-	// This ensures that the image is not presented to the windowing system until all commands have been submitted
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, renderCompleteSemaphore));
+	//// Present the current buffer to the swap chain
+	//// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
+	//// This ensures that the image is not presented to the windowing system until all commands have been submitted
+	//VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, renderCompleteSemaphore));
 }
 
 void TriangleSample::updateUniformBuffers()

@@ -626,7 +626,7 @@ void VulkanBase::getOverlayText(VulkanTextOverlay *textOverlay)
 void VulkanBase::prepareFrame()
 {
 	// Acquire the next image from the swap chaing
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(semaphores.presentComplete, &mCurrentBuffer));
+	VK_CHECK_RESULT(mSwapChain.acquireNextImage(semaphores.presentComplete, &mSwapChain.mCurrentBuffer));
 }
 
 void VulkanBase::submitFrame()
@@ -649,7 +649,7 @@ void VulkanBase::submitFrame()
 
 		// Submit current text overlay command buffer
 		mSubmitInfo.commandBufferCount = 1;
-		mSubmitInfo.pCommandBuffers = &mTextOverlay->mCmdBuffers[mCurrentBuffer];
+		mSubmitInfo.pCommandBuffers = &mTextOverlay->mCmdBuffers[mSwapChain.mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
 		// Reset stage mask
@@ -663,7 +663,7 @@ void VulkanBase::submitFrame()
 		mSubmitInfo.pSignalSemaphores = &semaphores.renderComplete;
 	}
 
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
+	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mSwapChain.mCurrentBuffer, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
 
 	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
 }

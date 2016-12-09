@@ -11,6 +11,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\gameplay\src\BoundingBox.cpp" />
+    <ClCompile Include="..\..\gameplay\src\BoundingSphere.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Frustum.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Logger.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Matrix.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Plane.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Ray.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Vector2.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Vector3.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Vector4.cpp" />
     <ClCompile Include="Example.cpp" />
     <ClCompile Include="vkcore\VkCoreDevice.cpp" />
     <ClCompile Include="vkcore\vulkanandroid.cpp" />
@@ -21,6 +31,16 @@
     <ClCompile Include="vkcore\vulkantools.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\gameplay\src\BoundingBox.h" />
+    <ClInclude Include="..\..\gameplay\src\BoundingSphere.h" />
+    <ClInclude Include="..\..\gameplay\src\Frustum.h" />
+    <ClInclude Include="..\..\gameplay\src\Logger.h" />
+    <ClInclude Include="..\..\gameplay\src\Matrix.h" />
+    <ClInclude Include="..\..\gameplay\src\Plane.h" />
+    <ClInclude Include="..\..\gameplay\src\Ray.h" />
+    <ClInclude Include="..\..\gameplay\src\Vector2.h" />
+    <ClInclude Include="..\..\gameplay\src\Vector3.h" />
+    <ClInclude Include="..\..\gameplay\src\Vector4.h" />
     <ClInclude Include="vkcore\define.h" />
     <ClInclude Include="vkcore\frustum.hpp" />
     <ClInclude Include="vkcore\threadpool.hpp" />
@@ -83,6 +103,16 @@
     <ClInclude Include="vkcore\vulkanTextureLoader.hpp" />
     <ClInclude Include="vkcore\vulkantools.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\gameplay\src\BoundingBox.inl" />
+    <None Include="..\..\gameplay\src\BoundingSphere.inl" />
+    <None Include="..\..\gameplay\src\Matrix.inl" />
+    <None Include="..\..\gameplay\src\Plane.inl" />
+    <None Include="..\..\gameplay\src\Ray.inl" />
+    <None Include="..\..\gameplay\src\Vector2.inl" />
+    <None Include="..\..\gameplay\src\Vector3.inl" />
+    <None Include="..\..\gameplay\src\Vector4.inl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3E6755A8-7370-4449-A8B7-4FCDCABD242C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -127,13 +157,13 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\gameplay\src;..\..\external\glm;..\..\external\gli;..\..\external\assimp;..\..\external;.\vkcore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\gameplay\src;..\..\external\glm;..\..\external\gli;..\..\external\assimp;..\..\external;..\..\external-deps\include;.\vkcore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>OpenGL32.lib;GLU32.lib;..\..\libs\vulkan\vulkan-1.lib;..\..\libs\assimp\assimp.lib;gameplay.lib;gameplay-deps.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>OpenGL32.lib;GLU32.lib;..\..\libs\vulkan\vulkan-1.lib;..\..\libs\assimp\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\external-deps\lib\windows\x86_64\Debug;..\..\gameplay\Debug;$(DXSDK_DIR)Lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

@@ -23,10 +23,43 @@
     <ClCompile Include="vkcore\VkCoreDevice.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\Matrix.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\Vector2.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\Vector3.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\Vector4.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\Plane.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\Ray.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\Logger.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\BoundingBox.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\BoundingSphere.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gameplay\src\Frustum.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vkcore">
       <UniqueIdentifier>{bbbf10e9-18da-46e5-8547-130b654f0848}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{1ed5ad8c-612c-48fd-9265-5bb35e11a340}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -213,5 +246,61 @@
     <ClInclude Include="vkcore\VkTexturesparseresidency.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\Matrix.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\Vector2.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\Vector3.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\Vector4.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\Plane.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\Ray.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\Logger.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\BoundingBox.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\BoundingSphere.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gameplay\src\Frustum.h">
+      <Filter>math</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\gameplay\src\Matrix.inl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="..\..\gameplay\src\Vector2.inl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="..\..\gameplay\src\Vector3.inl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="..\..\gameplay\src\Vector4.inl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="..\..\gameplay\src\Plane.inl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="..\..\gameplay\src\Ray.inl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="..\..\gameplay\src\BoundingSphere.inl">
+      <Filter>math</Filter>
+    </None>
+    <None Include="..\..\gameplay\src\BoundingBox.inl">
+      <Filter>math</Filter>
+    </None>
   </ItemGroup>
 </Project>

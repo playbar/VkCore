@@ -132,7 +132,7 @@
     <ClCompile Include="vkcore\vulkanandroid.cpp" />
     <ClCompile Include="vkcore\VulkanBase.cpp" />
     <ClCompile Include="vkcore\vulkandebug.cpp" />
-    <ClCompile Include="vkcore\vulkangear.cpp" />
+    <ClCompile Include="vkcore\vulkanswapchain.cpp" />
     <ClCompile Include="vkcore\vulkantextoverlay.cpp" />
     <ClCompile Include="vkcore\vulkantools.cpp" />
   </ItemGroup>
@@ -264,7 +264,6 @@
     <ClInclude Include="vkcore\vulkanbuffer.hpp" />
     <ClInclude Include="vkcore\vulkandebug.h" />
     <ClInclude Include="vkcore\vulkanframebuffer.hpp" />
-    <ClInclude Include="vkcore\vulkangear.h" />
     <ClInclude Include="vkcore\vulkanheightmap.hpp" />
     <ClInclude Include="vkcore\vulkanMeshLoader.hpp" />
     <ClInclude Include="vkcore\vulkanswapchain.hpp" />

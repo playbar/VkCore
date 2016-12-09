@@ -67,7 +67,7 @@ protected:
 	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 	std::vector<VkShaderModule> shaderModules;
 	VkPipelineCache pipelineCache;
-	VulkanSwapChain mSwapChain;
+	//VulkanSwapChain mSwapChain;
 
 	struct
 	{
@@ -76,6 +76,7 @@ protected:
 		VkSemaphore textOverlayComplete;
 	} semaphores;
 	vkTools::VulkanTextureLoader *textureLoader = nullptr;
+
 
 public:
 	bool prepared = false;

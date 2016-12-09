@@ -372,13 +372,13 @@
     <ClCompile Include="vkcore\vulkandebug.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
-    <ClCompile Include="vkcore\vulkangear.cpp">
-      <Filter>vkcore</Filter>
-    </ClCompile>
     <ClCompile Include="vkcore\vulkantextoverlay.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
     <ClCompile Include="vkcore\vulkantools.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
+    <ClCompile Include="vkcore\vulkanswapchain.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
   </ItemGroup>
@@ -756,9 +756,6 @@
       <Filter>vkcore</Filter>
     </ClInclude>
     <ClInclude Include="vkcore\vulkanframebuffer.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\vulkangear.h">
       <Filter>vkcore</Filter>
     </ClInclude>
     <ClInclude Include="vkcore\vulkanheightmap.hpp">

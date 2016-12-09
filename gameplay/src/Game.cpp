@@ -835,6 +835,27 @@ void Game::submitFrame()
 
 void Game::prepareSynchronizationPrimitives()
 {
+	// Semaphores (Used for correct command ordering)
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	semaphoreCreateInfo.pNext = nullptr;
+
+	// Semaphore used to ensures that image presentation is complete before starting to submit again
+	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
+
+	// Semaphore used to ensures that all commands submitted have been finished before submitting the image to the queue
+	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
+
+	// Fences (Used to check draw command buffer completion)
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	// Create in signaled state so we don't wait on first render of each command buffer
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	mWaitFences.resize(mDrawCmdBuffers.size());
+	for (auto& fence : mWaitFences)
+	{
+		VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
+	}
 }
 void Game::prepareUniformBuffers()
 {

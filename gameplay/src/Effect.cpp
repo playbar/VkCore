@@ -237,12 +237,6 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 	Effect* effect = new Effect();
 
     std::string shaderSource;
-    char* infoLog = NULL;
-    GLuint vertexShader;
-    GLuint fragmentShader;
-    GLuint program;
-    GLint length;
-    GLint success;
 
     // Replace all comma separated definitions with #define prefix and \n suffix
     std::string definesStr = "";

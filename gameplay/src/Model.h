@@ -12,13 +12,6 @@ namespace vkcore
 class Bundle;
 class MeshSkin;
 
-
-/**
- * Defines a Model or mesh renderer which is an instance of a Mesh. 
- *
- * A model has a mesh that can be drawn with the specified materials for
- * each of the mesh parts within it.
- */
 class Model : public Ref, public Drawable
 {
     friend class Node;

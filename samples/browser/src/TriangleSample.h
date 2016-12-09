@@ -69,16 +69,10 @@ public:
 	VkDescriptorSetLayout mDescriptorSetLayout;
 	VkDescriptorSet mDescriptorSet;
 
-	VkSemaphore presentCompleteSemaphore;
-	VkSemaphore renderCompleteSemaphore;
-
-	std::vector<VkFence> mWaitFences;
 
 	void Init();
 
 	void UnInit();
-
-	void prepareSynchronizationPrimitives();
 
 	VkCommandBuffer getCommandBuffer(bool begin);
 
