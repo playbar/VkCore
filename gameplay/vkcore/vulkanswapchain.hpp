@@ -78,9 +78,6 @@ public:
 	// Active frame buffer index
 	uint32_t mCurrentBuffer = 0;
 
-	VkSemaphore presentCompleteSemaphore;
-	VkSemaphore renderCompleteSemaphore;
-	std::vector<VkFence> mWaitFences;
 
 	VulkanSwapChain();
 	~VulkanSwapChain();

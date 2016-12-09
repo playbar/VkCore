@@ -14,7 +14,6 @@ public:
 	VkPhysicalDeviceProperties mProperties;
 	VkPhysicalDeviceFeatures mFeatures;
 	VkPhysicalDeviceMemoryProperties mMemoryProperties;
-
 	std::vector<VkQueueFamilyProperties> mVecQueueFamilyProperties;
 
 	/** @brief Default command pool for the graphics queue family index */

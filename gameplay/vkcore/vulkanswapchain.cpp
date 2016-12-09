@@ -10,13 +10,7 @@ VulkanSwapChain::VulkanSwapChain()
 
 VulkanSwapChain::~VulkanSwapChain()
 {
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, presentCompleteSemaphore, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, renderCompleteSemaphore, nullptr);
 
-	for (auto& fence : mWaitFences)
-	{
-		vkDestroyFence(mVulkanDevice->mLogicalDevice, fence, nullptr);
-	}
 }
 
 void VulkanSwapChain::initSurface(

@@ -1,12 +1,3 @@
-/*
-* Vulkan examples debug wrapper
-* 
-* Appendix for VK_EXT_Debug_Report can be found at https://github.com/KhronosGroup/Vulkan-Docs/blob/1.0-VK_EXT_debug_report/doc/specs/vulkan/appendices/debug_report.txt
-*
-* Copyright (C) 2016 by Sascha Willems - www.saschawillems.de
-*
-* This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
-*/
 
 #include "vulkandebug.h"
 #include <iostream>
@@ -16,9 +7,6 @@ namespace vkDebug
 	int validationLayerCount = 1;
 	const char *validationLayerNames[] = 
 	{
-		// This is a meta layer that enables all of the standard
-		// validation layers in the correct order :
-		// threading, parameter_validation, device_limits, object_tracker, image, core_validation, swapchain, and unique_objects
 		"VK_LAYER_LUNARG_standard_validation"
 	};
 

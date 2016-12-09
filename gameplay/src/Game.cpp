@@ -829,7 +829,6 @@ void Game::submitFrame()
 	}
 
 	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
-
 	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
 }
 
@@ -859,18 +858,281 @@ void Game::prepareSynchronizationPrimitives()
 }
 void Game::prepareUniformBuffers()
 {
+	// Prepare and initialize a uniform buffer block containing shader uniforms
+	// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
+	VkMemoryRequirements memReqs;
+
+	// Vertex shader uniform buffer block
+	VkBufferCreateInfo bufferInfo = {};
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.pNext = nullptr;
+	allocInfo.allocationSize = 0;
+	allocInfo.memoryTypeIndex = 0;
+
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = sizeof(mUboVS);
+	// This buffer will be used as a uniform buffer
+	bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+	// Create a new buffer
+	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferInfo, nullptr, &mUniformDataVS.buffer));
+	// Get memory requirements including size, alignment and memory type 
+	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, &memReqs);
+	allocInfo.allocationSize = memReqs.size;
+	// Get the memory type index that supports host visibile memory access
+	// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
+	// We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
+	// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
+	allocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	// Allocate memory for the uniform buffer
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
+	// Bind memory to buffer
+	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
+
+	// Store information in the uniform's descriptor that is used by the descriptor set
+	mUniformDataVS.descriptor.buffer = mUniformDataVS.buffer;
+	mUniformDataVS.descriptor.offset = 0;
+	mUniformDataVS.descriptor.range = sizeof(mUboVS);
+
+	updateUniformBuffers();
 }
+
+void Game::updateUniformBuffers()
+{
+	// Update matrices
+	float aspect = (float)width / (float)height;
+	vkcore::Matrix::createPerspective(60.0f, 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
+	//mUboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 256.0f);
+	//mUboVS.projectionMatrix = glm::mat4();
+	//mUboVS.viewMatrix.translate(0.0f, 0.0f, -1.0f);
+	//mUboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
+	//mUboVS.viewMatrix = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+	//mUboVS.viewMatrix = glm::translate(mUboVS.viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
+	//mUboVS.viewMatrix = glm::mat4();
+	//std::cout.precision(4);
+	//std::cout << mZoom << std::endl;
+
+	Matrix::createTranslation(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
+	//mUboVS.viewMatrix.translate(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
+	char szTmp[256] = {};
+	sprintf(szTmp, "zoom=%f", mZoom);
+	OutputDebugString(szTmp);
+	//mUboVS.modelMatrix = glm::mat4();
+	//mUboVS.modelMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -1.7));
+	//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	//mUboVS.modelMatrix.rotate(vkcore::Vector3(1.0f, 0.0f, 0.0f), mRotation.x);
+	Matrix::createRotationX(mRotation.x, &mUboVS.modelMatrix);
+	mUboVS.modelMatrix.rotateY(mRotation.y);
+	mUboVS.modelMatrix.rotateZ(mRotation.z);
+	//Matrix::createRotationY(mRotation.y, &mUboVS.modelMatrix);
+	//mat.rotate(vkcore::Vector3(0.0f, 1.0f, 0.0f), mRotation.y, &mUboVS.modelMatrix);
+	//mUboVS.modelMatrix.rotate(vkcore::Vector3(0.0f, 0.0f, 1.0f), mRotation.z);
+	//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	//mUboVS.modelMatrix = glm::scale(glm::mat4(), glm::vec3(1.0f / 400.0f, 1/300.0f, 0.0f));
+	//mUboVS.modelMatrix = glm::mat4();
+
+	uint8_t *pData;
+	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
+	memcpy(pData, &mUboVS, sizeof(mUboVS));
+	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
+}
+
 void Game::setupDescriptorSetLayout()
 {
+	// Setup layout of descriptors used in this example
+	// Basically connects the different shader stages to descriptors for binding uniform buffers, image samplers, etc.
+	// So every shader binding should map to one descriptor set layout binding
+
+	// Binding 0: Uniform buffer (Vertex shader)
+	VkDescriptorSetLayoutBinding layoutBinding = {};
+	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	layoutBinding.descriptorCount = 1;
+	layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	layoutBinding.pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+	descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorLayout.pNext = nullptr;
+	descriptorLayout.bindingCount = 1;
+	descriptorLayout.pBindings = &layoutBinding;
+
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
+
+	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
+	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
+	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
+	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pPipelineLayoutCreateInfo.pNext = nullptr;
+	pPipelineLayoutCreateInfo.setLayoutCount = 1;
+	pPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
+
+	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+
 }
 void Game::preparePipelines()
 {
+	// Create the graphics pipeline used in this example
+	// Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine
+	// A pipeline is then stored and hashed on the GPU making pipeline changes very fast
+	// Note: There are still a few dynamic states that are not directly part of the pipeline (but the info that they are used is)
+
+	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
+	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
+	pipelineCreateInfo.layout = mPipelineLayout;
+	// Renderpass this pipeline is attached to
+	pipelineCreateInfo.renderPass = mRenderPass;
+
+	// Construct the differnent states making up the pipeline
+
+	// Input assembly state describes how primitives are assembled
+	// This pipeline will assemble vertex data as a triangle lists (though we only use one triangle)
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
+	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+	// Rasterization state
+	VkPipelineRasterizationStateCreateInfo rasterizationState = {};
+	rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterizationState.cullMode = VK_CULL_MODE_NONE;
+	rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterizationState.depthClampEnable = VK_FALSE;
+	rasterizationState.rasterizerDiscardEnable = VK_FALSE;
+	rasterizationState.depthBiasEnable = VK_FALSE;
+	rasterizationState.lineWidth = 1.0f;
+
+	// Color blend state describes how blend factors are calculated (if used)
+	// We need one blend attachment state per color attachment (even if blending is not used
+	VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
+	blendAttachmentState[0].colorWriteMask = 0xf;
+	blendAttachmentState[0].blendEnable = VK_FALSE;
+	VkPipelineColorBlendStateCreateInfo colorBlendState = {};
+	colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	colorBlendState.attachmentCount = 1;
+	colorBlendState.pAttachments = blendAttachmentState;
+
+	// Viewport state sets the number of viewports and scissor used in this pipeline
+	// Note: This is actually overriden by the dynamic states (see below)
+	VkPipelineViewportStateCreateInfo viewportState = {};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState.viewportCount = 1;
+	viewportState.scissorCount = 1;
+
+	// Enable dynamic states
+	// Most states are baked into the pipeline, but there are still a few dynamic states that can be changed within a command buffer
+	// To be able to change these we need do specify which dynamic states will be changed using this pipeline. Their actual states are set later on in the command buffer.
+	// For this example we will set the viewport and scissor using dynamic states
+	std::vector<VkDynamicState> dynamicStateEnables;
+	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
+	VkPipelineDynamicStateCreateInfo dynamicState = {};
+	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicState.pDynamicStates = dynamicStateEnables.data();
+	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+
+	// Depth and stencil state containing depth and stencil compare and test operations
+	// We only use depth tests and want depth tests and writes to be enabled and compare with less or equal
+	VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
+	depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencilState.depthTestEnable = VK_TRUE;
+	depthStencilState.depthWriteEnable = VK_TRUE;
+	depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	depthStencilState.depthBoundsTestEnable = VK_FALSE;
+	depthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
+	depthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
+	depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
+	depthStencilState.stencilTestEnable = VK_FALSE;
+	depthStencilState.front = depthStencilState.back;
+
+	// Multi sampling state
+	// This example does not make use fo multi sampling (for anti-aliasing), the state must still be set and passed to the pipeline
+	VkPipelineMultisampleStateCreateInfo multisampleState = {};
+	multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	multisampleState.pSampleMask = nullptr;
+
+	// Load shaders
+	// Vulkan loads it's shaders from an immediate binary representation called SPIR-V
+	// Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
+	std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
+	shaderStages[0] = loadShader(getAssetPath() + "shaders/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+	shaderStages[1] = loadShader(getAssetPath() + "shaders/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+
+	// Assign the pipeline states to the pipeline creation info structure
+	pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+	pipelineCreateInfo.pStages = shaderStages.data();
+	pipelineCreateInfo.pVertexInputState = &mVertices.inputState;
+	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
+	pipelineCreateInfo.pRasterizationState = &rasterizationState;
+	pipelineCreateInfo.pColorBlendState = &colorBlendState;
+	pipelineCreateInfo.pMultisampleState = &multisampleState;
+	pipelineCreateInfo.pViewportState = &viewportState;
+	pipelineCreateInfo.pDepthStencilState = &depthStencilState;
+	pipelineCreateInfo.renderPass = mRenderPass;
+	pipelineCreateInfo.pDynamicState = &dynamicState;
+
+	// Create rendering pipeline using the specified states
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
+
 }
+
 void Game::setupDescriptorPool()
 {
+	// We need to tell the API the number of max. requested descriptors per type
+	VkDescriptorPoolSize typeCounts[1];
+	// This example only uses one descriptor type (uniform buffer) and only requests one descriptor of this type
+	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	typeCounts[0].descriptorCount = 1;
+	// For additional types you need to add new entries in the type count list
+	// E.g. for two combined image samplers :
+	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	// typeCounts[1].descriptorCount = 2;
+
+	// Create the global descriptor pool
+	// All descriptors used in this example are allocated from this pool
+	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptorPoolInfo.pNext = nullptr;
+	descriptorPoolInfo.poolSizeCount = 1;
+	descriptorPoolInfo.pPoolSizes = typeCounts;
+	// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
+	descriptorPoolInfo.maxSets = 1;
+
+	VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+
 }
 void Game::setupDescriptorSet()
 {
+	// Allocate a new descriptor set from the global descriptor pool
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = descriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &mDescriptorSetLayout;
+
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
+
+	// Update the descriptor set determining the shader binding points
+	// For every binding point used in a shader there needs to be one
+	// descriptor set matching that binding point
+
+	VkWriteDescriptorSet writeDescriptorSet = {};
+
+	// Binding 0 : Uniform buffer
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.dstSet = mDescriptorSet;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writeDescriptorSet.pBufferInfo = &mUniformDataVS.descriptor;
+	// Binds this uniform buffer to binding point 0
+	writeDescriptorSet.dstBinding = 0;
+
+	vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+
 }
 
 void Game::InitVulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
@@ -957,6 +1219,22 @@ void Game::UnInitVulkan()
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
+
+	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, presentCompleteSemaphore, nullptr);
+	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, renderCompleteSemaphore, nullptr);
+
+	vkDestroyPipeline(mVulkanDevice->mLogicalDevice, mPipeline, nullptr);
+
+	vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
+	vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
+
+	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
+	vkFreeMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
+
+	for (auto& fence : mWaitFences)
+	{
+		vkDestroyFence(mVulkanDevice->mLogicalDevice, fence, nullptr);
+	}
 
 	if (mEnableTextOverlay)
 	{
@@ -1634,12 +1912,39 @@ void Game::handleEvent(const xcb_generic_event_t *event)
 
 void Game::render()
 {
+	// Get next image in the swap chain (back/front buffer)
+	VK_CHECK_RESULT(mSwapChain.acquireNextImage(presentCompleteSemaphore, &mCurrentBuffer));
 
+	// Use a fence to wait until the command buffer has finished execution before using it again
+	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
+	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
+
+	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	// The submit info structure specifices a command buffer queue submission batch
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pWaitDstStageMask = &waitStageMask;									// Pointer to the list of pipeline stages that the semaphore waits will occur at
+	submitInfo.pWaitSemaphores = &presentCompleteSemaphore;							// Semaphore(s) to wait upon before the submitted command buffer starts executing
+	submitInfo.waitSemaphoreCount = 1;												// One wait semaphore																				
+	submitInfo.pSignalSemaphores = &renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
+	submitInfo.signalSemaphoreCount = 1;											// One signal semaphore
+	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];					// Command buffers(s) to execute in this batch (submission)
+	submitInfo.commandBufferCount = 1;												// One command buffer
+
+																					// Submit to the graphics queue passing a wait fence
+	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
+
+	// Present the current buffer to the swap chain
+	// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
+	// This ensures that the image is not presented to the windowing system until all commands have been submitted
+	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, renderCompleteSemaphore));
 }
 
 void Game::viewChanged()
 {
 	// Can be overrdiden in derived class
+	updateUniformBuffers();
 }
 
 void Game::keyPressed(uint32_t keyCode)
@@ -1649,7 +1954,80 @@ void Game::keyPressed(uint32_t keyCode)
 
 void Game::buildCommandBuffers()
 {
-	// Can be overriden in derived class
+	VkCommandBufferBeginInfo cmdBufInfo = {};
+	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	cmdBufInfo.pNext = nullptr;
+
+	// Set clear values for all framebuffer attachments with loadOp set to clear
+	// We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear values for both
+	VkClearValue clearValues[2];
+	clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 1.0f } };
+	clearValues[1].depthStencil = { 1.0f, 0 };
+
+	VkRenderPassBeginInfo renderPassBeginInfo = {};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.pNext = nullptr;
+	renderPassBeginInfo.renderPass = mRenderPass;
+	renderPassBeginInfo.renderArea.offset.x = 0;
+	renderPassBeginInfo.renderArea.offset.y = 0;
+	renderPassBeginInfo.renderArea.extent.width = width;
+	renderPassBeginInfo.renderArea.extent.height = height;
+	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.pClearValues = clearValues;
+
+	for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
+	{
+		// Set target frame buffer
+		renderPassBeginInfo.framebuffer = mFrameBuffers[i];
+
+		VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
+
+		// Start the first sub pass specified in our default render pass setup by the base class
+		// This will clear the color and depth attachment
+		vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		// Update dynamic viewport state
+		VkViewport viewport = {};
+		viewport.x = 0;
+		viewport.y = 0;
+		viewport.width = (float)width;
+		viewport.height = (float)height;
+		viewport.minDepth = (float) 0.0f;
+		viewport.maxDepth = (float) 1.0f;
+		vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
+
+		// Update dynamic scissor state
+		VkRect2D scissor = {};
+		scissor.extent.width = width;
+		scissor.extent.height = height;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
+
+		// Bind descriptor sets describing shader binding points
+		vkCmdBindDescriptorSets(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSet, 0, nullptr);
+
+		// Bind the rendering pipeline
+		// The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
+		vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipeline);
+
+		// Bind triangle vertex buffer (contains position and colors)
+		VkDeviceSize offsets[1] = { 0 };
+		vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &mVertices.buffer, offsets);
+
+		// Bind triangle index buffer
+		vkCmdBindIndexBuffer(mDrawCmdBuffers[i], mIndices.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+		// Draw indexed triangle
+		vkCmdDrawIndexed(mDrawCmdBuffers[i], mIndices.count, 1, 0, 0, 1);
+
+		vkCmdEndRenderPass(mDrawCmdBuffers[i]);
+
+		// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to 
+		// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(mDrawCmdBuffers[i]));
+	}
 }
 
 void Game::createCommandPool()
@@ -2171,9 +2549,9 @@ void Game::frame()
         //GP_ASSERT(_physicsController);
         //GP_ASSERT(_aiController);
 
-        //// Update Time.
-        //float elapsedTime = (frameTime - lastFrameTime);
-        //lastFrameTime = frameTime;
+        // Update Time.
+        float elapsedTime = (frameTime - lastFrameTime);
+        lastFrameTime = frameTime;
 
         //// Update the scheduled and running animations.
         //_animationController->update(elapsedTime);
@@ -2200,9 +2578,8 @@ void Game::frame()
         //// Audio Rendering.
         //_audioController->update(elapsedTime);
 
-		render();
-        //// Graphics Rendering.
-        //render(elapsedTime);
+        // Graphics Rendering.
+        render(elapsedTime);
 	
         //// Run script render.
         //if (_scriptTarget)

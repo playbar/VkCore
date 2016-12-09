@@ -332,85 +332,18 @@ unsigned int Model::draw(bool wireframe)
 
     unsigned int partCount = _mesh->getPartCount();
 
-	// Get next image in the swap chain (back/front buffer)
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(presentCompleteSemaphore, &mCurrentBuffer));
 
-	// Use a fence to wait until the command buffer has finished execution before using it again
-	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
-	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
-
-	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	// The submit info structure specifices a command buffer queue submission batch
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pWaitDstStageMask = &waitStageMask;									// Pointer to the list of pipeline stages that the semaphore waits will occur at
-	submitInfo.pWaitSemaphores = &presentCompleteSemaphore;							// Semaphore(s) to wait upon before the submitted command buffer starts executing
-	submitInfo.waitSemaphoreCount = 1;												// One wait semaphore																				
-	submitInfo.pSignalSemaphores = &renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
-	submitInfo.signalSemaphoreCount = 1;											// One signal semaphore
-	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];					// Command buffers(s) to execute in this batch (submission)
-	submitInfo.commandBufferCount = 1;												// One command buffer
+	submitInfo.pCommandBuffers = &mCmdBuffers[bufferindex];
+	submitInfo.commandBufferCount = 1;
 
-																					// Submit to the graphics queue passing a wait fence
-	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
+	VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, mFence));
 
-	// Present the current buffer to the swap chain
-	// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
-	// This ensures that the image is not presented to the windowing system until all commands have been submitted
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, renderCompleteSemaphore));
+	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mFence, VK_TRUE, UINT64_MAX));
+	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mFence));
 
-    //if (partCount == 0)
-    //{
-    //    // No mesh parts (index buffers).
-    //    if (_material)
-    //    {
-    //        Technique* technique = _material->getTechnique();
-    //        GP_ASSERT(technique);
-    //        unsigned int passCount = technique->getPassCount();
-    //        for (unsigned int i = 0; i < passCount; ++i)
-    //        {
-    //            Pass* pass = technique->getPassByIndex(i);
-    //            GP_ASSERT(pass);
-    //            pass->bind();
-    //            //GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0) );
-    //            //if (!wireframe || !drawWireframe(_mesh))
-    //            //{
-    //            //    GL_ASSERT( glDrawArrays(_mesh->getPrimitiveType(), 0, _mesh->getVertexCount()) );
-    //            //}
-    //            pass->unbind();
-    //        }
-    //    }
-    //}
-    //else
-    //{
-    //    for (unsigned int i = 0; i < partCount; ++i)
-    //    {
-    //        MeshPart* part = _mesh->getPart(i);
-    //        GP_ASSERT(part);
 
-    //        // Get the material for this mesh part.
-    //        Material* material = getMaterial(i);
-    //        if (material)
-    //        {
-    //            Technique* technique = material->getTechnique();
-    //            GP_ASSERT(technique);
-    //            unsigned int passCount = technique->getPassCount();
-    //            for (unsigned int j = 0; j < passCount; ++j)
-    //            {
-    //                Pass* pass = technique->getPassByIndex(j);
-    //                GP_ASSERT(pass);
-    //                pass->bind();
-    //                //GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, part->_indexBuffer) );
-    //                //if (!wireframe || !drawWireframe(part))
-    //                //{
-    //                //    GL_ASSERT( glDrawElements(part->getPrimitiveType(), part->getIndexCount(), part->getIndexFormat(), 0) );
-    //                //}
-    //                pass->unbind();
-    //            }
-    //        }
-    //    }
-    //}
     return partCount;
 }
 

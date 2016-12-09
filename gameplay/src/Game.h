@@ -53,6 +53,7 @@ protected:
 	VkInstance mInstance;
 
 	VkPhysicalDeviceFeatures enabledFeatures = {};
+
 	VkQueue mQueue;
 	VkFormat mColorformat = VK_FORMAT_B8G8R8A8_UNORM;
 	VkFormat mDepthFormat;
@@ -76,6 +77,37 @@ protected:
 		VkSemaphore textOverlayComplete;
 	} semaphores;
 	vkTools::VulkanTextureLoader *textureLoader = nullptr;
+
+	VkSemaphore presentCompleteSemaphore;
+	VkSemaphore renderCompleteSemaphore;
+	std::vector<VkFence> mWaitFences;
+
+	// For simplicity we use the same uniform block layout as in the shader:
+	//	layout(set = 0, binding = 0) uniform UBO
+	//	{
+	//		mat4 projectionMatrix;
+	//		mat4 modelMatrix;
+	//		mat4 viewMatrix;
+	//	} ubo;
+	struct
+	{
+		vkcore::Matrix projectionMatrix;
+		vkcore::Matrix modelMatrix;
+		vkcore::Matrix viewMatrix;
+	} mUboVS;
+
+	// Uniform block object
+	struct
+	{
+		VkDeviceMemory memory;
+		VkBuffer buffer;
+		VkDescriptorBufferInfo descriptor;
+	}  mUniformDataVS;
+
+	VkPipelineLayout mPipelineLayout;
+	VkPipeline mPipeline;
+	VkDescriptorSetLayout mDescriptorSetLayout;
+	VkDescriptorSet mDescriptorSet;
 
 
 public:
@@ -298,6 +330,8 @@ public:
 
 	virtual void prepareSynchronizationPrimitives();
 	virtual void prepareUniformBuffers();
+	void updateUniformBuffers();
+
 	virtual void setupDescriptorSetLayout();
 	virtual void preparePipelines();
 	virtual void setupDescriptorPool();
