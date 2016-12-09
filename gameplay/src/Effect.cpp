@@ -2,6 +2,7 @@
 #include "Effect.h"
 #include "FileSystem.h"
 #include "Game.h"
+#include "vulkantools.h"
 
 #define OPENGL_ES_DEFINE  "OPENGL_ES"
 
@@ -232,8 +233,10 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
     GP_ASSERT(vshSource);
     GP_ASSERT(fshSource);
 
-    const unsigned int SHADER_SOURCE_LENGTH = 3;
-    const GLchar* shaderSource[SHADER_SOURCE_LENGTH];
+	// Create and return the new Effect.
+	Effect* effect = new Effect();
+
+    std::string shaderSource;
     char* infoLog = NULL;
     GLuint vertexShader;
     GLuint fragmentShader;
@@ -245,216 +248,228 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
     std::string definesStr = "";
     replaceDefines(defines, definesStr);
     
-    shaderSource[0] = definesStr.c_str();
-    shaderSource[1] = "\n";
+    shaderSource = definesStr.c_str();
+    shaderSource += "\n";
     std::string vshSourceStr = "";
     if (vshPath)
     {
-        // Replace the #include "xxxxx.xxx" with the sources that come from file paths
         replaceIncludes(vshPath, vshSource, vshSourceStr);
         if (vshSource && strlen(vshSource) != 0)
             vshSourceStr += "\n";
     }
-    shaderSource[2] = vshPath ? vshSourceStr.c_str() :  vshSource;
-    GL_ASSERT( vertexShader = glCreateShader(GL_VERTEX_SHADER) );
-    GL_ASSERT( glShaderSource(vertexShader, SHADER_SOURCE_LENGTH, shaderSource, NULL) );
-    GL_ASSERT( glCompileShader(vertexShader) );
-    GL_ASSERT( glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success) );
-    if (success != GL_TRUE)
-    {
-        GL_ASSERT( glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &length) );
-        if (length == 0)
-        {
-            length = 4096;
-        }
-        if (length > 0)
-        {
-            infoLog = new char[length];
-            GL_ASSERT( glGetShaderInfoLog(vertexShader, length, NULL, infoLog) );
-            infoLog[length-1] = '\0';
-        }
+    shaderSource += (vshPath ? vshSourceStr.c_str() :  vshSource);
 
-        // Write out the expanded shader file.
-        if (vshPath)
-            writeShaderToErrorFile(vshPath, shaderSource[2]);
+	effect->shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	effect->shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
 
-        GP_ERROR("Compile failed for vertex shader '%s' with error '%s'.", vshPath == NULL ? vshSource : vshPath, infoLog == NULL ? "" : infoLog);
-        SAFE_DELETE_ARRAY(infoLog);
+	VkShaderModule shaderModule;
+	VkShaderModuleCreateInfo moduleCreateInfo;
+	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	moduleCreateInfo.pNext = NULL;
+	moduleCreateInfo.codeSize = 3 * sizeof(uint32_t) + shaderSource.length() + 1;
+	moduleCreateInfo.pCode = (uint32_t*)malloc(moduleCreateInfo.codeSize);
+	moduleCreateInfo.flags = 0;
 
-        // Clean up.
-        GL_ASSERT( glDeleteShader(vertexShader) );
+	// Magic SPV number
+	((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203;
+	((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
+	((uint32_t *)moduleCreateInfo.pCode)[2] = VK_SHADER_STAGE_VERTEX_BIT;
+	memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderSource.c_str(), shaderSource.length() + 1);
 
-        return NULL;
-    }
+	VK_CHECK_RESULT(vkCreateShaderModule(mVulkanDevice->mLogicalDevice, &moduleCreateInfo, NULL, &shaderModule));
+	effect->shaderStages[0].module = shaderModule;
+	effect->shaderStages[0].pName = "main"; // todo : make param
+	effect->shaderModules.push_back(effect->shaderStages[0].module);
 
+   ////////////////////////////////////////////////////////////
+
+	shaderSource.clear();
+	shaderSource = definesStr.c_str();
+	shaderSource += "\n";
     // Compile the fragment shader.
     std::string fshSourceStr;
     if (fshPath)
     {
-        // Replace the #include "xxxxx.xxx" with the sources that come from file paths
         replaceIncludes(fshPath, fshSource, fshSourceStr);
         if (fshSource && strlen(fshSource) != 0)
             fshSourceStr += "\n";
     }
-    shaderSource[2] = fshPath ? fshSourceStr.c_str() : fshSource;
-    GL_ASSERT( fragmentShader = glCreateShader(GL_FRAGMENT_SHADER) );
-    GL_ASSERT( glShaderSource(fragmentShader, SHADER_SOURCE_LENGTH, shaderSource, NULL) );
-    GL_ASSERT( glCompileShader(fragmentShader) );
-    GL_ASSERT( glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success) );
-    if (success != GL_TRUE)
-    {
-        GL_ASSERT( glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &length) );
-        if (length == 0)
-        {
-            length = 4096;
-        }
-        if (length > 0)
-        {
-            infoLog = new char[length];
-            GL_ASSERT( glGetShaderInfoLog(fragmentShader, length, NULL, infoLog) );
-            infoLog[length-1] = '\0';
-        }
-        
-        // Write out the expanded shader file.
-        if (fshPath)
-            writeShaderToErrorFile(fshPath, shaderSource[2]);
 
-        GP_ERROR("Compile failed for fragment shader (%s): %s", fshPath == NULL ? fshSource : fshPath, infoLog == NULL ? "" : infoLog);
-        SAFE_DELETE_ARRAY(infoLog);
+    shaderSource = (fshPath ? fshSourceStr.c_str() : fshSource);
+	effect->shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	effect->shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-        // Clean up.
-        GL_ASSERT( glDeleteShader(vertexShader) );
-        GL_ASSERT( glDeleteShader(fragmentShader) );
+	VkShaderModule shaderModuleFra;
+	VkShaderModuleCreateInfo moduleCreateInfoFra;
+	moduleCreateInfoFra.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	moduleCreateInfoFra.pNext = NULL;
+	moduleCreateInfoFra.codeSize = 3 * sizeof(uint32_t) + shaderSource.length() + 1;
+	moduleCreateInfoFra.pCode = (uint32_t*)malloc(moduleCreateInfoFra.codeSize);
+	moduleCreateInfoFra.flags = 0;
 
-        return NULL;
-    }
+	// Magic SPV number
+	((uint32_t *)moduleCreateInfoFra.pCode)[0] = 0x07230203;
+	((uint32_t *)moduleCreateInfoFra.pCode)[1] = 0;
+	((uint32_t *)moduleCreateInfoFra.pCode)[2] = VK_SHADER_STAGE_FRAGMENT_BIT;
+	memcpy(((uint32_t *)moduleCreateInfoFra.pCode + 3), shaderSource.c_str(), shaderSource.length() + 1);
+	VK_CHECK_RESULT(vkCreateShaderModule(mVulkanDevice->mLogicalDevice, &moduleCreateInfoFra, NULL, &shaderModuleFra));
 
-    // Link program.
-    GL_ASSERT( program = glCreateProgram() );
-    GL_ASSERT( glAttachShader(program, vertexShader) );
-    GL_ASSERT( glAttachShader(program, fragmentShader) );
-    GL_ASSERT( glLinkProgram(program) );
-    GL_ASSERT( glGetProgramiv(program, GL_LINK_STATUS, &success) );
+	effect->shaderStages[1].module = shaderModuleFra;
+	effect->shaderStages[1].pName = "main"; // todo : make param
+	effect->shaderModules.push_back(effect->shaderStages[0].module);
 
-    // Delete shaders after linking.
-    GL_ASSERT( glDeleteShader(vertexShader) );
-    GL_ASSERT( glDeleteShader(fragmentShader) );
+	//////////////////////////////
+	// Binding 0: Uniform buffer (Vertex shader)
+	VkDescriptorSetLayoutBinding layoutBinding = {};
+	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	layoutBinding.descriptorCount = 1;
+	layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	layoutBinding.pImmutableSamplers = nullptr;
 
-    // Check link status.
-    if (success != GL_TRUE)
-    {
-        GL_ASSERT( glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length) );
-        if (length == 0)
-        {
-            length = 4096;
-        }
-        if (length > 0)
-        {
-            infoLog = new char[length];
-            GL_ASSERT( glGetProgramInfoLog(program, length, NULL, infoLog) );
-            infoLog[length-1] = '\0';
-        }
-        GP_ERROR("Linking program failed (%s,%s): %s", vshPath == NULL ? "NULL" : vshPath, fshPath == NULL ? "NULL" : fshPath, infoLog == NULL ? "" : infoLog);
-        SAFE_DELETE_ARRAY(infoLog);
+	VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+	descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorLayout.pNext = nullptr;
+	descriptorLayout.bindingCount = 1;
+	descriptorLayout.pBindings = &layoutBinding;
 
-        // Clean up.
-        GL_ASSERT( glDeleteProgram(program) );
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &effect->mDescriptorSetLayout));
 
-        return NULL;
-    }
+	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
+	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
+	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
+	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pPipelineLayoutCreateInfo.pNext = nullptr;
+	pPipelineLayoutCreateInfo.setLayoutCount = 1;
+	pPipelineLayoutCreateInfo.pSetLayouts = &effect->mDescriptorSetLayout;
 
-    // Create and return the new Effect.
-    Effect* effect = new Effect();
-    effect->_program = program;
+	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &effect->mPipelineLayout));
 
-    // Query and store vertex attribute meta-data from the program.
-    // NOTE: Rather than using glBindAttribLocation to explicitly specify our own
-    // preferred attribute locations, we're going to query the locations that were
-    // automatically bound by the GPU. While it can sometimes be convenient to use
-    // glBindAttribLocation, some vendors actually reserve certain attribute indices
-    // and therefore using this function can create compatibility issues between
-    // different hardware vendors.
-    GLint activeAttributes;
-    GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes) );
-    if (activeAttributes > 0)
-    {
-        GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &length) );
-        if (length > 0)
-        {
-            GLchar* attribName = new GLchar[length + 1];
-            GLint attribSize;
-            GLenum attribType;
-            GLint attribLocation;
-            for (int i = 0; i < activeAttributes; ++i)
-            {
-                // Query attribute info.
-                GL_ASSERT( glGetActiveAttrib(program, i, length, NULL, &attribSize, &attribType, attribName) );
-                attribName[length] = '\0';
+  
+	///////////////////////////////////
 
-                // Query the pre-assigned attribute location.
-                GL_ASSERT( attribLocation = glGetAttribLocation(program, attribName) );
+    //// Link program.
+    //GL_ASSERT( program = glCreateProgram() );
+    //GL_ASSERT( glAttachShader(program, vertexShader) );
+    //GL_ASSERT( glAttachShader(program, fragmentShader) );
+    //GL_ASSERT( glLinkProgram(program) );
+    //GL_ASSERT( glGetProgramiv(program, GL_LINK_STATUS, &success) );
 
-                // Assign the vertex attribute mapping for the effect.
-                effect->_vertexAttributes[attribName] = attribLocation;
-            }
-            SAFE_DELETE_ARRAY(attribName);
-        }
-    }
+    //// Delete shaders after linking.
+    //GL_ASSERT( glDeleteShader(vertexShader) );
+    //GL_ASSERT( glDeleteShader(fragmentShader) );
 
-    // Query and store uniforms from the program.
-    GLint activeUniforms;
-    GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &activeUniforms) );
-    if (activeUniforms > 0)
-    {
-        GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &length) );
-        if (length > 0)
-        {
-            GLchar* uniformName = new GLchar[length + 1];
-            GLint uniformSize;
-            GLenum uniformType;
-            GLint uniformLocation;
-            unsigned int samplerIndex = 0;
-            for (int i = 0; i < activeUniforms; ++i)
-            {
-                // Query uniform info.
-                GL_ASSERT( glGetActiveUniform(program, i, length, NULL, &uniformSize, &uniformType, uniformName) );
-                uniformName[length] = '\0';  // null terminate
-                if (length > 3)
-                {
-                    // If this is an array uniform, strip array indexers off it since GL does not
-                    // seem to be consistent across different drivers/implementations in how it returns
-                    // array uniforms. On some systems it will return "u_matrixArray", while on others
-                    // it will return "u_matrixArray[0]".
-                    char* c = strrchr(uniformName, '[');
-                    if (c)
-                    {
-                        *c = '\0';
-                    }
-                }
+    //// Check link status.
+    //if (success != GL_TRUE)
+    //{
+    //    GL_ASSERT( glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length) );
+    //    if (length == 0)
+    //    {
+    //        length = 4096;
+    //    }
+    //    if (length > 0)
+    //    {
+    //        infoLog = new char[length];
+    //        GL_ASSERT( glGetProgramInfoLog(program, length, NULL, infoLog) );
+    //        infoLog[length-1] = '\0';
+    //    }
+    //    GP_ERROR("Linking program failed (%s,%s): %s", vshPath == NULL ? "NULL" : vshPath, fshPath == NULL ? "NULL" : fshPath, infoLog == NULL ? "" : infoLog);
+    //    SAFE_DELETE_ARRAY(infoLog);
 
-                // Query the pre-assigned uniform location.
-                GL_ASSERT( uniformLocation = glGetUniformLocation(program, uniformName) );
+    //    // Clean up.
+    //    GL_ASSERT( glDeleteProgram(program) );
 
-                Uniform* uniform = new Uniform();
-                uniform->_effect = effect;
-                uniform->_name = uniformName;
-                uniform->_location = uniformLocation;
-                uniform->_type = uniformType;
-                if (uniformType == GL_SAMPLER_2D || uniformType == GL_SAMPLER_CUBE)
-                {
-                    uniform->_index = samplerIndex;
-                    samplerIndex += uniformSize;
-                }
-                else
-                {
-                    uniform->_index = 0;
-                }
+    //    return NULL;
+    //}
 
-                effect->_uniforms[uniformName] = uniform;
-            }
-            SAFE_DELETE_ARRAY(uniformName);
-        }
-    }
+   
+    //// Query and store vertex attribute meta-data from the program.
+    //// NOTE: Rather than using glBindAttribLocation to explicitly specify our own
+    //// preferred attribute locations, we're going to query the locations that were
+    //// automatically bound by the GPU. While it can sometimes be convenient to use
+    //// glBindAttribLocation, some vendors actually reserve certain attribute indices
+    //// and therefore using this function can create compatibility issues between
+    //// different hardware vendors.
+    //GLint activeAttributes;
+    //GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes) );
+    //if (activeAttributes > 0)
+    //{
+    //    GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &length) );
+    //    if (length > 0)
+    //    {
+    //        GLchar* attribName = new GLchar[length + 1];
+    //        GLint attribSize;
+    //        GLenum attribType;
+    //        GLint attribLocation;
+    //        for (int i = 0; i < activeAttributes; ++i)
+    //        {
+    //            // Query attribute info.
+    //            GL_ASSERT( glGetActiveAttrib(program, i, length, NULL, &attribSize, &attribType, attribName) );
+    //            attribName[length] = '\0';
+
+    //            // Query the pre-assigned attribute location.
+    //            GL_ASSERT( attribLocation = glGetAttribLocation(program, attribName) );
+
+    //            // Assign the vertex attribute mapping for the effect.
+    //            effect->_vertexAttributes[attribName] = attribLocation;
+    //        }
+    //        SAFE_DELETE_ARRAY(attribName);
+    //    }
+    //}
+
+    //// Query and store uniforms from the program.
+    //GLint activeUniforms;
+    //GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &activeUniforms) );
+    //if (activeUniforms > 0)
+    //{
+    //    GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &length) );
+    //    if (length > 0)
+    //    {
+    //        GLchar* uniformName = new GLchar[length + 1];
+    //        GLint uniformSize;
+    //        GLenum uniformType;
+    //        GLint uniformLocation;
+    //        unsigned int samplerIndex = 0;
+    //        for (int i = 0; i < activeUniforms; ++i)
+    //        {
+    //            // Query uniform info.
+    //            GL_ASSERT( glGetActiveUniform(program, i, length, NULL, &uniformSize, &uniformType, uniformName) );
+    //            uniformName[length] = '\0';  // null terminate
+    //            if (length > 3)
+    //            {
+    //                // If this is an array uniform, strip array indexers off it since GL does not
+    //                // seem to be consistent across different drivers/implementations in how it returns
+    //                // array uniforms. On some systems it will return "u_matrixArray", while on others
+    //                // it will return "u_matrixArray[0]".
+    //                char* c = strrchr(uniformName, '[');
+    //                if (c)
+    //                {
+    //                    *c = '\0';
+    //                }
+    //            }
+
+    //            // Query the pre-assigned uniform location.
+    //            GL_ASSERT( uniformLocation = glGetUniformLocation(program, uniformName) );
+
+    //            Uniform* uniform = new Uniform();
+    //            uniform->_effect = effect;
+    //            uniform->_name = uniformName;
+    //            uniform->_location = uniformLocation;
+    //            uniform->_type = uniformType;
+    //            if (uniformType == GL_SAMPLER_2D || uniformType == GL_SAMPLER_CUBE)
+    //            {
+    //                uniform->_index = samplerIndex;
+    //                samplerIndex += uniformSize;
+    //            }
+    //            else
+    //            {
+    //                uniform->_index = 0;
+    //            }
+
+    //            effect->_uniforms[uniformName] = uniform;
+    //        }
+    //        SAFE_DELETE_ARRAY(uniformName);
+    //    }
+    //}
 
     return effect;
 }

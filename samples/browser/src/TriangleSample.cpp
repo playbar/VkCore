@@ -369,6 +369,7 @@ void TriangleSample::setupDescriptorSetLayout()
 	pPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
 
 	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+
 }
 
 void TriangleSample::setupDescriptorSet()

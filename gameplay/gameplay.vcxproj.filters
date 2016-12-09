@@ -17,7 +17,7 @@
       <UniqueIdentifier>{eb377577-593a-469f-9361-b6950a99e431}</UniqueIdentifier>
     </Filter>
     <Filter Include="vkcore">
-      <UniqueIdentifier>{15e2481f-90e8-427e-8c48-b6d06100aadf}</UniqueIdentifier>
+      <UniqueIdentifier>{7e49d3d6-461a-4b67-8c8d-21bcaadfa227}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -357,6 +357,9 @@
     <ClCompile Include="src\Drawable.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Script.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="vkcore\VkCoreDevice.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
@@ -377,9 +380,6 @@
     </ClCompile>
     <ClCompile Include="vkcore\vulkantools.cpp">
       <Filter>vkcore</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Script.cpp">
-      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -725,8 +725,8 @@
     <ClInclude Include="src\Drawable.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="vkcore\define.h">
-      <Filter>vkcore</Filter>
+    <ClInclude Include="src\Script.h">
+      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="vkcore\frustum.hpp">
       <Filter>vkcore</Filter>
@@ -737,136 +737,7 @@
     <ClInclude Include="vkcore\VDeleter.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>
-    <ClInclude Include="vkcore\VkBloom.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkCamera.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkComputecullandlod.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkComputeParticles.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkComputeShader.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
     <ClInclude Include="vkcore\VkCoreDevice.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkDebugMarker.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkDeferred.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkDeferredMultisampling.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkDeferredShadows.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkDisplacement.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkDistancefieldfonts.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkGears.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkGeometryShader.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkIndirectdraw.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkInstancing.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkMesh.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkMultisampling.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkMultiThreading.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkOcclusionquery.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkOffScreen.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkParallaxMapping.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkParticlefire.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkPipelines.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkPushConstants.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkRadialBlur.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkRaytracing.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkScene.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkSceneRendering.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkShadowMapping.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkShadowMappingomni.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkSkeletalAnimation.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkSphericalenvmapping.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkSsao.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkSubPasses.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTerraintessellation.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTessellation.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTextOverLay.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexture.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexture3d.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTextureArray.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexturecubemap.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexturemipmapgen.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexturesparseresidency.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>
     <ClInclude Include="vkcore\VkTriangle.hpp">
@@ -908,8 +779,11 @@
     <ClInclude Include="vkcore\vulkantools.h">
       <Filter>vkcore</Filter>
     </ClInclude>
-    <ClInclude Include="src\Script.h">
-      <Filter>src</Filter>
+    <ClInclude Include="vkcore\define.h">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkCamera.hpp">
+      <Filter>vkcore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -13,7 +13,7 @@ const Game::ClearFlags& Sample::CLEAR_COLOR_STENCIL = Game::CLEAR_COLOR_STENCIL;
 const Game::ClearFlags& Sample::CLEAR_DEPTH_STENCIL = Game::CLEAR_DEPTH_STENCIL;
 const Game::ClearFlags& Sample::CLEAR_COLOR_DEPTH_STENCIL = Game::CLEAR_COLOR_DEPTH_STENCIL;
 
-Sample::Sample() : Game(true, NULL)
+Sample::Sample() : Game(false, NULL)
 {
 }
 

@@ -24,70 +24,15 @@ class RenderState : public Ref
 
 public:
 
-    /**
-    * An abstract base class that can be extended to support custom material auto bindings.
-    *
-    * Implementing a custom auto binding resolver allows the set of built-in parameter auto
-    * bindings to be extended or overridden. Any parameter auto binding that is set on a
-    * material will be forwarded to any custom auto binding resolvers, in the order in which
-    * they are registered. If a registered resolver returns true (specifying that it handles
-    * the specified autoBinding), no further code will be executed for that autoBinding.
-    * This allows auto binding resolvers to not only implement new/custom binding strings,
-    * but it also lets them override existing/built-in ones. For this reason, you should
-    * ensure that you ONLY return true if you explicitly handle a custom auto binding; return
-    * false otherwise.
-    *
-    * Note that the custom resolver is called only once for a RenderState object when its
-    * node binding is initially set. This occurs when a material is initially bound to a
-    * renderable (Model, Terrain, etc) that belongs to a Node. The resolver is NOT called
-    * each frame or each time the RenderState is bound. Therefore, when implementing custom
-    * auto bindings for values that change over time, you should bind a method pointer to
-    * the passed in MaterialParaemter using the MaterialParameter::bindValue method. This way,
-    * the bound method will be called each frame to set an updated value into the MaterialParameter.
-    *
-    * If no registered resolvers explicitly handle an auto binding, the binding will attempt
-    * to be resolved using the internal/built-in resolver, which is able to handle any
-    * auto bindings found in the RenderState::AutoBinding enumeration.
-    *
-    * When an instance of a class that extends AutoBindingResolver is created, it is automatically
-    * registered as a custom auto binding handler. Likewise, it is automatically deregistered
-    * on destruction.
-    *
-    * @script{ignore}
-    */
+
     class AutoBindingResolver
     {
     public:
-
-        /**
-         * Destructor.
-         */
         virtual ~AutoBindingResolver();
-
-        /**
-        * Called when an unrecognized material auto binding is encountered
-        * during material loading.
-        *
-        * Implemenations of this method should do a string comparison on the passed
-        * in name parameter and decide whether or not they should handle the
-        * parameter. If the parameter is not handled, false should be returned so
-        * that other auto binding resolvers get a chance to handle the parameter.
-        * Otherwise, the parameter should be set or bound and true should be returned.
-        *
-        * @param autoBinding Name of the auto binding to be resolved.
-        * @param node The node that the material is attached to.
-        * @param parameter The material parameter to be bound (if true is returned).
-        *
-        * @return True if the auto binding is handled and the associated parmeter is
-        *      bound, false otherwise.
-        */
         virtual bool resolveAutoBinding(const char* autoBinding, Node* node, MaterialParameter* parameter) = 0;
 
     protected:
 
-        /**
-         * Constructor.
-         */
         AutoBindingResolver();
 
     };
@@ -98,65 +43,17 @@ public:
     enum AutoBinding
     {
         NONE,
-
-        /**
-         * Binds a node's World matrix.
-         */
         WORLD_MATRIX,
-
-        /**
-         * Binds the View matrix of the active camera for the node's scene.
-         */
         VIEW_MATRIX,
-
-        /**
-         * Binds the Projection matrix of the active camera for the node's scene.
-         */
         PROJECTION_MATRIX,
-
-        /**
-         * Binds a node's WorldView matrix.
-         */
         WORLD_VIEW_MATRIX,
-
-        /**
-         * Binds the ViewProjection matrix of the active camera for the node's scene.
-         */
         VIEW_PROJECTION_MATRIX,
-
-        /**
-         * Binds a node's WorldViewProjection matrix.
-         */
         WORLD_VIEW_PROJECTION_MATRIX,
-
-        /**
-         * Binds a node's InverseTransposeWorl matrix.
-         */
         INVERSE_TRANSPOSE_WORLD_MATRIX,
-
-        /**
-         * Binds a node's InverseTransposeWorldView matrix.
-         */
         INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX,
-
-        /**
-         * Binds the position (Vector3) of the active camera for the node's scene.
-         */
         CAMERA_WORLD_POSITION,
-
-        /**
-         * Binds the view-space position (Vector3) of the active camera for the node's scene.
-         */
         CAMERA_VIEW_POSITION,
-
-        /**
-         * Binds the matrix palette of MeshSkin attached to a node's model.
-         */
         MATRIX_PALETTE,
-
-        /**
-         * Binds the current scene's ambient color (Vector3).
-         */
         SCENE_AMBIENT_COLOR
     };
 

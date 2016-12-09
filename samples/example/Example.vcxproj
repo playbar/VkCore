@@ -12,6 +12,76 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Example.cpp" />
+    <ClCompile Include="vkcore\VkCoreDevice.cpp" />
+    <ClCompile Include="vkcore\vulkanandroid.cpp" />
+    <ClCompile Include="vkcore\VulkanBase.cpp" />
+    <ClCompile Include="vkcore\vulkandebug.cpp" />
+    <ClCompile Include="vkcore\vulkangear.cpp" />
+    <ClCompile Include="vkcore\vulkantextoverlay.cpp" />
+    <ClCompile Include="vkcore\vulkantools.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="vkcore\define.h" />
+    <ClInclude Include="vkcore\frustum.hpp" />
+    <ClInclude Include="vkcore\threadpool.hpp" />
+    <ClInclude Include="vkcore\VDeleter.hpp" />
+    <ClInclude Include="vkcore\VkBloom.hpp" />
+    <ClInclude Include="vkcore\VkCamera.hpp" />
+    <ClInclude Include="vkcore\VkComputecullandlod.hpp" />
+    <ClInclude Include="vkcore\VkComputeParticles.hpp" />
+    <ClInclude Include="vkcore\VkComputeShader.hpp" />
+    <ClInclude Include="vkcore\VkCoreDevice.hpp" />
+    <ClInclude Include="vkcore\VkDebugMarker.hpp" />
+    <ClInclude Include="vkcore\VkDeferred.hpp" />
+    <ClInclude Include="vkcore\VkDeferredMultisampling.hpp" />
+    <ClInclude Include="vkcore\VkDeferredShadows.hpp" />
+    <ClInclude Include="vkcore\VkDisplacement.hpp" />
+    <ClInclude Include="vkcore\VkDistancefieldfonts.hpp" />
+    <ClInclude Include="vkcore\VkGears.hpp" />
+    <ClInclude Include="vkcore\VkGeometryShader.hpp" />
+    <ClInclude Include="vkcore\VkIndirectdraw.hpp" />
+    <ClInclude Include="vkcore\VkInstancing.hpp" />
+    <ClInclude Include="vkcore\VkMesh.hpp" />
+    <ClInclude Include="vkcore\VkMultisampling.hpp" />
+    <ClInclude Include="vkcore\VkMultiThreading.hpp" />
+    <ClInclude Include="vkcore\VkOcclusionquery.hpp" />
+    <ClInclude Include="vkcore\VkOffScreen.hpp" />
+    <ClInclude Include="vkcore\VkParallaxMapping.hpp" />
+    <ClInclude Include="vkcore\VkParticlefire.hpp" />
+    <ClInclude Include="vkcore\VkPipelines.hpp" />
+    <ClInclude Include="vkcore\VkPushConstants.hpp" />
+    <ClInclude Include="vkcore\VkRadialBlur.hpp" />
+    <ClInclude Include="vkcore\VkRaytracing.hpp" />
+    <ClInclude Include="vkcore\VkScene.hpp" />
+    <ClInclude Include="vkcore\VkSceneRendering.hpp" />
+    <ClInclude Include="vkcore\VkShadowMapping.hpp" />
+    <ClInclude Include="vkcore\VkShadowMappingomni.hpp" />
+    <ClInclude Include="vkcore\VkSkeletalAnimation.hpp" />
+    <ClInclude Include="vkcore\VkSphericalenvmapping.hpp" />
+    <ClInclude Include="vkcore\VkSsao.hpp" />
+    <ClInclude Include="vkcore\VkSubPasses.hpp" />
+    <ClInclude Include="vkcore\VkTerraintessellation.hpp" />
+    <ClInclude Include="vkcore\VkTessellation.hpp" />
+    <ClInclude Include="vkcore\VkTextOverLay.hpp" />
+    <ClInclude Include="vkcore\VkTexture.hpp" />
+    <ClInclude Include="vkcore\VkTexture3d.hpp" />
+    <ClInclude Include="vkcore\VkTextureArray.hpp" />
+    <ClInclude Include="vkcore\VkTexturecubemap.hpp" />
+    <ClInclude Include="vkcore\VkTexturemipmapgen.hpp" />
+    <ClInclude Include="vkcore\VkTexturesparseresidency.hpp" />
+    <ClInclude Include="vkcore\VkTriangle.hpp" />
+    <ClInclude Include="vkcore\vulkanandroid.h" />
+    <ClInclude Include="vkcore\VulkanBase.h" />
+    <ClInclude Include="vkcore\vulkanbuffer.hpp" />
+    <ClInclude Include="vkcore\vulkandebug.h" />
+    <ClInclude Include="vkcore\vulkanframebuffer.hpp" />
+    <ClInclude Include="vkcore\vulkangear.h" />
+    <ClInclude Include="vkcore\vulkanheightmap.hpp" />
+    <ClInclude Include="vkcore\vulkanMeshLoader.hpp" />
+    <ClInclude Include="vkcore\vulkanswapchain.hpp" />
+    <ClInclude Include="vkcore\vulkantextoverlay.hpp" />
+    <ClInclude Include="vkcore\vulkanTextureLoader.hpp" />
+    <ClInclude Include="vkcore\vulkantools.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3E6755A8-7370-4449-A8B7-4FCDCABD242C}</ProjectGuid>
@@ -57,7 +127,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\gameplay\src;..\..\gameplay\vkcore;..\..\external\glm;..\..\external\gli;..\..\external\assimp;..\..\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\gameplay\src;..\..\external\glm;..\..\external\gli;..\..\external\assimp;..\..\external;.\vkcore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>

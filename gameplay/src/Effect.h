@@ -6,7 +6,9 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Matrix.h"
+#include "array"
 #include "Texture.h"
+#include "vulkan/vulkan.h"
 
 namespace vkcore
 {
@@ -217,26 +219,12 @@ public:
 
     /**
      * Returns the currently bound effect for the rendering system.
-     *
-     * @return The currently bound effect, or NULL if no effect is currently bound.
      */
     static Effect* getCurrentEffect();
 
 private:
-
-    /**
-     * Hidden constructor (use createEffect instead).
-     */
     Effect();
-
-    /**
-     * Hidden destructor (use destroyEffect instead).
-     */
     ~Effect();
-
-    /**
-     * Hidden copy assignment operator.
-     */
     Effect& operator=(const Effect&);
 
     static Effect* createFromSource(const char* vshPath, const char* vshSource, const char* fshPath, const char* fshSource, const char* defines = NULL);
@@ -246,6 +234,11 @@ private:
     std::map<std::string, VertexAttribute> _vertexAttributes;
     mutable std::map<std::string, Uniform*> _uniforms;
     static Uniform _emptyUniform;
+
+	VkPipelineLayout mPipelineLayout;
+	VkDescriptorSetLayout mDescriptorSetLayout;
+	std::vector<VkShaderModule> shaderModules;
+	std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 };
 
 /**
@@ -286,6 +279,7 @@ private:
     GLenum _type;
     unsigned int _index;
     Effect* _effect;
+
 };
 
 }

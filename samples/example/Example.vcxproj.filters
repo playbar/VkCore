@@ -1,0 +1,217 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Example.cpp" />
+    <ClCompile Include="vkcore\vulkanandroid.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
+    <ClCompile Include="vkcore\VulkanBase.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
+    <ClCompile Include="vkcore\vulkandebug.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
+    <ClCompile Include="vkcore\vulkangear.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
+    <ClCompile Include="vkcore\vulkantextoverlay.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
+    <ClCompile Include="vkcore\vulkantools.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
+    <ClCompile Include="vkcore\VkCoreDevice.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="vkcore">
+      <UniqueIdentifier>{bbbf10e9-18da-46e5-8547-130b654f0848}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="vkcore\VkTriangle.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkanandroid.h">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VulkanBase.h">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkanbuffer.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkandebug.h">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkanframebuffer.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkangear.h">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkanheightmap.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkanMeshLoader.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkanswapchain.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkantextoverlay.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkanTextureLoader.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkantools.h">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\define.h">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\frustum.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\threadpool.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VDeleter.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkBloom.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkCamera.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkComputecullandlod.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkComputeParticles.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkComputeShader.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkCoreDevice.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkDebugMarker.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkDeferred.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkDeferredMultisampling.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkDeferredShadows.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkDisplacement.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkDistancefieldfonts.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkGears.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkGeometryShader.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkIndirectdraw.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkInstancing.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkMesh.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkMultisampling.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkMultiThreading.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkOcclusionquery.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkOffScreen.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkParallaxMapping.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkParticlefire.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkPipelines.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkPushConstants.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkRadialBlur.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkRaytracing.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkScene.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkSceneRendering.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkShadowMapping.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkShadowMappingomni.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkSkeletalAnimation.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkSphericalenvmapping.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkSsao.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkSubPasses.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTerraintessellation.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTessellation.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTextOverLay.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTexture.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTexture3d.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTextureArray.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTexturecubemap.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTexturemipmapgen.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTexturesparseresidency.hpp">
+      <Filter>vkcore</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
