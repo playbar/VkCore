@@ -39,6 +39,13 @@ public:
 
     unsigned int draw(bool wireframe = false);
 
+	bool checkCommandBuffers();
+	void createCommandPool();
+	void createCommandBuffers();
+	void buildCommandBuffers();
+	void destroyCommandBuffers();
+	void setupRenderPass();
+
 private:
 
     Model();
@@ -64,6 +71,11 @@ private:
     unsigned int _partCount;
     Material** _partMaterials;
     MeshSkin* _skin;
+
+	VkRenderPass mRenderPass;
+	VkCommandPool mCmdPool;
+	std::vector<VkCommandBuffer> mDrawCmdBuffers;
+
 };
 
 }

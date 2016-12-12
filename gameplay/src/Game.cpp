@@ -113,7 +113,7 @@ Game::Game(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 
 	if (enabledFeaturesFn != nullptr)
 	{
-		this->enabledFeatures = enabledFeaturesFn();
+		this->mEnabledFeatures = enabledFeaturesFn();
 	}
 
 #if defined(_WIN32)
@@ -231,122 +231,8 @@ const std::string Game::getAssetPath()
 #endif
 }
 
-bool Game::checkCommandBuffers()
-{
-	for (auto& cmdBuffer : mDrawCmdBuffers)
-	{
-		if (cmdBuffer == VK_NULL_HANDLE)
-		{
-			return false;
-		}
-	}
-	return true;
-}
 
-void Game::createCommandBuffers()
-{
-	// Create one command buffer for each swap chain image and reuse for rendering
-	mDrawCmdBuffers.resize(mSwapChain.mImageCount);
 
-	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
-			mCmdPool,
-			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			static_cast<uint32_t>(mDrawCmdBuffers.size()));
-
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
-}
-
-void Game::destroyCommandBuffers()
-{
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
-}
-
-void Game::createSetupCommandBuffer()
-{
-	if (setupCmdBuffer != VK_NULL_HANDLE)
-	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
-		setupCmdBuffer = VK_NULL_HANDLE; // todo : check if still necessary
-	}
-
-	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
-			mCmdPool,
-			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			1);
-
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &setupCmdBuffer));
-
-	VkCommandBufferBeginInfo cmdBufInfo = {};
-	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-	VK_CHECK_RESULT(vkBeginCommandBuffer(setupCmdBuffer, &cmdBufInfo));
-}
-
-void Game::flushSetupCommandBuffer()
-{
-	if (setupCmdBuffer == VK_NULL_HANDLE)
-		return;
-
-	VK_CHECK_RESULT(vkEndCommandBuffer(setupCmdBuffer));
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &setupCmdBuffer;
-
-	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, VK_NULL_HANDLE));
-	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
-
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
-	setupCmdBuffer = VK_NULL_HANDLE;
-}
-
-VkCommandBuffer Game::createCommandBuffer(VkCommandBufferLevel level, bool begin)
-{
-	VkCommandBuffer cmdBuffer;
-
-	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
-			mCmdPool,
-			level,
-			1);
-
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
-
-	// If requested, also start the new command buffer
-	if (begin)
-	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
-		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
-	}
-
-	return cmdBuffer;
-}
-
-void Game::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
-{
-	if (commandBuffer == VK_NULL_HANDLE)
-	{
-		return;
-	}
-
-	VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-	VK_CHECK_RESULT(vkQueueWaitIdle(queue));
-
-	if (free)
-	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
-	}
-}
 
 void Game::createPipelineCache()
 {
@@ -361,7 +247,6 @@ void Game::prepare()
 	{
 		vkDebug::DebugMarker::setup(mVulkanDevice->mLogicalDevice);
 	}
-	createCommandPool();
 	createSetupCommandBuffer();
 	setupSwapChain();
 	createCommandBuffers();
@@ -373,7 +258,7 @@ void Game::prepare()
 	// Recreate setup command buffer for derived class
 	createSetupCommandBuffer();
 	// Create a simple texture loader class
-	textureLoader = new vkTools::VulkanTextureLoader(mVulkanDevice, mQueue, mCmdPool);
+	textureLoader = new vkTools::VulkanTextureLoader(mVulkanDevice, mVulkanDevice->mQueue, mCmdPool);
 #if defined(__ANDROID__)
 	textureLoader->assetManager = androidApp->activity->assetManager;
 #endif
@@ -385,7 +270,7 @@ void Game::prepare()
 		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 		mTextOverlay = new VulkanTextOverlay(
 			mVulkanDevice,
-			mQueue,
+			mVulkanDevice->mQueue,
 			mFrameBuffers,
 			mColorformat,
 			mDepthFormat,
@@ -413,67 +298,6 @@ VkPipelineShaderStageCreateInfo Game::loadShader(std::string fileName, VkShaderS
 	return shaderStage;
 }
 
-VkBool32 Game::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory)
-{
-	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
-	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
-
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
-
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, *buffer, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
-	if (data != nullptr)
-	{
-		void *mapped;
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
-		memcpy(mapped, data, size);
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, *memory);
-	}
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
-
-	return true;
-}
-
-VkBool32 Game::createBuffer(VkBufferUsageFlags usage, VkDeviceSize size, void * data, VkBuffer *buffer, VkDeviceMemory *memory)
-{
-	return createBuffer(usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, size, data, buffer, memory);
-}
-
-VkBool32 Game::createBuffer(VkBufferUsageFlags usage, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory, VkDescriptorBufferInfo * descriptor)
-{
-	VkBool32 res = createBuffer(usage, size, data, buffer, memory);
-	if (res)
-	{
-		descriptor->offset = 0;
-		descriptor->buffer = *buffer;
-		descriptor->range = size;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-VkBool32 Game::createBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory, VkDescriptorBufferInfo * descriptor)
-{
-	VkBool32 res = createBuffer(usage, memoryPropertyFlags, size, data, buffer, memory);
-	if (res)
-	{
-		descriptor->offset = 0;
-		descriptor->buffer = *buffer;
-		descriptor->range = size;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
 void Game::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, float scale)
 {
 	vkMeshLoader::MeshCreateInfo meshCreateInfo;
@@ -494,7 +318,8 @@ void Game::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer,
 	mesh->LoadMesh(filename);
 	assert(mesh->m_Entries.size() > 0);
 
-	VkCommandBuffer copyCmd = Game::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+	//VkCommandBuffer copyCmd = Game::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+	VkCommandBuffer copyCmd = mVulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 
 	mesh->createBuffers(
 		meshBuffer,
@@ -502,7 +327,7 @@ void Game::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer,
 		meshCreateInfo,
 		true,
 		copyCmd,
-		mQueue);
+		mVulkanDevice->mQueue);
 
 	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &copyCmd);
 
@@ -815,7 +640,7 @@ void Game::submitFrame()
 		// Submit current text overlay command buffer
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &mTextOverlay->mCmdBuffers[mCurrentBuffer];
-		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
+		VK_CHECK_RESULT(vkQueueSubmit(mVulkanDevice->mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
 		// Reset stage mask
 		mSubmitInfo.pWaitDstStageMask = &submitPipelineStages;
@@ -828,8 +653,8 @@ void Game::submitFrame()
 		mSubmitInfo.pSignalSemaphores = &semaphores.renderComplete;
 	}
 
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
-	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
+	VK_CHECK_RESULT(mSwapChain.queuePresent(mVulkanDevice->mQueue, mCurrentBuffer, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
+	VK_CHECK_RESULT(vkQueueWaitIdle(mVulkanDevice->mQueue));
 }
 
 void Game::prepareSynchronizationPrimitives()
@@ -1161,7 +986,7 @@ void Game::InitVulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledF
 
 	if (enabledFeaturesFn != nullptr)
 	{
-		this->enabledFeatures = enabledFeaturesFn();
+		this->mEnabledFeatures = enabledFeaturesFn();
 	}
 
 #if defined(_WIN32)
@@ -1293,10 +1118,8 @@ void Game::InitVulkan(bool enableValidation)
 	}
 
 	mVulkanDevice = new VkCoreDevice(physicalDevices[0]);
-	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(enabledFeatures));
+	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(mEnabledFeatures));
 
-	// Get a graphics queue from the device
-	vkGetDeviceQueue(mVulkanDevice->mLogicalDevice, mVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
 
 	// Find a suitable depth format
 	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &mDepthFormat);
@@ -1933,12 +1756,12 @@ void Game::render()
 	submitInfo.commandBufferCount = 1;												// One command buffer
 
 																					// Submit to the graphics queue passing a wait fence
-	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
+	VK_CHECK_RESULT(vkQueueSubmit(mVulkanDevice->mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
 
 	// Present the current buffer to the swap chain
 	// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
 	// This ensures that the image is not presented to the windowing system until all commands have been submitted
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, renderCompleteSemaphore));
+	VK_CHECK_RESULT(mSwapChain.queuePresent(mVulkanDevice->mQueue, mCurrentBuffer, renderCompleteSemaphore));
 }
 
 void Game::viewChanged()
@@ -1950,93 +1773,6 @@ void Game::viewChanged()
 void Game::keyPressed(uint32_t keyCode)
 {
 	// Can be overriden in derived class
-}
-
-void Game::buildCommandBuffers()
-{
-	VkCommandBufferBeginInfo cmdBufInfo = {};
-	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	cmdBufInfo.pNext = nullptr;
-
-	// Set clear values for all framebuffer attachments with loadOp set to clear
-	// We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear values for both
-	VkClearValue clearValues[2];
-	clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 1.0f } };
-	clearValues[1].depthStencil = { 1.0f, 0 };
-
-	VkRenderPassBeginInfo renderPassBeginInfo = {};
-	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.pNext = nullptr;
-	renderPassBeginInfo.renderPass = mRenderPass;
-	renderPassBeginInfo.renderArea.offset.x = 0;
-	renderPassBeginInfo.renderArea.offset.y = 0;
-	renderPassBeginInfo.renderArea.extent.width = width;
-	renderPassBeginInfo.renderArea.extent.height = height;
-	renderPassBeginInfo.clearValueCount = 2;
-	renderPassBeginInfo.pClearValues = clearValues;
-
-	for (int32_t i = 0; i < mDrawCmdBuffers.size(); ++i)
-	{
-		// Set target frame buffer
-		renderPassBeginInfo.framebuffer = mFrameBuffers[i];
-
-		VK_CHECK_RESULT(vkBeginCommandBuffer(mDrawCmdBuffers[i], &cmdBufInfo));
-
-		// Start the first sub pass specified in our default render pass setup by the base class
-		// This will clear the color and depth attachment
-		vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		// Update dynamic viewport state
-		VkViewport viewport = {};
-		viewport.x = 0;
-		viewport.y = 0;
-		viewport.width = (float)width;
-		viewport.height = (float)height;
-		viewport.minDepth = (float) 0.0f;
-		viewport.maxDepth = (float) 1.0f;
-		vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
-
-		// Update dynamic scissor state
-		VkRect2D scissor = {};
-		scissor.extent.width = width;
-		scissor.extent.height = height;
-		scissor.offset.x = 0;
-		scissor.offset.y = 0;
-		vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
-
-		// Bind descriptor sets describing shader binding points
-		vkCmdBindDescriptorSets(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSet, 0, nullptr);
-
-		// Bind the rendering pipeline
-		// The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
-		vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipeline);
-
-		// Bind triangle vertex buffer (contains position and colors)
-		VkDeviceSize offsets[1] = { 0 };
-		vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &mVertices.buffer, offsets);
-
-		// Bind triangle index buffer
-		vkCmdBindIndexBuffer(mDrawCmdBuffers[i], mIndices.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-		// Draw indexed triangle
-		vkCmdDrawIndexed(mDrawCmdBuffers[i], mIndices.count, 1, 0, 0, 1);
-
-		vkCmdEndRenderPass(mDrawCmdBuffers[i]);
-
-		// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to 
-		// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
-
-		VK_CHECK_RESULT(vkEndCommandBuffer(mDrawCmdBuffers[i]));
-	}
-}
-
-void Game::createCommandPool()
-{
-	VkCommandPoolCreateInfo cmdPoolInfo = {};
-	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
-	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
 }
 
 void Game::setupDepthStencil()
@@ -2219,7 +1955,7 @@ void Game::windowResize()
 	createCommandBuffers();
 	buildCommandBuffers();
 
-	vkQueueWaitIdle(mQueue);
+	vkQueueWaitIdle(mVulkanDevice->mQueue);
 	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 
 	if (mEnableTextOverlay)

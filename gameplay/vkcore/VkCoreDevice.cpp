@@ -229,6 +229,10 @@ VkResult VkCoreDevice::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
 		mCommandPool = createCommandPool(queueFamilyIndices.graphics);
 	}
 
+	// Get a graphics queue from the device
+	vkGetDeviceQueue(mLogicalDevice, queueFamilyIndices.graphics, 0, &mQueue);
+
+
 	return result;
 }
 
@@ -321,6 +325,68 @@ void VkCoreDevice::copyBuffer(vk::Buffer *src, vk::Buffer *dst, VkQueue queue, V
 	vkCmdCopyBuffer(copyCmd, src->buffer, dst->buffer, 1, &bufferCopy);
 
 	flushCommandBuffer(copyCmd, queue);
+}
+
+
+VkBool32 VkCoreDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory)
+{
+	VkMemoryRequirements memReqs;
+	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
+	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+
+	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
+
+	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, *buffer, &memReqs);
+	memAlloc.allocationSize = memReqs.size;
+	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
+	if (data != nullptr)
+	{
+		void *mapped;
+		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
+		memcpy(mapped, data, size);
+		vkUnmapMemory(mVulkanDevice->mLogicalDevice, *memory);
+	}
+	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
+
+	return true;
+}
+
+VkBool32 VkCoreDevice::createBuffer(VkBufferUsageFlags usage, VkDeviceSize size, void * data, VkBuffer *buffer, VkDeviceMemory *memory)
+{
+	return createBuffer(usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, size, data, buffer, memory);
+}
+
+VkBool32 VkCoreDevice::createBuffer(VkBufferUsageFlags usage, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory, VkDescriptorBufferInfo * descriptor)
+{
+	VkBool32 res = createBuffer(usage, size, data, buffer, memory);
+	if (res)
+	{
+		descriptor->offset = 0;
+		descriptor->buffer = *buffer;
+		descriptor->range = size;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+VkBool32 VkCoreDevice::createBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory, VkDescriptorBufferInfo * descriptor)
+{
+	VkBool32 res = createBuffer(usage, memoryPropertyFlags, size, data, buffer, memory);
+	if (res)
+	{
+		descriptor->offset = 0;
+		descriptor->buffer = *buffer;
+		descriptor->range = size;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 VkCommandPool VkCoreDevice::createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags)

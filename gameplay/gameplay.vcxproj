@@ -130,7 +130,6 @@
     <ClCompile Include="src\VerticalLayout.cpp" />
     <ClCompile Include="vkcore\VkCoreDevice.cpp" />
     <ClCompile Include="vkcore\vulkanandroid.cpp" />
-    <ClCompile Include="vkcore\VulkanBase.cpp" />
     <ClCompile Include="vkcore\vulkandebug.cpp" />
     <ClCompile Include="vkcore\vulkanswapchain.cpp" />
     <ClCompile Include="vkcore\vulkantextoverlay.cpp" />
@@ -258,9 +257,7 @@
     <ClInclude Include="vkcore\VDeleter.hpp" />
     <ClInclude Include="vkcore\VkCamera.hpp" />
     <ClInclude Include="vkcore\VkCoreDevice.hpp" />
-    <ClInclude Include="vkcore\VkTriangle.hpp" />
     <ClInclude Include="vkcore\vulkanandroid.h" />
-    <ClInclude Include="vkcore\VulkanBase.h" />
     <ClInclude Include="vkcore\vulkanbuffer.hpp" />
     <ClInclude Include="vkcore\vulkandebug.h" />
     <ClInclude Include="vkcore\vulkanframebuffer.hpp" />

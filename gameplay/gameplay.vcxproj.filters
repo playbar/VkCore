@@ -366,9 +366,6 @@
     <ClCompile Include="vkcore\vulkanandroid.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
-    <ClCompile Include="vkcore\VulkanBase.cpp">
-      <Filter>vkcore</Filter>
-    </ClCompile>
     <ClCompile Include="vkcore\vulkandebug.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
@@ -740,13 +737,7 @@
     <ClInclude Include="vkcore\VkCoreDevice.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>
-    <ClInclude Include="vkcore\VkTriangle.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
     <ClInclude Include="vkcore\vulkanandroid.h">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VulkanBase.h">
       <Filter>vkcore</Filter>
     </ClInclude>
     <ClInclude Include="vkcore\vulkanbuffer.hpp">

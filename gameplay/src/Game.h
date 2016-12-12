@@ -52,23 +52,22 @@ protected:
 	uint32_t lastFPS = 0;
 	VkInstance mInstance;
 
-	VkPhysicalDeviceFeatures enabledFeatures = {};
-
-	VkQueue mQueue;
+	VkPhysicalDeviceFeatures mEnabledFeatures = {};
+	
 	VkFormat mColorformat = VK_FORMAT_B8G8R8A8_UNORM;
 	VkFormat mDepthFormat;
-	VkCommandPool mCmdPool;
-	VkCommandBuffer setupCmdBuffer = VK_NULL_HANDLE;
+	
 	VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	VkSubmitInfo mSubmitInfo;
-	std::vector<VkCommandBuffer> mDrawCmdBuffers;
-	VkRenderPass mRenderPass;
-	std::vector<VkFramebuffer>mFrameBuffers;
+	VkSubmitInfo mSubmitInfo;	
+	
+	
 	uint32_t mCurrentBuffer = 0;
 	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-	std::vector<VkShaderModule> shaderModules;
+	
 	VkPipelineCache pipelineCache;
-	//VulkanSwapChain mSwapChain;
+	std::vector<VkShaderModule> shaderModules;
+	std::vector<VkFramebuffer>mFrameBuffers;
+	
 
 	struct
 	{
@@ -216,10 +215,8 @@ public:
 	// Pure virtual function to be overriden by the dervice class
 	// Called in case of an event where e.g. the framebuffer has to be rebuild and thus
 	// all command buffers that may reference this
-	virtual void buildCommandBuffers();
+	
 
-	// Creates a new (graphics) command pool object storing command buffers
-	void createCommandPool();
 	// Setup default depth and stencil views
 	virtual void setupDepthStencil();
 	// Create framebuffers for all requested swap chain images
@@ -227,7 +224,7 @@ public:
 	virtual void setupFrameBuffer();
 	// Setup a default render pass
 	// Can be overriden in derived class to setup a custom render pass (e.g. for MSAA)
-	virtual void setupRenderPass();
+
 
 	// Connect and prepare the swap chain
 	void initSwapchain();
@@ -262,38 +259,7 @@ public:
 	// Load a SPIR-V shader
 	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
 
-	// Create a buffer, fill it with data (if != NULL) and bind buffer memory
-	VkBool32 createBuffer(
-		VkBufferUsageFlags usageFlags,
-		VkMemoryPropertyFlags memoryPropertyFlags,
-		VkDeviceSize size,
-		void *data,
-		VkBuffer *buffer,
-		VkDeviceMemory *memory);
-	// This version always uses HOST_VISIBLE memory
-	VkBool32 createBuffer(
-		VkBufferUsageFlags usage,
-		VkDeviceSize size,
-		void *data,
-		VkBuffer *buffer,
-		VkDeviceMemory *memory);
-	// Overload that assigns buffer info to descriptor
-	VkBool32 createBuffer(
-		VkBufferUsageFlags usage,
-		VkDeviceSize size,
-		void *data,
-		VkBuffer *buffer,
-		VkDeviceMemory *memory,
-		VkDescriptorBufferInfo *descriptor);
-	// Overload to pass memory property flags
-	VkBool32 createBuffer(
-		VkBufferUsageFlags usage,
-		VkMemoryPropertyFlags memoryPropertyFlags,
-		VkDeviceSize size,
-		void *data,
-		VkBuffer *buffer,
-		VkDeviceMemory *memory,
-		VkDescriptorBufferInfo *descriptor);
+	
 
 	// Load a mesh (using ASSIMP) and create vulkan vertex and index buffers with given vertex layout
 	void loadMesh(
