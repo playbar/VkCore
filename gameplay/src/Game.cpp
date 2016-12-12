@@ -222,24 +222,6 @@ std::string Game::getWindowTitle()
 	return windowTitle;
 }
 
-const std::string Game::getAssetPath()
-{
-#if defined(__ANDROID__)
-	return "";
-#else
-	return "./../data/";
-#endif
-}
-
-
-
-
-void Game::createPipelineCache()
-{
-	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
-	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	VK_CHECK_RESULT(vkCreatePipelineCache(mVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
-}
 
 void Game::prepare()
 {
@@ -247,100 +229,14 @@ void Game::prepare()
 	{
 		vkDebug::DebugMarker::setup(mVulkanDevice->mLogicalDevice);
 	}
-	createSetupCommandBuffer();
 	setupSwapChain();
-	createCommandBuffers();
-	setupDepthStencil();
-	setupRenderPass();
-	createPipelineCache();
-	setupFrameBuffer();
-	flushSetupCommandBuffer();
-	// Recreate setup command buffer for derived class
-	createSetupCommandBuffer();
-	// Create a simple texture loader class
-	textureLoader = new vkTools::VulkanTextureLoader(mVulkanDevice, mVulkanDevice->mQueue, mCmdPool);
-#if defined(__ANDROID__)
-	textureLoader->assetManager = androidApp->activity->assetManager;
-#endif
-	if (mEnableTextOverlay)
-	{
-		// Load the text rendering shaders
-		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
-		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
-		mTextOverlay = new VulkanTextOverlay(
-			mVulkanDevice,
-			mVulkanDevice->mQueue,
-			mFrameBuffers,
-			mColorformat,
-			mDepthFormat,
-			&width,
-			&height,
-			shaderStages
-		);
-		updateTextOverlay();
-	}
-}
-
-VkPipelineShaderStageCreateInfo Game::loadShader(std::string fileName, VkShaderStageFlagBits stage)
-{
-	VkPipelineShaderStageCreateInfo shaderStage = {};
-	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	shaderStage.stage = stage;
-#if defined(__ANDROID__)
-	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
-#else
-	shaderStage.module = vkTools::loadShader(fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
-#endif
-	shaderStage.pName = "main"; // todo : make param
-	assert(shaderStage.module != NULL);
-	shaderModules.push_back(shaderStage.module);
-	return shaderStage;
-}
-
-void Game::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, float scale)
-{
-	vkMeshLoader::MeshCreateInfo meshCreateInfo;
-	meshCreateInfo.scale = glm::vec3(scale);
-	meshCreateInfo.center = glm::vec3(0.0f);
-	meshCreateInfo.uvscale = glm::vec2(1.0f);
-	loadMesh(filename, meshBuffer, vertexLayout, &meshCreateInfo);
-}
-
-void Game::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, vkMeshLoader::MeshCreateInfo *meshCreateInfo)
-{
-	VulkanMeshLoader *mesh = new VulkanMeshLoader(mVulkanDevice);
-
-#if defined(__ANDROID__)
-	mesh->assetManager = androidApp->activity->assetManager;
-#endif
-
-	mesh->LoadMesh(filename);
-	assert(mesh->m_Entries.size() > 0);
-
-	//VkCommandBuffer copyCmd = Game::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
-	VkCommandBuffer copyCmd = mVulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
-
-	mesh->createBuffers(
-		meshBuffer,
-		vertexLayout,
-		meshCreateInfo,
-		true,
-		copyCmd,
-		mVulkanDevice->mQueue);
-
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &copyCmd);
-
-	meshBuffer->dim = mesh->dim.size;
-
-	delete(mesh);
+	
 }
 
 void Game::renderLoop()
 {
 	destWidth = width;
 	destHeight = height;
-#if defined(_WIN32)
 	MSG msg;
 	while (TRUE)
 	{
@@ -390,223 +286,16 @@ void Game::renderLoop()
 				SetWindowText(mHwndWinow, windowTitle.c_str());
 			}
 			lastFPS = roundf(1.0f / frameTimer);
-			updateTextOverlay();
 			fpsTimer = 0.0f;
 			frameCounter = 0;
 		}
 	}
-#elif defined(__ANDROID__)
-	while (1)
-	{
-		int ident;
-		int events;
-		struct android_poll_source* source;
-		bool destroy = false;
 
-		focused = true;
-
-		while ((ident = ALooper_pollAll(focused ? 0 : -1, NULL, &events, (void**)&source)) >= 0)
-		{
-			if (source != NULL)
-			{
-				source->process(androidApp, source);
-			}
-			if (androidApp->destroyRequested != 0)
-			{
-				LOGD("Android app destroy requested");
-				destroy = true;
-				break;
-			}
-		}
-
-		// App destruction requested
-		// Exit loop, example will be destroyed in application main
-		if (destroy)
-		{
-			break;
-		}
-
-		// Render frame
-		if (prepared)
-		{
-			auto tStart = std::chrono::high_resolution_clock::now();
-			render();
-			frameCounter++;
-			auto tEnd = std::chrono::high_resolution_clock::now();
-			auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-			frameTimer = tDiff / 1000.0f;
-			mCamera.update(frameTimer);
-			// Convert to clamped timer value
-			if (!paused)
-			{
-				timer += timerSpeed * frameTimer;
-				if (timer > 1.0)
-				{
-					timer -= 1.0f;
-				}
-			}
-			fpsTimer += (float)tDiff;
-			if (fpsTimer > 1000.0f)
-			{
-				lastFPS = frameCounter;
-				updateTextOverlay();
-				fpsTimer = 0.0f;
-				frameCounter = 0;
-			}
-			// Check gamepad state
-			const float deadZone = 0.0015f;
-			// todo : check if gamepad is present
-			// todo : time based and relative axis positions
-			bool updateView = false;
-			if (mCamera.type != VkCamera::CameraType::firstperson)
-			{
-				// Rotate
-				if (std::abs(gamePadState.axisLeft.x) > deadZone)
-				{
-					rotation.y += gamePadState.axisLeft.x * 0.5f * rotationSpeed;
-					mCamera.rotate(glm::vec3(0.0f, gamePadState.axisLeft.x * 0.5f, 0.0f));
-					updateView = true;
-				}
-				if (std::abs(gamePadState.axisLeft.y) > deadZone)
-				{
-					rotation.x -= gamePadState.axisLeft.y * 0.5f * rotationSpeed;
-					mCamera.rotate(glm::vec3(gamePadState.axisLeft.y * 0.5f, 0.0f, 0.0f));
-					updateView = true;
-				}
-				// Zoom
-				if (std::abs(gamePadState.axisRight.y) > deadZone)
-				{
-					mZoom -= gamePadState.axisRight.y * 0.01f * zoomSpeed;
-					updateView = true;
-				}
-				if (updateView)
-				{
-					viewChanged();
-				}
-			}
-			else
-			{
-				updateView = mCamera.updatePad(gamePadState.axisLeft, gamePadState.axisRight, frameTimer);
-				if (updateView)
-				{
-					viewChanged();
-				}
-			}
-		}
-	}
-#elif defined(_DIRECT2DISPLAY)
-	while (!quit)
-	{
-		auto tStart = std::chrono::high_resolution_clock::now();
-		if (viewUpdated)
-		{
-			viewUpdated = false;
-			viewChanged();
-		}
-		render();
-		frameCounter++;
-		auto tEnd = std::chrono::high_resolution_clock::now();
-		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-		frameTimer = tDiff / 1000.0f;
-		mCamera.update(frameTimer);
-		if (mCamera.moving())
-		{
-			viewUpdated = true;
-		}
-		// Convert to clamped timer value
-		if (!paused)
-		{
-			timer += timerSpeed * frameTimer;
-			if (timer > 1.0)
-			{
-				timer -= 1.0f;
-			}
-		}
-		fpsTimer += (float)tDiff;
-		if (fpsTimer > 1000.0f)
-		{
-			lastFPS = frameCounter;
-			updateTextOverlay();
-			fpsTimer = 0.0f;
-			frameCounter = 0;
-		}
-	}
-#elif defined(__linux__)
-	xcb_flush(connection);
-	while (!quit)
-	{
-		auto tStart = std::chrono::high_resolution_clock::now();
-		if (viewUpdated)
-		{
-			viewUpdated = false;
-			viewChanged();
-		}
-		xcb_generic_event_t *event;
-		while ((event = xcb_poll_for_event(connection)))
-		{
-			handleEvent(event);
-			free(event);
-		}
-		render();
-		frameCounter++;
-		auto tEnd = std::chrono::high_resolution_clock::now();
-		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-		frameTimer = tDiff / 1000.0f;
-		mCamera.update(frameTimer);
-		if (mCamera.moving())
-		{
-			viewUpdated = true;
-		}
-		// Convert to clamped timer value
-		if (!paused)
-		{
-			timer += timerSpeed * frameTimer;
-			if (timer > 1.0)
-			{
-				timer -= 1.0f;
-			}
-		}
-		fpsTimer += (float)tDiff;
-		if (fpsTimer > 1000.0f)
-		{
-			if (!mEnableTextOverlay)
-			{
-				std::string windowTitle = getWindowTitle();
-				xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-					mHwndWinow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-					windowTitle.size(), windowTitle.c_str());
-			}
-			lastFPS = frameCounter;
-			updateTextOverlay();
-			fpsTimer = 0.0f;
-			frameCounter = 0;
-		}
-	}
-#endif
 	// Flush device to make sure all resources can be freed 
 	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
 
 }
 
-void Game::updateTextOverlay()
-{
-	if (!mEnableTextOverlay)
-		return;
-
-	mTextOverlay->beginTextUpdate();
-
-	mTextOverlay->addText(title, 5.0f, 5.0f, VulkanTextOverlay::alignLeft);
-
-	std::stringstream ss;
-	ss << std::fixed << std::setprecision(3) << (frameTimer * 1000.0f) << "ms (" << lastFPS << " fps)";
-	mTextOverlay->addText(ss.str(), 5.0f, 25.0f, VulkanTextOverlay::alignLeft);
-
-	mTextOverlay->addText(mVulkanDevice->mProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
-
-	getOverlayText(mTextOverlay);
-
-	mTextOverlay->endTextUpdate();
-}
 
 void Game::getOverlayText(VulkanTextOverlay *textOverlay)
 {
@@ -616,44 +305,12 @@ void Game::getOverlayText(VulkanTextOverlay *textOverlay)
 void Game::prepareFrame()
 {
 	// Acquire the next image from the swap chaing
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(semaphores.presentComplete, &mCurrentBuffer));
+	VK_CHECK_RESULT(mSwapChain.acquireNextImage(semaphores.presentComplete));
 }
 
 void Game::submitFrame()
 {
-	bool submitTextOverlay = mEnableTextOverlay && mTextOverlay->mVisible;
-
-	if (submitTextOverlay)
-	{
-		// Wait for color attachment output to finish before rendering the text overlay
-		VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		mSubmitInfo.pWaitDstStageMask = &stageFlags;
-
-		// Set semaphores
-		// Wait for render complete semaphore
-		mSubmitInfo.waitSemaphoreCount = 1;
-		mSubmitInfo.pWaitSemaphores = &semaphores.renderComplete;
-		// Signal ready with text overlay complete semaphpre
-		mSubmitInfo.signalSemaphoreCount = 1;
-		mSubmitInfo.pSignalSemaphores = &semaphores.textOverlayComplete;
-
-		// Submit current text overlay command buffer
-		mSubmitInfo.commandBufferCount = 1;
-		mSubmitInfo.pCommandBuffers = &mTextOverlay->mCmdBuffers[mCurrentBuffer];
-		VK_CHECK_RESULT(vkQueueSubmit(mVulkanDevice->mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
-
-		// Reset stage mask
-		mSubmitInfo.pWaitDstStageMask = &submitPipelineStages;
-		// Reset wait and signal semaphores for rendering next frame
-		// Wait for swap chain presentation to finish
-		mSubmitInfo.waitSemaphoreCount = 1;
-		mSubmitInfo.pWaitSemaphores = &semaphores.presentComplete;
-		// Signal ready with offscreen semaphore
-		mSubmitInfo.signalSemaphoreCount = 1;
-		mSubmitInfo.pSignalSemaphores = &semaphores.renderComplete;
-	}
-
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mVulkanDevice->mQueue, mCurrentBuffer, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
+	VK_CHECK_RESULT(mSwapChain.queuePresent(mVulkanDevice->mQueue, semaphores.renderComplete));
 	VK_CHECK_RESULT(vkQueueWaitIdle(mVulkanDevice->mQueue));
 }
 
@@ -675,290 +332,13 @@ void Game::prepareSynchronizationPrimitives()
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	// Create in signaled state so we don't wait on first render of each command buffer
 	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	mWaitFences.resize(mDrawCmdBuffers.size());
+	mWaitFences.resize(mSwapChain.buffers.size());
 	for (auto& fence : mWaitFences)
 	{
 		VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
 	}
 }
-void Game::prepareUniformBuffers()
-{
-	// Prepare and initialize a uniform buffer block containing shader uniforms
-	// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
-	VkMemoryRequirements memReqs;
 
-	// Vertex shader uniform buffer block
-	VkBufferCreateInfo bufferInfo = {};
-	VkMemoryAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.pNext = nullptr;
-	allocInfo.allocationSize = 0;
-	allocInfo.memoryTypeIndex = 0;
-
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = sizeof(mUboVS);
-	// This buffer will be used as a uniform buffer
-	bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-	// Create a new buffer
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferInfo, nullptr, &mUniformDataVS.buffer));
-	// Get memory requirements including size, alignment and memory type 
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, &memReqs);
-	allocInfo.allocationSize = memReqs.size;
-	// Get the memory type index that supports host visibile memory access
-	// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
-	// We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
-	// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
-	allocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	// Allocate memory for the uniform buffer
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
-	// Bind memory to buffer
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
-
-	// Store information in the uniform's descriptor that is used by the descriptor set
-	mUniformDataVS.descriptor.buffer = mUniformDataVS.buffer;
-	mUniformDataVS.descriptor.offset = 0;
-	mUniformDataVS.descriptor.range = sizeof(mUboVS);
-
-	updateUniformBuffers();
-}
-
-void Game::updateUniformBuffers()
-{
-	// Update matrices
-	float aspect = (float)width / (float)height;
-	vkcore::Matrix::createPerspective(60.0f, 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
-	//mUboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 256.0f);
-	//mUboVS.projectionMatrix = glm::mat4();
-	//mUboVS.viewMatrix.translate(0.0f, 0.0f, -1.0f);
-	//mUboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
-	//mUboVS.viewMatrix = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
-	//mUboVS.viewMatrix = glm::translate(mUboVS.viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
-	//mUboVS.viewMatrix = glm::mat4();
-	//std::cout.precision(4);
-	//std::cout << mZoom << std::endl;
-
-	Matrix::createTranslation(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
-	//mUboVS.viewMatrix.translate(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
-	char szTmp[256] = {};
-	sprintf(szTmp, "zoom=%f", mZoom);
-	OutputDebugString(szTmp);
-	//mUboVS.modelMatrix = glm::mat4();
-	//mUboVS.modelMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -1.7));
-	//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	//mUboVS.modelMatrix.rotate(vkcore::Vector3(1.0f, 0.0f, 0.0f), mRotation.x);
-	Matrix::createRotationX(mRotation.x, &mUboVS.modelMatrix);
-	mUboVS.modelMatrix.rotateY(mRotation.y);
-	mUboVS.modelMatrix.rotateZ(mRotation.z);
-	//Matrix::createRotationY(mRotation.y, &mUboVS.modelMatrix);
-	//mat.rotate(vkcore::Vector3(0.0f, 1.0f, 0.0f), mRotation.y, &mUboVS.modelMatrix);
-	//mUboVS.modelMatrix.rotate(vkcore::Vector3(0.0f, 0.0f, 1.0f), mRotation.z);
-	//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-	//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-	//mUboVS.modelMatrix = glm::scale(glm::mat4(), glm::vec3(1.0f / 400.0f, 1/300.0f, 0.0f));
-	//mUboVS.modelMatrix = glm::mat4();
-
-	uint8_t *pData;
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
-	memcpy(pData, &mUboVS, sizeof(mUboVS));
-	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
-}
-
-void Game::setupDescriptorSetLayout()
-{
-	// Setup layout of descriptors used in this example
-	// Basically connects the different shader stages to descriptors for binding uniform buffers, image samplers, etc.
-	// So every shader binding should map to one descriptor set layout binding
-
-	// Binding 0: Uniform buffer (Vertex shader)
-	VkDescriptorSetLayoutBinding layoutBinding = {};
-	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	layoutBinding.descriptorCount = 1;
-	layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	layoutBinding.pImmutableSamplers = nullptr;
-
-	VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-	descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorLayout.pNext = nullptr;
-	descriptorLayout.bindingCount = 1;
-	descriptorLayout.pBindings = &layoutBinding;
-
-	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
-
-	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
-	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
-	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
-	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pPipelineLayoutCreateInfo.pNext = nullptr;
-	pPipelineLayoutCreateInfo.setLayoutCount = 1;
-	pPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
-
-	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
-
-}
-void Game::preparePipelines()
-{
-	// Create the graphics pipeline used in this example
-	// Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine
-	// A pipeline is then stored and hashed on the GPU making pipeline changes very fast
-	// Note: There are still a few dynamic states that are not directly part of the pipeline (but the info that they are used is)
-
-	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
-	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
-	pipelineCreateInfo.layout = mPipelineLayout;
-	// Renderpass this pipeline is attached to
-	pipelineCreateInfo.renderPass = mRenderPass;
-
-	// Construct the differnent states making up the pipeline
-
-	// Input assembly state describes how primitives are assembled
-	// This pipeline will assemble vertex data as a triangle lists (though we only use one triangle)
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
-	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-
-	// Rasterization state
-	VkPipelineRasterizationStateCreateInfo rasterizationState = {};
-	rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizationState.cullMode = VK_CULL_MODE_NONE;
-	rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-	rasterizationState.depthClampEnable = VK_FALSE;
-	rasterizationState.rasterizerDiscardEnable = VK_FALSE;
-	rasterizationState.depthBiasEnable = VK_FALSE;
-	rasterizationState.lineWidth = 1.0f;
-
-	// Color blend state describes how blend factors are calculated (if used)
-	// We need one blend attachment state per color attachment (even if blending is not used
-	VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
-	blendAttachmentState[0].colorWriteMask = 0xf;
-	blendAttachmentState[0].blendEnable = VK_FALSE;
-	VkPipelineColorBlendStateCreateInfo colorBlendState = {};
-	colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	colorBlendState.attachmentCount = 1;
-	colorBlendState.pAttachments = blendAttachmentState;
-
-	// Viewport state sets the number of viewports and scissor used in this pipeline
-	// Note: This is actually overriden by the dynamic states (see below)
-	VkPipelineViewportStateCreateInfo viewportState = {};
-	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewportState.viewportCount = 1;
-	viewportState.scissorCount = 1;
-
-	// Enable dynamic states
-	// Most states are baked into the pipeline, but there are still a few dynamic states that can be changed within a command buffer
-	// To be able to change these we need do specify which dynamic states will be changed using this pipeline. Their actual states are set later on in the command buffer.
-	// For this example we will set the viewport and scissor using dynamic states
-	std::vector<VkDynamicState> dynamicStateEnables;
-	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
-	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
-	VkPipelineDynamicStateCreateInfo dynamicState = {};
-	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicState.pDynamicStates = dynamicStateEnables.data();
-	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
-
-	// Depth and stencil state containing depth and stencil compare and test operations
-	// We only use depth tests and want depth tests and writes to be enabled and compare with less or equal
-	VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
-	depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depthStencilState.depthTestEnable = VK_TRUE;
-	depthStencilState.depthWriteEnable = VK_TRUE;
-	depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-	depthStencilState.depthBoundsTestEnable = VK_FALSE;
-	depthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
-	depthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
-	depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
-	depthStencilState.stencilTestEnable = VK_FALSE;
-	depthStencilState.front = depthStencilState.back;
-
-	// Multi sampling state
-	// This example does not make use fo multi sampling (for anti-aliasing), the state must still be set and passed to the pipeline
-	VkPipelineMultisampleStateCreateInfo multisampleState = {};
-	multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-	multisampleState.pSampleMask = nullptr;
-
-	// Load shaders
-	// Vulkan loads it's shaders from an immediate binary representation called SPIR-V
-	// Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
-	std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
-	shaderStages[0] = loadShader(getAssetPath() + "shaders/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-	shaderStages[1] = loadShader(getAssetPath() + "shaders/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-
-	// Assign the pipeline states to the pipeline creation info structure
-	pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-	pipelineCreateInfo.pStages = shaderStages.data();
-	pipelineCreateInfo.pVertexInputState = &mVertices.inputState;
-	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
-	pipelineCreateInfo.pRasterizationState = &rasterizationState;
-	pipelineCreateInfo.pColorBlendState = &colorBlendState;
-	pipelineCreateInfo.pMultisampleState = &multisampleState;
-	pipelineCreateInfo.pViewportState = &viewportState;
-	pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-	pipelineCreateInfo.renderPass = mRenderPass;
-	pipelineCreateInfo.pDynamicState = &dynamicState;
-
-	// Create rendering pipeline using the specified states
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
-
-}
-
-void Game::setupDescriptorPool()
-{
-	// We need to tell the API the number of max. requested descriptors per type
-	VkDescriptorPoolSize typeCounts[1];
-	// This example only uses one descriptor type (uniform buffer) and only requests one descriptor of this type
-	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	typeCounts[0].descriptorCount = 1;
-	// For additional types you need to add new entries in the type count list
-	// E.g. for two combined image samplers :
-	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	// typeCounts[1].descriptorCount = 2;
-
-	// Create the global descriptor pool
-	// All descriptors used in this example are allocated from this pool
-	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptorPoolInfo.pNext = nullptr;
-	descriptorPoolInfo.poolSizeCount = 1;
-	descriptorPoolInfo.pPoolSizes = typeCounts;
-	// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
-	descriptorPoolInfo.maxSets = 1;
-
-	VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
-
-}
-void Game::setupDescriptorSet()
-{
-	// Allocate a new descriptor set from the global descriptor pool
-	VkDescriptorSetAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = descriptorPool;
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &mDescriptorSetLayout;
-
-	VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
-
-	// Update the descriptor set determining the shader binding points
-	// For every binding point used in a shader there needs to be one
-	// descriptor set matching that binding point
-
-	VkWriteDescriptorSet writeDescriptorSet = {};
-
-	// Binding 0 : Uniform buffer
-	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSet.dstSet = mDescriptorSet;
-	writeDescriptorSet.descriptorCount = 1;
-	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSet.pBufferInfo = &mUniformDataVS.descriptor;
-	// Binds this uniform buffer to binding point 0
-	writeDescriptorSet.dstBinding = 0;
-
-	vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
-
-}
 
 void Game::InitVulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 {
@@ -1008,38 +388,12 @@ void Game::UnInitVulkan()
 {
 	// Clean up Vulkan resources
 	mSwapChain.cleanup();
-	if (descriptorPool != VK_NULL_HANDLE)
-	{
-		vkDestroyDescriptorPool(mVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
-	}
-	if (setupCmdBuffer != VK_NULL_HANDLE)
-	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
-
-	}
-	destroyCommandBuffers();
-	vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
-	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
-	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
-	}
-
-	for (auto& shaderModule : shaderModules)
-	{
-		vkDestroyShaderModule(mVulkanDevice->mLogicalDevice, shaderModule, nullptr);
-	}
-	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
-
-	vkDestroyPipelineCache(mVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
 
 	if (textureLoader)
 	{
 		delete textureLoader;
 	}
 
-	vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
 
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
@@ -1048,13 +402,6 @@ void Game::UnInitVulkan()
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, presentCompleteSemaphore, nullptr);
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, renderCompleteSemaphore, nullptr);
 
-	vkDestroyPipeline(mVulkanDevice->mLogicalDevice, mPipeline, nullptr);
-
-	vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
-
-	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
 
 	for (auto& fence : mWaitFences)
 	{
@@ -1401,17 +748,17 @@ void Game::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			mousePos.y = (float)posy;
 		}
 		break;
-	case WM_SIZE:
-		if ((prepared) && (wParam != SIZE_MINIMIZED))
-		{
-			if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED)))
-			{
-				destWidth = LOWORD(lParam);
-				destHeight = HIWORD(lParam);
-				windowResize();
-			}
-		}
-		break;
+	//case WM_SIZE:
+	//	if ((prepared) && (wParam != SIZE_MINIMIZED))
+	//	{
+	//		if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED)))
+	//		{
+	//			destWidth = LOWORD(lParam);
+	//			destHeight = HIWORD(lParam);
+	//			windowResize();
+	//		}
+	//	}
+	//	break;
 	case WM_ENTERSIZEMOVE:
 		resizing = true;
 		break;
@@ -1735,39 +1082,14 @@ void Game::handleEvent(const xcb_generic_event_t *event)
 
 void Game::render()
 {
-	// Get next image in the swap chain (back/front buffer)
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(presentCompleteSemaphore, &mCurrentBuffer));
+	
 
-	// Use a fence to wait until the command buffer has finished execution before using it again
-	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
-	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
-
-	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	// The submit info structure specifices a command buffer queue submission batch
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pWaitDstStageMask = &waitStageMask;									// Pointer to the list of pipeline stages that the semaphore waits will occur at
-	submitInfo.pWaitSemaphores = &presentCompleteSemaphore;							// Semaphore(s) to wait upon before the submitted command buffer starts executing
-	submitInfo.waitSemaphoreCount = 1;												// One wait semaphore																				
-	submitInfo.pSignalSemaphores = &renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
-	submitInfo.signalSemaphoreCount = 1;											// One signal semaphore
-	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];					// Command buffers(s) to execute in this batch (submission)
-	submitInfo.commandBufferCount = 1;												// One command buffer
-
-																					// Submit to the graphics queue passing a wait fence
-	VK_CHECK_RESULT(vkQueueSubmit(mVulkanDevice->mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
-
-	// Present the current buffer to the swap chain
-	// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
-	// This ensures that the image is not presented to the windowing system until all commands have been submitted
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mVulkanDevice->mQueue, mCurrentBuffer, renderCompleteSemaphore));
 }
 
 void Game::viewChanged()
 {
 	// Can be overrdiden in derived class
-	updateUniformBuffers();
+	
 }
 
 void Game::keyPressed(uint32_t keyCode)
@@ -1775,203 +1097,59 @@ void Game::keyPressed(uint32_t keyCode)
 	// Can be overriden in derived class
 }
 
-void Game::setupDepthStencil()
-{
-	VkImageCreateInfo imageCreateInfo = {};
-	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = NULL;
-	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageCreateInfo.format = mDepthFormat;
-	imageCreateInfo.extent = { width, height, 1 };
-	imageCreateInfo.mipLevels = 1;
-	imageCreateInfo.arrayLayers = 1;
-	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-	imageCreateInfo.flags = 0;
-
-	VkMemoryAllocateInfo memAllocateInfo = {};
-	memAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memAllocateInfo.pNext = NULL;
-	memAllocateInfo.allocationSize = 0;
-	memAllocateInfo.memoryTypeIndex = 0;
-
-	VkImageViewCreateInfo depthStencilView = {};
-	depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	depthStencilView.pNext = NULL;
-	depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	depthStencilView.format = mDepthFormat;
-	depthStencilView.flags = 0;
-	depthStencilView.subresourceRange = {};
-	depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-	depthStencilView.subresourceRange.baseMipLevel = 0;
-	depthStencilView.subresourceRange.levelCount = 1;
-	depthStencilView.subresourceRange.baseArrayLayer = 0;
-	depthStencilView.subresourceRange.layerCount = 1;
-
-	VkMemoryRequirements memReqs;
-
-	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &depthStencil.image));
-	vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
-	memAllocateInfo.allocationSize = memReqs.size;
-	memAllocateInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocateInfo, nullptr, &depthStencil.mem));
-	VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
-
-	depthStencilView.image = depthStencil.image;
-	VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
-}
-
-void Game::setupFrameBuffer()
-{
-	VkImageView attachments[2];
-
-	// Depth/Stencil attachment is the same for all frame buffers
-	attachments[1] = depthStencil.view;
-
-	VkFramebufferCreateInfo frameBufferCreateInfo = {};
-	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	frameBufferCreateInfo.pNext = NULL;
-	frameBufferCreateInfo.renderPass = mRenderPass;
-	frameBufferCreateInfo.attachmentCount = 2;
-	frameBufferCreateInfo.pAttachments = attachments;
-	frameBufferCreateInfo.width = width;
-	frameBufferCreateInfo.height = height;
-	frameBufferCreateInfo.layers = 1;
-
-	// Create frame buffers for every swap chain image
-	mFrameBuffers.resize(mSwapChain.mImageCount);
-	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
-	{
-		attachments[0] = mSwapChain.buffers[i].view;
-		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
-	}
-}
-
-void Game::setupRenderPass()
-{
-	std::array<VkAttachmentDescription, 2> attachments = {};
-	// Color attachment
-	attachments[0].format = mColorformat;
-	attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-	attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	// Depth attachment
-	attachments[1].format = mDepthFormat;
-	attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-	attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentReference colorReference = {};
-	colorReference.attachment = 0;
-	colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentReference depthReference = {};
-	depthReference.attachment = 1;
-	depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpassDescription = {};
-	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpassDescription.colorAttachmentCount = 1;
-	subpassDescription.pColorAttachments = &colorReference;
-	subpassDescription.pDepthStencilAttachment = &depthReference;
-	subpassDescription.inputAttachmentCount = 0;
-	subpassDescription.pInputAttachments = nullptr;
-	subpassDescription.preserveAttachmentCount = 0;
-	subpassDescription.pPreserveAttachments = nullptr;
-	subpassDescription.pResolveAttachments = nullptr;
-
-	// Subpass dependencies for layout transitions
-	std::array<VkSubpassDependency, 2> dependencies;
-
-	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependencies[0].dstSubpass = 0;
-	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	dependencies[1].srcSubpass = 0;
-	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	VkRenderPassCreateInfo renderPassInfo = {};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-	renderPassInfo.pAttachments = attachments.data();
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpassDescription;
-	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-	renderPassInfo.pDependencies = dependencies.data();
-
-	VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
-}
-
-void Game::windowResize()
-{
-	if (!prepared)
-	{
-		return;
-	}
-	prepared = false;
-
-	// Recreate swap chain
-	width = destWidth;
-	height = destHeight;
-	createSetupCommandBuffer();
-	setupSwapChain();
-
-	// Recreate the frame buffers
-
-	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
-	setupDepthStencil();
-
-	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
-	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
-	}
-	setupFrameBuffer();
-
-	flushSetupCommandBuffer();
-
-	// Command buffers need to be recreated as they may store
-	// references to the recreated frame buffer
-	destroyCommandBuffers();
-	createCommandBuffers();
-	buildCommandBuffers();
-
-	vkQueueWaitIdle(mVulkanDevice->mQueue);
-	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
-
-	if (mEnableTextOverlay)
-	{
-		mTextOverlay->reallocateCommandBuffers();
-		updateTextOverlay();
-	}
-
-	mCamera.updateAspectRatio((float)width / (float)height);
-
-	// Notify derived class
-	windowResized();
-	viewChanged();
-
-	prepared = true;
-}
+//
+//void Game::windowResize()
+//{
+//	if (!prepared)
+//	{
+//		return;
+//	}
+//	prepared = false;
+//
+//	// Recreate swap chain
+//	width = destWidth;
+//	height = destHeight;
+//	createSetupCommandBuffer();
+//	setupSwapChain();
+//
+//	// Recreate the frame buffers
+//
+//	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+//	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+//	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
+//	setupDepthStencil();
+//
+//	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
+//	{
+//		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
+//	}
+//	setupFrameBuffer();
+//
+//	flushSetupCommandBuffer();
+//
+//	// Command buffers need to be recreated as they may store
+//	// references to the recreated frame buffer
+//	destroyCommandBuffers();
+//	createCommandBuffers();
+//	buildCommandBuffers();
+//
+//	vkQueueWaitIdle(mVulkanDevice->mQueue);
+//	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
+//
+//	if (mEnableTextOverlay)
+//	{
+//		mTextOverlay->reallocateCommandBuffers();
+//		updateTextOverlay();
+//	}
+//
+//	mCamera.updateAspectRatio((float)width / (float)height);
+//
+//	// Notify derived class
+//	windowResized();
+//	viewChanged();
+//
+//	prepared = true;
+//}
 
 void Game::windowResized()
 {
@@ -2257,12 +1435,12 @@ void Game::frame()
 		prepareSynchronizationPrimitives();
 		initialize();
 		//prepareVertices(true);
-		prepareUniformBuffers();
-		setupDescriptorSetLayout();
-		preparePipelines();
-		setupDescriptorPool();
-		setupDescriptorSet();
-		buildCommandBuffers();
+		//prepareUniformBuffers();
+		//setupDescriptorSetLayout();
+		//preparePipelines();
+		//setupDescriptorPool();
+		//setupDescriptorSet();
+		//buildCommandBuffers();
       
         if (_scriptTarget)
             _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, initialize));
@@ -2345,7 +1523,7 @@ void Game::frame()
         //if (_scriptTarget)
         //    _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, update), 0);
 
-		render();
+		render(0);
         //// Graphics Rendering.
         //render(0);
 

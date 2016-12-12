@@ -27,18 +27,18 @@ public:
     void setIndexData(const void* indexData, unsigned int indexStart, unsigned int indexCount);
     bool isDynamic() const;
 
-private:
-   
-    MeshPart();
-    MeshPart(const MeshPart& copy);
-    static MeshPart* create(Mesh* mesh, unsigned int meshIndex, VkPrimitiveTopology primitiveType, Mesh::IndexFormat indexFormat, unsigned int indexCount, bool dynamic = false);
-
 	// Index buffer
 	struct
 	{
 		VkDeviceMemory mVKMemory;
 		VkBuffer mVKBuffer;
 	} mIndices;
+
+private:
+   
+    MeshPart();
+    MeshPart(const MeshPart& copy);
+    static MeshPart* create(Mesh* mesh, unsigned int meshIndex, VkPrimitiveTopology primitiveType, Mesh::IndexFormat indexFormat, unsigned int indexCount, bool dynamic = false);
 
     Mesh* mMesh;
     unsigned int mMeshIndex;

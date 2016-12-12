@@ -624,7 +624,6 @@ int Platform::enterMessagePump()
 				SetWindowText(_game->mHwndWinow, windowTitle.c_str());
 			}
 			_game->lastFPS = roundf(1.0f / _game->frameTimer);
-			_game->updateTextOverlay();
 			_game->fpsTimer = 0.0f;
 			_game->frameCounter = 0;
 		}

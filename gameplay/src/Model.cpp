@@ -114,6 +114,38 @@ Model::~Model()
     SAFE_DELETE(_skin);
 }
 
+void Model::UninitVulkan()
+{
+	if (descriptorPool != VK_NULL_HANDLE)
+	{
+		vkDestroyDescriptorPool(mVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
+	}
+
+	destroyCommandBuffers();
+	vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
+	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
+	{
+		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
+	}
+
+	for (auto& shaderModule : shaderModules)
+	{
+		vkDestroyShaderModule(mVulkanDevice->mLogicalDevice, shaderModule, nullptr);
+	}
+	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
+	vkDestroyPipelineCache(mVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
+	vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
+	vkDestroyPipeline(mVulkanDevice->mLogicalDevice, mPipeline, nullptr);
+	vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
+	vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
+	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
+	vkFreeMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
+
+	return;
+}
+
 Model* Model::create(Mesh* mesh)
 {
     GP_ASSERT(mesh);
@@ -349,10 +381,10 @@ unsigned int Model::draw(bool wireframe)
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mSwapChain.bufferindex];
+	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mSwapChain.mCurrentBuffer];
 	submitInfo.commandBufferCount = 1;
 
-	VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, mFence));
+	VK_CHECK_RESULT(vkQueueSubmit(mVulkanDevice->mQueue, 1, &submitInfo, mFence));
 
 	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mFence, VK_TRUE, UINT64_MAX));
 	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mFence));
@@ -360,6 +392,152 @@ unsigned int Model::draw(bool wireframe)
 
     return partCount;
 }
+
+
+void Model::setupDepthStencil()
+{
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageCreateInfo.format = mDepthFormat;
+	imageCreateInfo.extent = { width, height, 1 };
+	imageCreateInfo.mipLevels = 1;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	imageCreateInfo.flags = 0;
+
+	VkMemoryAllocateInfo memAllocateInfo = {};
+	memAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memAllocateInfo.pNext = NULL;
+	memAllocateInfo.allocationSize = 0;
+	memAllocateInfo.memoryTypeIndex = 0;
+
+	VkImageViewCreateInfo depthStencilView = {};
+	depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	depthStencilView.pNext = NULL;
+	depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	depthStencilView.format = mDepthFormat;
+	depthStencilView.flags = 0;
+	depthStencilView.subresourceRange = {};
+	depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+	depthStencilView.subresourceRange.baseMipLevel = 0;
+	depthStencilView.subresourceRange.levelCount = 1;
+	depthStencilView.subresourceRange.baseArrayLayer = 0;
+	depthStencilView.subresourceRange.layerCount = 1;
+
+	VkMemoryRequirements memReqs;
+
+	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &depthStencil.image));
+	vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
+	memAllocateInfo.allocationSize = memReqs.size;
+	memAllocateInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocateInfo, nullptr, &depthStencil.mem));
+	VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
+
+	depthStencilView.image = depthStencil.image;
+	VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
+}
+
+void Model::createPipelineCache()
+{
+	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
+	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+	VK_CHECK_RESULT(vkCreatePipelineCache(mVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+}
+
+
+void Model::setupDescriptorPool()
+{
+	// We need to tell the API the number of max. requested descriptors per type
+	VkDescriptorPoolSize typeCounts[1];
+	// This example only uses one descriptor type (uniform buffer) and only requests one descriptor of this type
+	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	typeCounts[0].descriptorCount = 1;
+	// For additional types you need to add new entries in the type count list
+	// E.g. for two combined image samplers :
+	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	// typeCounts[1].descriptorCount = 2;
+
+	// Create the global descriptor pool
+	// All descriptors used in this example are allocated from this pool
+	VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptorPoolInfo.pNext = nullptr;
+	descriptorPoolInfo.poolSizeCount = 1;
+	descriptorPoolInfo.pPoolSizes = typeCounts;
+	// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
+	descriptorPoolInfo.maxSets = 1;
+
+	VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+
+}
+
+
+void Model::setupDescriptorSet()
+{
+	// Allocate a new descriptor set from the global descriptor pool
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = descriptorPool;
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &mDescriptorSetLayout;
+
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
+
+	// Update the descriptor set determining the shader binding points
+	// For every binding point used in a shader there needs to be one
+	// descriptor set matching that binding point
+
+	VkWriteDescriptorSet writeDescriptorSet = {};
+
+	// Binding 0 : Uniform buffer
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.dstSet = mDescriptorSet;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writeDescriptorSet.pBufferInfo = &mUniformDataVS.descriptor;
+	// Binds this uniform buffer to binding point 0
+	writeDescriptorSet.dstBinding = 0;
+
+	vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+
+}
+
+void Model::setupDescriptorSetLayout()
+{
+	// Setup layout of descriptors used in this example
+	// Basically connects the different shader stages to descriptors for binding uniform buffers, image samplers, etc.
+	// So every shader binding should map to one descriptor set layout binding
+
+	// Binding 0: Uniform buffer (Vertex shader)
+	VkDescriptorSetLayoutBinding layoutBinding = {};
+	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	layoutBinding.descriptorCount = 1;
+	layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	layoutBinding.pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+	descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorLayout.pNext = nullptr;
+	descriptorLayout.bindingCount = 1;
+	descriptorLayout.pBindings = &layoutBinding;
+
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
+
+	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
+	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
+	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
+	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pPipelineLayoutCreateInfo.pNext = nullptr;
+	pPipelineLayoutCreateInfo.setLayoutCount = 1;
+	pPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
+
+	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+}
+
 
 void Model::createCommandPool()
 {
@@ -446,13 +624,13 @@ void Model::buildCommandBuffers()
 
 		// Bind triangle vertex buffer (contains position and colors)
 		VkDeviceSize offsets[1] = { 0 };
-		vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &mVertices.buffer, offsets);
+		vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &_mesh->mVertices.buffer, offsets);
 
 		// Bind triangle index buffer
-		vkCmdBindIndexBuffer(mDrawCmdBuffers[i], mIndices.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(mDrawCmdBuffers[i], _mesh->getPart(0)->mIndices.mVKBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		// Draw indexed triangle
-		vkCmdDrawIndexed(mDrawCmdBuffers[i], mIndices.count, 1, 0, 0, 1);
+		vkCmdDrawIndexed(mDrawCmdBuffers[i], _mesh->getPart(0)->mIndexCount, 1, 0, 0, 1);
 
 		vkCmdEndRenderPass(mDrawCmdBuffers[i]);
 
@@ -540,6 +718,217 @@ void Model::setupRenderPass()
 	renderPassInfo.pDependencies = dependencies.data();
 
 	VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
+	return;
+}
+
+
+void Model::setupFrameBuffer()
+{
+	VkImageView attachments[2];
+
+	// Depth/Stencil attachment is the same for all frame buffers
+	attachments[1] = depthStencil.view;
+
+	VkFramebufferCreateInfo frameBufferCreateInfo = {};
+	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	frameBufferCreateInfo.pNext = NULL;
+	frameBufferCreateInfo.renderPass = mRenderPass;
+	frameBufferCreateInfo.attachmentCount = 2;
+	frameBufferCreateInfo.pAttachments = attachments;
+	frameBufferCreateInfo.width = width;
+	frameBufferCreateInfo.height = height;
+	frameBufferCreateInfo.layers = 1;
+
+	// Create frame buffers for every swap chain image
+	mFrameBuffers.resize(mSwapChain.mImageCount);
+	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
+	{
+		attachments[0] = mSwapChain.buffers[i].view;
+		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
+	}
+}
+
+void Model::preparePipelines()
+{
+	// Create the graphics pipeline used in this example
+	// Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine
+	// A pipeline is then stored and hashed on the GPU making pipeline changes very fast
+	// Note: There are still a few dynamic states that are not directly part of the pipeline (but the info that they are used is)
+
+	VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
+	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
+	pipelineCreateInfo.layout = mPipelineLayout;
+	// Renderpass this pipeline is attached to
+	pipelineCreateInfo.renderPass = mRenderPass;
+
+	// Construct the differnent states making up the pipeline
+
+	// Input assembly state describes how primitives are assembled
+	// This pipeline will assemble vertex data as a triangle lists (though we only use one triangle)
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
+	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+	// Rasterization state
+	VkPipelineRasterizationStateCreateInfo rasterizationState = {};
+	rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterizationState.cullMode = VK_CULL_MODE_NONE;
+	rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterizationState.depthClampEnable = VK_FALSE;
+	rasterizationState.rasterizerDiscardEnable = VK_FALSE;
+	rasterizationState.depthBiasEnable = VK_FALSE;
+	rasterizationState.lineWidth = 1.0f;
+
+	// Color blend state describes how blend factors are calculated (if used)
+	// We need one blend attachment state per color attachment (even if blending is not used
+	VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
+	blendAttachmentState[0].colorWriteMask = 0xf;
+	blendAttachmentState[0].blendEnable = VK_FALSE;
+	VkPipelineColorBlendStateCreateInfo colorBlendState = {};
+	colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	colorBlendState.attachmentCount = 1;
+	colorBlendState.pAttachments = blendAttachmentState;
+
+	// Viewport state sets the number of viewports and scissor used in this pipeline
+	// Note: This is actually overriden by the dynamic states (see below)
+	VkPipelineViewportStateCreateInfo viewportState = {};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState.viewportCount = 1;
+	viewportState.scissorCount = 1;
+
+	// Enable dynamic states
+	// Most states are baked into the pipeline, but there are still a few dynamic states that can be changed within a command buffer
+	// To be able to change these we need do specify which dynamic states will be changed using this pipeline. Their actual states are set later on in the command buffer.
+	// For this example we will set the viewport and scissor using dynamic states
+	std::vector<VkDynamicState> dynamicStateEnables;
+	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+	dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
+	VkPipelineDynamicStateCreateInfo dynamicState = {};
+	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicState.pDynamicStates = dynamicStateEnables.data();
+	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+
+	// Depth and stencil state containing depth and stencil compare and test operations
+	// We only use depth tests and want depth tests and writes to be enabled and compare with less or equal
+	VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
+	depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencilState.depthTestEnable = VK_TRUE;
+	depthStencilState.depthWriteEnable = VK_TRUE;
+	depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	depthStencilState.depthBoundsTestEnable = VK_FALSE;
+	depthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
+	depthStencilState.back.passOp = VK_STENCIL_OP_KEEP;
+	depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
+	depthStencilState.stencilTestEnable = VK_FALSE;
+	depthStencilState.front = depthStencilState.back;
+
+	// Multi sampling state
+	// This example does not make use fo multi sampling (for anti-aliasing), the state must still be set and passed to the pipeline
+	VkPipelineMultisampleStateCreateInfo multisampleState = {};
+	multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	multisampleState.pSampleMask = nullptr;
+
+	// Load shaders
+	// Vulkan loads it's shaders from an immediate binary representation called SPIR-V
+	// Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
+	std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
+	shaderStages[0] = loadShader(mVulkanDevice->getAssetPath() + "shaders/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+	shaderStages[1] = loadShader(mVulkanDevice->getAssetPath() + "shaders/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+
+	// Assign the pipeline states to the pipeline creation info structure
+	pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+	pipelineCreateInfo.pStages = shaderStages.data();
+	pipelineCreateInfo.pVertexInputState = &_mesh->mVertices.inputState;
+	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
+	pipelineCreateInfo.pRasterizationState = &rasterizationState;
+	pipelineCreateInfo.pColorBlendState = &colorBlendState;
+	pipelineCreateInfo.pMultisampleState = &multisampleState;
+	pipelineCreateInfo.pViewportState = &viewportState;
+	pipelineCreateInfo.pDepthStencilState = &depthStencilState;
+	pipelineCreateInfo.renderPass = mRenderPass;
+	pipelineCreateInfo.pDynamicState = &dynamicState;
+
+	// Create rendering pipeline using the specified states
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
+
+}
+
+
+
+void Model::prepareUniformBuffers()
+{
+	// Prepare and initialize a uniform buffer block containing shader uniforms
+	// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
+	VkMemoryRequirements memReqs;
+
+	// Vertex shader uniform buffer block
+	VkBufferCreateInfo bufferInfo = {};
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.pNext = nullptr;
+	allocInfo.allocationSize = 0;
+	allocInfo.memoryTypeIndex = 0;
+
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = sizeof(mUboVS);
+	// This buffer will be used as a uniform buffer
+	bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+	// Create a new buffer
+	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferInfo, nullptr, &mUniformDataVS.buffer));
+	// Get memory requirements including size, alignment and memory type 
+	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, &memReqs);
+	allocInfo.allocationSize = memReqs.size;
+	// Get the memory type index that supports host visibile memory access
+	// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
+	// We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
+	// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
+	allocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	// Allocate memory for the uniform buffer
+	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
+	// Bind memory to buffer
+	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
+
+	// Store information in the uniform's descriptor that is used by the descriptor set
+	mUniformDataVS.descriptor.buffer = mUniformDataVS.buffer;
+	mUniformDataVS.descriptor.offset = 0;
+	mUniformDataVS.descriptor.range = sizeof(mUboVS);
+
+	updateUniformBuffers();
+}
+
+void Model::updateUniformBuffers()
+{
+	// Update matrices
+	float aspect = (float)width / (float)height;
+	vkcore::Matrix::createPerspective(MATH_DEG_TO_RAD(60.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
+	Matrix::createTranslation(0.0f, 0.0f, -10.0f, &mUboVS.viewMatrix);
+	Matrix::createRotationX( 0.0f, &mUboVS.modelMatrix);
+	mUboVS.modelMatrix.rotateY(0.0f);
+	mUboVS.modelMatrix.rotateZ(0.0f);
+	uint8_t *pData;
+	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
+	memcpy(pData, &mUboVS, sizeof(mUboVS));
+	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
+}
+
+VkPipelineShaderStageCreateInfo Model::loadShader(std::string fileName, VkShaderStageFlagBits stage)
+{
+	VkPipelineShaderStageCreateInfo shaderStage = {};
+	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStage.stage = stage;
+#if defined(__ANDROID__)
+	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+#else
+	shaderStage.module = vkTools::loadShader(fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+#endif
+	shaderStage.pName = "main"; // todo : make param
+	assert(shaderStage.module != NULL);
+	shaderModules.push_back(shaderStage.module);
+	return shaderStage;
 }
 
 

@@ -323,19 +323,19 @@ void VulkanSwapChain::create(uint32_t *width, uint32_t *height, bool vsync)
 	}
 }
 
-VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *imageIndex)
+VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore)
 {
-	return fpAcquireNextImageKHR(device, mSwapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, imageIndex);
+	return fpAcquireNextImageKHR(device, mSwapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &mCurrentBuffer);
 }
 
-VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
+VkResult VulkanSwapChain::queuePresent(VkQueue queue, VkSemaphore waitSemaphore)
 {
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.pNext = NULL;
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = &mSwapChain;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pImageIndices = &mCurrentBuffer;
 	// Check if a wait semaphore has been specified to wait for before presenting the image
 	if (waitSemaphore != VK_NULL_HANDLE)
 	{

@@ -60,14 +60,6 @@ protected:
 	VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	VkSubmitInfo mSubmitInfo;	
 	
-	
-	uint32_t mCurrentBuffer = 0;
-	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-	
-	VkPipelineCache pipelineCache;
-	std::vector<VkShaderModule> shaderModules;
-	std::vector<VkFramebuffer>mFrameBuffers;
-	
 
 	struct
 	{
@@ -80,34 +72,6 @@ protected:
 	VkSemaphore presentCompleteSemaphore;
 	VkSemaphore renderCompleteSemaphore;
 	std::vector<VkFence> mWaitFences;
-
-	// For simplicity we use the same uniform block layout as in the shader:
-	//	layout(set = 0, binding = 0) uniform UBO
-	//	{
-	//		mat4 projectionMatrix;
-	//		mat4 modelMatrix;
-	//		mat4 viewMatrix;
-	//	} ubo;
-	struct
-	{
-		vkcore::Matrix projectionMatrix;
-		vkcore::Matrix modelMatrix;
-		vkcore::Matrix viewMatrix;
-	} mUboVS;
-
-	// Uniform block object
-	struct
-	{
-		VkDeviceMemory memory;
-		VkBuffer buffer;
-		VkDescriptorBufferInfo descriptor;
-	}  mUniformDataVS;
-
-	VkPipelineLayout mPipelineLayout;
-	VkPipeline mPipeline;
-	VkDescriptorSetLayout mDescriptorSetLayout;
-	VkDescriptorSet mDescriptorSet;
-
 
 public:
 	bool prepared = false;
@@ -145,12 +109,6 @@ public:
 	std::string title = "VkCore";
 	std::string name = "VkCore";
 
-	struct
-	{
-		VkImage image;
-		VkDeviceMemory mem;
-		VkImageView view;
-	} depthStencil;
 
 	// Gamepad state (only one pad supported)
 	struct
@@ -191,7 +149,7 @@ public:
 	void windowResize();
 	VkResult createInstance(bool enableValidation);
 	std::string getWindowTitle();
-	const std::string getAssetPath();
+	
 
 #if defined(_WIN32)
 	void setupConsole(std::string title);
@@ -218,12 +176,6 @@ public:
 	
 
 	// Setup default depth and stencil views
-	virtual void setupDepthStencil();
-	// Create framebuffers for all requested swap chain images
-	// Can be overriden in derived class to setup a custom framebuffer (e.g. for MSAA)
-	virtual void setupFrameBuffer();
-	// Setup a default render pass
-	// Can be overriden in derived class to setup a custom render pass (e.g. for MSAA)
 
 
 	// Connect and prepare the swap chain
@@ -231,53 +183,13 @@ public:
 	// Create swap chain images
 	void setupSwapChain();
 
-	// Check if command buffers are valid (!= VK_NULL_HANDLE)
-	bool checkCommandBuffers();
-	// Create command buffers for drawing commands
-	void createCommandBuffers();
-	// Destroy all command buffers and set their handles to VK_NULL_HANDLE
-	// May be necessary during runtime if options are toggled 
-	void destroyCommandBuffers();
-	// Create command buffer for setup commands
-	void createSetupCommandBuffer();
-	// Finalize setup command bufferm submit it to the queue and remove it
-	void flushSetupCommandBuffer();
-
-	// Command buffer creation
-	// Creates and returns a new command buffer
-	VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin);
-	// End the command buffer, submit it to the queue and free (if requested)
-	// Note : Waits for the queue to become idle
-	void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free);
-
-	// Create a cache pool for rendering pipelines
-	void createPipelineCache();
-
 	// Prepare commonly used Vulkan functions
 	virtual void prepare();
 
-	// Load a SPIR-V shader
-	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
 
-	
-
-	// Load a mesh (using ASSIMP) and create vulkan vertex and index buffers with given vertex layout
-	void loadMesh(
-		std::string fiename,
-		vkMeshLoader::MeshBuffer *meshBuffer,
-		std::vector<vkMeshLoader::VertexLayout> vertexLayout,
-		float scale);
-	void loadMesh(
-		std::string filename,
-		vkMeshLoader::MeshBuffer *meshBuffer,
-		std::vector<vkMeshLoader::VertexLayout>
-		vertexLayout,
-		vkMeshLoader::MeshCreateInfo *meshCreateInfo);
 
 	// Start the main render loop
 	void renderLoop();
-
-	void updateTextOverlay();
 
 	// Called when the text overlay is updating
 	// Can be overriden in derived class to add custom text to the overlay
@@ -295,13 +207,9 @@ public:
 	////////////////////////
 
 	virtual void prepareSynchronizationPrimitives();
-	virtual void prepareUniformBuffers();
-	void updateUniformBuffers();
 
-	virtual void setupDescriptorSetLayout();
-	virtual void preparePipelines();
-	virtual void setupDescriptorPool();
-	virtual void setupDescriptorSet();
+
+
 
 	///////////////////////////////
 

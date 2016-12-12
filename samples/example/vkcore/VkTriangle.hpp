@@ -351,7 +351,7 @@ public:
 	{
 		// Update matrices
 		float aspect = (float)width / (float)height;
-		vkcore::Matrix::createPerspective(60.0f, 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
+		vkcore::Matrix::createPerspective(MATH_DEG_TO_RAD(60.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
 		//mUboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 256.0f);
 		//mUboVS.projectionMatrix = glm::mat4();
 		//mUboVS.viewMatrix.translate(0.0f, 0.0f, -1.0f);
@@ -371,9 +371,9 @@ public:
 		//mUboVS.modelMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -1.7));
 		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		//mUboVS.modelMatrix.rotate(vkcore::Vector3(1.0f, 0.0f, 0.0f), mRotation.x);
-		Matrix::createRotationX(mRotation.x, &mUboVS.modelMatrix);
-		mUboVS.modelMatrix.rotateY(mRotation.y);
-		mUboVS.modelMatrix.rotateZ(mRotation.z);
+		Matrix::createRotationX(MATH_DEG_TO_RAD(mRotation.x), &mUboVS.modelMatrix);
+		mUboVS.modelMatrix.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		mUboVS.modelMatrix.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 		//Matrix::createRotationY(mRotation.y, &mUboVS.modelMatrix);
 		//mat.rotate(vkcore::Vector3(0.0f, 1.0f, 0.0f), mRotation.y, &mUboVS.modelMatrix);
 		//mUboVS.modelMatrix.rotate(vkcore::Vector3(0.0f, 0.0f, 1.0f), mRotation.z);

@@ -449,3 +449,12 @@ void VkCoreDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue que
 }
 
 
+const std::string VkCoreDevice::getAssetPath()
+{
+#if defined(__ANDROID__)
+	return "";
+#else
+	return "./../data/";
+#endif
+}
+
