@@ -39,6 +39,7 @@ public:
 
     unsigned int draw(bool wireframe = false);
 	
+	void prepare();
 	void setupDepthStencil();
 	void createPipelineCache();
 	void setupDescriptorPool();
@@ -79,6 +80,7 @@ private:
     void setMaterialNodeBinding(Material *m);
 
     void validatePartCount();
+
 
     Mesh* _mesh;
     Material* _material;

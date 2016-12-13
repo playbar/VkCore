@@ -351,37 +351,16 @@ public:
 	{
 		// Update matrices
 		float aspect = (float)width / (float)height;
-		vkcore::Matrix::createPerspective(MATH_DEG_TO_RAD(60.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
-		//mUboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 256.0f);
-		//mUboVS.projectionMatrix = glm::mat4();
-		//mUboVS.viewMatrix.translate(0.0f, 0.0f, -1.0f);
-		//mUboVS.viewMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, mZoom));
-		//mUboVS.viewMatrix = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
-		//mUboVS.viewMatrix = glm::translate(mUboVS.viewMatrix, glm::vec3(0.0f, 0.0f, mZoom));
-		//mUboVS.viewMatrix = glm::mat4();
-		//std::cout.precision(4);
-		//std::cout << mZoom << std::endl;
-
+		vkcore::Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
 		Matrix::createTranslation(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
 		//mUboVS.viewMatrix.translate(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
 		char szTmp[256] = {};
 		sprintf(szTmp, "zoom=%f", mZoom);
 		OutputDebugString(szTmp);
-		//mUboVS.modelMatrix = glm::mat4();
-		//mUboVS.modelMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -1.7));
-		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		//mUboVS.modelMatrix.rotate(vkcore::Vector3(1.0f, 0.0f, 0.0f), mRotation.x);
+
 		Matrix::createRotationX(MATH_DEG_TO_RAD(mRotation.x), &mUboVS.modelMatrix);
 		mUboVS.modelMatrix.rotateY(MATH_DEG_TO_RAD(mRotation.y));
 		mUboVS.modelMatrix.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
-		//Matrix::createRotationY(mRotation.y, &mUboVS.modelMatrix);
-		//mat.rotate(vkcore::Vector3(0.0f, 1.0f, 0.0f), mRotation.y, &mUboVS.modelMatrix);
-		//mUboVS.modelMatrix.rotate(vkcore::Vector3(0.0f, 0.0f, 1.0f), mRotation.z);
-		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		//mUboVS.modelMatrix = glm::rotate(mUboVS.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-		//mUboVS.modelMatrix = glm::scale(glm::mat4(), glm::vec3(1.0f / 400.0f, 1/300.0f, 0.0f));
-		//mUboVS.modelMatrix = glm::mat4();
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));

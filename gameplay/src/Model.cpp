@@ -90,6 +90,7 @@ namespace vkcore
 Model::Model() : Drawable(),
     _mesh(NULL), _material(NULL), _partCount(0), _partMaterials(NULL), _skin(NULL)
 {
+	prepare();
 }
 
 Model::Model(Mesh* mesh) : Drawable(),
@@ -97,6 +98,7 @@ Model::Model(Mesh* mesh) : Drawable(),
 {
     GP_ASSERT(mesh);
     _partCount = mesh->getPartCount();
+	prepare();
 }
 
 Model::~Model()
@@ -393,6 +395,24 @@ unsigned int Model::draw(bool wireframe)
     return partCount;
 }
 
+void Model::prepare()
+{
+	vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &mDepthFormat);
+	createCommandPool();
+	createCommandBuffers();
+	setupDepthStencil();
+	setupRenderPass();
+	createPipelineCache();
+	setupFrameBuffer();
+
+	prepareUniformBuffers();
+	setupDescriptorSetLayout();
+	preparePipelines();
+	setupDescriptorPool();
+	setupDescriptorSet();
+	buildCommandBuffers();
+
+}
 
 void Model::setupDepthStencil()
 {
@@ -904,7 +924,7 @@ void Model::updateUniformBuffers()
 {
 	// Update matrices
 	float aspect = (float)width / (float)height;
-	vkcore::Matrix::createPerspective(MATH_DEG_TO_RAD(60.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
+	vkcore::Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
 	Matrix::createTranslation(0.0f, 0.0f, -10.0f, &mUboVS.viewMatrix);
 	Matrix::createRotationX( 0.0f, &mUboVS.modelMatrix);
 	mUboVS.modelMatrix.rotateY(0.0f);

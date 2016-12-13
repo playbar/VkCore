@@ -33,6 +33,7 @@ static Mesh* createTriangleMesh()
         VertexFormat::Element(VertexFormat::COLOR, 3)
     };
     Mesh* mesh = Mesh::createMesh(VertexFormat(elements, 2), vertexCount, false);
+	
     if (mesh == NULL)
     {
         GP_ERROR("Failed to create mesh.");
