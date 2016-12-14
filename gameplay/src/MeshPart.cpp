@@ -25,11 +25,6 @@ MeshPart::~MeshPart()
 MeshPart* MeshPart::create(Mesh* mesh, unsigned int meshIndex, VkPrimitiveTopology primitiveType,
     Mesh::IndexFormat indexFormat, unsigned int indexCount, bool dynamic)
 {
-    // Create a VBO for our index buffer.
-    //GLuint vbo;
-    //GL_ASSERT( glGenBuffers(1, &vbo) );
-    //GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo) );
-
     unsigned int indexSize = 0;
     switch (indexFormat)
     {

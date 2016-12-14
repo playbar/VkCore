@@ -26,6 +26,8 @@ static Mesh* createTriangleMesh()
         p2.x, p2.y, 0.0f,     0.0f, 1.0f, 0.0f,
         p3.x, p3.y, 0.0f,     0.0f, 0.0f, 1.0f,
     };
+
+	float indexBuffer[] = { 1, 0, 2 };
     unsigned int vertexCount = 3;
     VertexFormat::Element elements[] =
     {
@@ -41,6 +43,8 @@ static Mesh* createTriangleMesh()
     }
     mesh->setPrimitiveType(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
     mesh->setVertexData(vertices, 0, vertexCount);
+	MeshPart *meshPart = mesh->addPart(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, Mesh::INDEX32, vertexCount);
+	meshPart->setIndexData(indexBuffer, 0, vertexCount);
     return mesh;
 }
 

@@ -334,27 +334,10 @@ bool Mesh::unmapVertexBuffer()
 
 void Mesh::setVertexData(const void* vertexData, unsigned int vertexStart, unsigned int vertexCount)
 {
-
 	void *data;
 	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, vertexStart * mVertexFormat.getVertexSize(), vertexCount * mVertexFormat.getVertexSize(), 0, &data));
 	memcpy(data, vertexData, vertexCount * mVertexFormat.getVertexSize());
 	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory);
-
-    //GL_ASSERT( glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer) );
-
-    //if (vertexStart == 0 && vertexCount == 0)
-    //{
-    //    GL_ASSERT( glBufferData(GL_ARRAY_BUFFER, _vertexFormat.getVertexSize() * _vertexCount, vertexData, _dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW) );
-    //}
-    //else
-    //{
-    //    if (vertexCount == 0)
-    //    {
-    //        vertexCount = _vertexCount - vertexStart;
-    //    }
-
-    //    GL_ASSERT( glBufferSubData(GL_ARRAY_BUFFER, vertexStart * _vertexFormat.getVertexSize(), vertexCount * _vertexFormat.getVertexSize(), vertexData) );
-    //}
 }
 
 MeshPart* Mesh::addPart(VkPrimitiveTopology primitiveType, IndexFormat indexFormat, unsigned int indexCount, bool dynamic)

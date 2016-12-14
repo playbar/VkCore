@@ -1434,16 +1434,6 @@ void Game::frame()
 		prepare();
 		prepareSynchronizationPrimitives();
 		initialize();
-		//prepareVertices(true);
-		//prepareUniformBuffers();
-		//setupDescriptorSetLayout();
-		//preparePipelines();
-		//setupDescriptorPool();
-		//setupDescriptorSet();
-		//buildCommandBuffers();
-      
-        if (_scriptTarget)
-            _scriptTarget->fireScriptEvent<void>(GP_GET_SCRIPT_EVENT(GameScriptTarget, initialize));
         _initialized = true;
 
         // Fire first game resize event
