@@ -384,8 +384,10 @@ unsigned int Model::draw(bool wireframe)
 
     unsigned int partCount = _mesh->getPartCount();
 
+	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pWaitDstStageMask = &waitStageMask;
 	submitInfo.pWaitSemaphores = &mVulkanDevice->presentCompleteSemaphore;
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &mVulkanDevice->renderCompleteSemaphore;

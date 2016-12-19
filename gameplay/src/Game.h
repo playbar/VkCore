@@ -74,8 +74,8 @@ public:
 
 public:
 	bool prepared = false;
-	uint32_t width = 1280;
-	uint32_t height = 720;
+	uint32_t width = 800;
+	uint32_t height = 600;
 
 	VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 

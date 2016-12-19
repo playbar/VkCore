@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\gameplay\src\BoundingBox.cpp" />
+    <ClCompile Include="..\..\gameplay\src\BoundingSphere.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Frustum.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Logger.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Matrix.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Plane.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Ray.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Vector2.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Vector3.cpp" />
+    <ClCompile Include="..\..\gameplay\src\Vector4.cpp" />
+    <ClCompile Include="triangle.cpp" />
+    <ClCompile Include="vkcore\VkCoreDevice.cpp" />
+    <ClCompile Include="vkcore\VulkanBase.cpp" />
+    <ClCompile Include="vkcore\vulkandebug.cpp" />
+    <ClCompile Include="vkcore\vulkantextoverlay.cpp" />
+    <ClCompile Include="vkcore\vulkantools.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\gameplay\src\BoundingBox.h" />
+    <ClInclude Include="..\..\gameplay\src\BoundingSphere.h" />
+    <ClInclude Include="..\..\gameplay\src\Frustum.h" />
+    <ClInclude Include="..\..\gameplay\src\Logger.h" />
+    <ClInclude Include="..\..\gameplay\src\Matrix.h" />
+    <ClInclude Include="..\..\gameplay\src\Plane.h" />
+    <ClInclude Include="..\..\gameplay\src\Ray.h" />
+    <ClInclude Include="..\..\gameplay\src\Vector2.h" />
+    <ClInclude Include="..\..\gameplay\src\Vector3.h" />
+    <ClInclude Include="..\..\gameplay\src\Vector4.h" />
+    <ClInclude Include="vkcore\define.h" />
+    <ClInclude Include="vkcore\frustum.hpp" />
+    <ClInclude Include="vkcore\threadpool.hpp" />
+    <ClInclude Include="vkcore\VDeleter.hpp" />
+    <ClInclude Include="vkcore\VkCamera.hpp" />
+    <ClInclude Include="vkcore\VkCoreDevice.hpp" />
+    <ClInclude Include="vkcore\VkTriangle.hpp" />
+    <ClInclude Include="vkcore\VulkanBase.h" />
+    <ClInclude Include="vkcore\vulkanbuffer.hpp" />
+    <ClInclude Include="vkcore\vulkandebug.h" />
+    <ClInclude Include="vkcore\vulkanframebuffer.hpp" />
+    <ClInclude Include="vkcore\vulkanheightmap.hpp" />
+    <ClInclude Include="vkcore\vulkanMeshLoader.hpp" />
+    <ClInclude Include="vkcore\vulkanswapchain.hpp" />
+    <ClInclude Include="vkcore\vulkantextoverlay.hpp" />
+    <ClInclude Include="vkcore\vulkanTextureLoader.hpp" />
+    <ClInclude Include="vkcore\vulkantools.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\gameplay\src\BoundingBox.inl" />
+    <None Include="..\..\gameplay\src\BoundingSphere.inl" />
+    <None Include="..\..\gameplay\src\Matrix.inl" />
+    <None Include="..\..\gameplay\src\Plane.inl" />
+    <None Include="..\..\gameplay\src\Ray.inl" />
+    <None Include="..\..\gameplay\src\Vector2.inl" />
+    <None Include="..\..\gameplay\src\Vector3.inl" />
+    <None Include="..\..\gameplay\src\Vector4.inl" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A03F9D4F-6513-4743-BE9A-AE66D2FBC93D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>triangle</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)\bin\</OutDir>
+    <IntDir>$(SolutionDir)\bin\intermediate\$(ProjectName)\$(ConfigurationName)</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)\bin\</OutDir>
+    <IntDir>$(SolutionDir)\bin\intermediate\$(ProjectName)\$(ConfigurationName)</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;_USE_MATH_DEFINES;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\gameplay\src;..\..\external\glm;..\..\external\gli;..\..\external\assimp;..\..\external;..\..\external-deps\include;.\vkcore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>OpenGL32.lib;GLU32.lib;..\..\libs\vulkan\vulkan-1.lib;..\..\libs\assimp\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\external-deps\lib\windows\x86_64\Debug;..\..\gameplay\Debug;$(DXSDK_DIR)Lib\x64</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;VK_USE_PLATFORM_WIN32_KHR;_USE_MATH_DEFINES;NOMINMAX;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\base;..\external\glm;..\external\gli;..\external\assimp;..\external;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>..\libs\vulkan\vulkan-1.lib;..\libs\assimp\assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

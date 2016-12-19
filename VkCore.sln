@@ -26,8 +26,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample-racer", "samples\rac
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mytest", "samples\mytest\mytest.vcxproj", "{7CAA1FD5-62CB-4069-A627-3803A906B045}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Example", "samples\example\Example.vcxproj", "{3E6755A8-7370-4449-A8B7-4FCDCABD242C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -71,12 +69,6 @@ Global
 		{7CAA1FD5-62CB-4069-A627-3803A906B045}.DebugMem|x64.Build.0 = Debug|x64
 		{7CAA1FD5-62CB-4069-A627-3803A906B045}.Release|x64.ActiveCfg = Release|x64
 		{7CAA1FD5-62CB-4069-A627-3803A906B045}.Release|x64.Build.0 = Release|x64
-		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.Debug|x64.ActiveCfg = Debug|x64
-		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.Debug|x64.Build.0 = Debug|x64
-		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.DebugMem|x64.ActiveCfg = Debug|x64
-		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.DebugMem|x64.Build.0 = Debug|x64
-		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.Release|x64.ActiveCfg = Release|x64
-		{3E6755A8-7370-4449-A8B7-4FCDCABD242C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
