@@ -14,6 +14,7 @@ public:
 	VkPhysicalDeviceProperties mProperties;
 	VkPhysicalDeviceFeatures mFeatures;
 	VkPhysicalDeviceMemoryProperties mMemoryProperties;
+	VkQueue mQueue;
 
 	std::vector<VkQueueFamilyProperties> mVecQueueFamilyProperties;
 
@@ -159,5 +160,5 @@ public:
 };
 
 
-extern VkCoreDevice *mVulkanDevice;
+extern VkCoreDevice *gVulkanDevice;
 

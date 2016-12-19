@@ -18,8 +18,8 @@ MeshPart::~MeshPart()
     //    glDeleteBuffers(1, &_indexBuffer);
     //}
 
-	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mIndices.mVKBuffer, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory, nullptr);
+	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mIndices.mVKBuffer, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, mIndices.mVKMemory, nullptr);
 }
 
 MeshPart* MeshPart::create(Mesh* mesh, unsigned int meshIndex, VkPrimitiveTopology primitiveType,
@@ -64,12 +64,12 @@ MeshPart* MeshPart::create(Mesh* mesh, unsigned int meshIndex, VkPrimitiveTopolo
 	indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
 	// Copy index data to a buffer visible to the host
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &part->mIndices.mVKBuffer));
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, part->mIndices.mVKBuffer, &memReqs);
+	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &part->mIndices.mVKBuffer));
+	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, part->mIndices.mVKBuffer, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &part->mIndices.mVKMemory));
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, part->mIndices.mVKBuffer, part->mIndices.mVKMemory, 0));
+	memAlloc.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &part->mIndices.mVKMemory));
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, part->mIndices.mVKBuffer, part->mIndices.mVKMemory, 0));
 
     return part;
 }
@@ -105,14 +105,14 @@ void* MeshPart::mapIndexBuffer()
 	uint32_t indexBufferSize = mIndexCount * mIndexSize;
 	void *data;
 
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory, 0, indexBufferSize, 0, &data));
+	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mIndices.mVKMemory, 0, indexBufferSize, 0, &data));
 	return data;
 }
 
 bool MeshPart::unmapIndexBuffer()
 {
     //return glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory);
+	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mIndices.mVKMemory);
 	return true;
 }
 
@@ -120,9 +120,9 @@ void MeshPart::setIndexData(const void* indexData, unsigned int indexStart, unsi
 {
 	uint32_t indexBufferSize = indexCount * mIndexSize;
 	void *data;
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory, indexStart * mIndexSize, indexBufferSize, 0, &data));
+	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mIndices.mVKMemory, indexStart * mIndexSize, indexBufferSize, 0, &data));
 	memcpy(data, indexData, indexBufferSize);
-	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mIndices.mVKMemory);
+	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mIndices.mVKMemory);
 }
 
 bool MeshPart::isDynamic() const

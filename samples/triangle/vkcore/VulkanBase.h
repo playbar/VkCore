@@ -116,17 +116,9 @@ public:
 	// It connects the binding points of the different shaders with the buffers and images used for those bindings
 	VkDescriptorSet mDescriptorSet;
 
-
-	// Synchronization primitives
-	// Synchronization is an important concept of Vulkan that OpenGL mostly hid away. Getting this right is crucial to using Vulkan.
-
-	// Semaphores
-	// Used to coordinate operations within the graphics queue and ensure correct command ordering
 	VkSemaphore presentCompleteSemaphore;
 	VkSemaphore renderCompleteSemaphore;
 
-	// Fences
-	// Used to check the completion of queue operations (e.g. command buffer execution)
 	std::vector<VkFence> mWaitFences;
 	//////////////////////////////////
 
@@ -189,27 +181,23 @@ protected:
 	uint32_t lastFPS = 0;
 	// Vulkan instance, stores all per-application states
 	VkInstance mInstance;
-	VkCoreDevice *mVulkanDevice;
 
 	// Device features enabled by the example
 	// If not set, no additional features are enabled (may result in validation layer errors)
 	VkPhysicalDeviceFeatures enabledFeatures = {};
 
-	// Handle to the device graphics queue that command buffers are submitted to
-	VkQueue mQueue;
 	// Color buffer format
 	VkFormat mColorformat = VK_FORMAT_B8G8R8A8_UNORM;
 	// Depth buffer format
 	// Depth format is selected during Vulkan initialization
 	VkFormat mDepthFormat;
-	// Command buffer pool
+
 	VkCommandPool mCmdPool;
 	// Command buffer used for setup
-	VkCommandBuffer setupCmdBuffer = VK_NULL_HANDLE;
+	//VkCommandBuffer setupCmdBuffer = VK_NULL_HANDLE;
 	/** @brief Pipeline stages used to wait at for graphics queue submissions */
 	VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	// Contains command buffers and semaphores to be presented to the queue
-	VkSubmitInfo mSubmitInfo;
 	// Command buffers used for rendering
 	std::vector<VkCommandBuffer> mDrawCmdBuffers;
 	// Global render pass for frame buffer writes
@@ -226,16 +214,7 @@ protected:
 	VkPipelineCache pipelineCache;
 	// Wraps the swap chain to present images (framebuffers) to the windowing system
 	VulkanSwapChain mSwapChain;
-	// Synchronization semaphores
-	struct
-	{
-		// Swap chain image presentation
-		VkSemaphore presentComplete;
-		// Command buffer submission and execution
-		VkSemaphore renderComplete;
-		// Text overlay submission and execution
-		VkSemaphore textOverlayComplete;
-	} semaphores;
+
 	// Simple texture loader
 	vkTools::VulkanTextureLoader *textureLoader = nullptr;
 	// Returns the base asset path (for shaders, models, textures) depending on the os
@@ -249,8 +228,6 @@ public:
 
 	float mZoom = 0;
 
-	static std::vector<const char*> args;
-
 	// Defines a frame rate independent timer value clamped from -1.0...1.0
 	// For use in animations, rotations, etc.
 	float timer = 0.0f;
@@ -259,7 +236,7 @@ public:
 	
 	bool paused = false;
 
-	bool mEnableTextOverlay = true;
+	bool mEnableTextOverlay = false;
 	VulkanTextOverlay *mTextOverlay;
 
 	// Use to adjust mouse rotation speed
@@ -427,13 +404,6 @@ public:
 	// Can be overriden in derived class to add custom text to the overlay
 	virtual void getOverlayText(VulkanTextOverlay * textOverlay);
 
-	// Prepare the frame for workload submission
-	// - Acquires the next image from the swap chain 
-	// - Sets the default wait and signal semaphores
-	void prepareFrame();
 
-	// Submit the frames' workload 
-	// - Submits the text overlay (if enabled)
-	void submitFrame();
 
 };

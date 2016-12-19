@@ -47,6 +47,9 @@
       <Filter>math</Filter>
     </ClCompile>
     <ClCompile Include="triangle.cpp" />
+    <ClCompile Include="vkcore\vulkanswapchain.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vkcore">

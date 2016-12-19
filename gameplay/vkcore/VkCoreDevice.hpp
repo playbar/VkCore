@@ -102,5 +102,5 @@ public:
 };
 
 
-extern VkCoreDevice *mVulkanDevice;
+extern VkCoreDevice *gVulkanDevice;
 

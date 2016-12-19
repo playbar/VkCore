@@ -120,30 +120,30 @@ void Model::UninitVulkan()
 {
 	if (descriptorPool != VK_NULL_HANDLE)
 	{
-		vkDestroyDescriptorPool(mVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
+		vkDestroyDescriptorPool(gVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
 	}
 
 	destroyCommandBuffers();
-	vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
+	vkDestroyRenderPass(gVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
 	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
+		vkDestroyFramebuffer(gVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
 	}
 
 	for (auto& shaderModule : shaderModules)
 	{
-		vkDestroyShaderModule(mVulkanDevice->mLogicalDevice, shaderModule, nullptr);
+		vkDestroyShaderModule(gVulkanDevice->mLogicalDevice, shaderModule, nullptr);
 	}
-	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
-	vkDestroyPipelineCache(mVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
-	vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
-	vkDestroyPipeline(mVulkanDevice->mLogicalDevice, mPipeline, nullptr);
-	vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
-	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
+	vkDestroyImageView(gVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+	vkDestroyImage(gVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
+	vkDestroyPipelineCache(gVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
+	vkDestroyCommandPool(gVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
+	vkDestroyPipeline(gVulkanDevice->mLogicalDevice, mPipeline, nullptr);
+	vkDestroyPipelineLayout(gVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
+	vkDestroyDescriptorSetLayout(gVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
+	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
 
 	return;
 }
@@ -378,9 +378,9 @@ unsigned int Model::draw(bool wireframe)
 {
     GP_ASSERT(_mesh);
 
-	VkFence fence = mVulkanDevice->mWaitFences[mSwapChain.mCurrentBuffer];
-	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &fence, VK_TRUE, UINT64_MAX));
-	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &fence));
+	VkFence fence = gVulkanDevice->mWaitFences[mSwapChain.mCurrentBuffer];
+	VK_CHECK_RESULT(vkWaitForFences(gVulkanDevice->mLogicalDevice, 1, &fence, VK_TRUE, UINT64_MAX));
+	VK_CHECK_RESULT(vkResetFences(gVulkanDevice->mLogicalDevice, 1, &fence));
 
     unsigned int partCount = _mesh->getPartCount();
 
@@ -388,21 +388,21 @@ unsigned int Model::draw(bool wireframe)
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pWaitDstStageMask = &waitStageMask;
-	submitInfo.pWaitSemaphores = &mVulkanDevice->presentCompleteSemaphore;
+	submitInfo.pWaitSemaphores = &gVulkanDevice->presentCompleteSemaphore;
 	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &mVulkanDevice->renderCompleteSemaphore;
+	submitInfo.pSignalSemaphores = &gVulkanDevice->renderCompleteSemaphore;
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mSwapChain.mCurrentBuffer];
 	submitInfo.commandBufferCount = 1;
 	
-	VK_CHECK_RESULT(vkQueueSubmit(mVulkanDevice->mQueue, 1, &submitInfo, fence));
+	VK_CHECK_RESULT(vkQueueSubmit(gVulkanDevice->mQueue, 1, &submitInfo, fence));
 
     return partCount;
 }
 
 void Model::prepare()
 {
-	vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &mDepthFormat);
+	vkTools::getSupportedDepthFormat(gVulkanDevice->mPhysicalDevice, &mDepthFormat);
 	createCommandPool();
 	createCommandBuffers();
 	setupDepthStencil();
@@ -455,22 +455,22 @@ void Model::setupDepthStencil()
 
 	VkMemoryRequirements memReqs;
 
-	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &depthStencil.image));
-	vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
+	VK_CHECK_RESULT(vkCreateImage(gVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &depthStencil.image));
+	vkGetImageMemoryRequirements(gVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
 	memAllocateInfo.allocationSize = memReqs.size;
-	memAllocateInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocateInfo, nullptr, &depthStencil.mem));
-	VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
+	memAllocateInfo.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAllocateInfo, nullptr, &depthStencil.mem));
+	VK_CHECK_RESULT(vkBindImageMemory(gVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
 
 	depthStencilView.image = depthStencil.image;
-	VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
+	VK_CHECK_RESULT(vkCreateImageView(gVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
 }
 
 void Model::createPipelineCache()
 {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	VK_CHECK_RESULT(vkCreatePipelineCache(mVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+	VK_CHECK_RESULT(vkCreatePipelineCache(gVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 }
 
 
@@ -496,7 +496,7 @@ void Model::setupDescriptorPool()
 	// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
 	descriptorPoolInfo.maxSets = 1;
 
-	VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+	VK_CHECK_RESULT(vkCreateDescriptorPool(gVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 
 }
 
@@ -510,7 +510,7 @@ void Model::setupDescriptorSet()
 	allocInfo.descriptorSetCount = 1;
 	allocInfo.pSetLayouts = &mDescriptorSetLayout;
 
-	VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(gVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
 
 	// Update the descriptor set determining the shader binding points
 	// For every binding point used in a shader there needs to be one
@@ -527,7 +527,7 @@ void Model::setupDescriptorSet()
 	// Binds this uniform buffer to binding point 0
 	writeDescriptorSet.dstBinding = 0;
 
-	vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+	vkUpdateDescriptorSets(gVulkanDevice->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 
 }
 
@@ -550,7 +550,7 @@ void Model::setupDescriptorSetLayout()
 	descriptorLayout.bindingCount = 1;
 	descriptorLayout.pBindings = &layoutBinding;
 
-	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
 
 	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
 	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
@@ -560,7 +560,7 @@ void Model::setupDescriptorSetLayout()
 	pPipelineLayoutCreateInfo.setLayoutCount = 1;
 	pPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
 
-	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+	VK_CHECK_RESULT(vkCreatePipelineLayout(gVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
 }
 
 
@@ -570,7 +570,7 @@ void Model::createCommandPool()
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
+	VK_CHECK_RESULT(vkCreateCommandPool(gVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
 }
 
 void Model::createCommandBuffers()
@@ -584,7 +584,7 @@ void Model::createCommandBuffers()
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mDrawCmdBuffers.size()));
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(gVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
 }
 
 
@@ -669,7 +669,7 @@ void Model::buildCommandBuffers()
 
 void Model::destroyCommandBuffers()
 {
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
+	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
 }
 
 
@@ -742,7 +742,7 @@ void Model::setupRenderPass()
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	renderPassInfo.pDependencies = dependencies.data();
 
-	VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
+	VK_CHECK_RESULT(vkCreateRenderPass(gVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
 	return;
 }
 
@@ -769,7 +769,7 @@ void Model::setupFrameBuffer()
 	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
 		attachments[0] = mSwapChain.buffers[i].view;
-		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
+		VK_CHECK_RESULT(vkCreateFramebuffer(gVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
 	}
 }
 
@@ -860,8 +860,8 @@ void Model::preparePipelines()
 	// Vulkan loads it's shaders from an immediate binary representation called SPIR-V
 	// Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
 	std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
-	shaderStages[0] = loadShader(mVulkanDevice->getAssetPath() + "shaders/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-	shaderStages[1] = loadShader(mVulkanDevice->getAssetPath() + "shaders/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shaderStages[0] = loadShader(gVulkanDevice->getAssetPath() + "shaders/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+	shaderStages[1] = loadShader(gVulkanDevice->getAssetPath() + "shaders/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 	// Assign the pipeline states to the pipeline creation info structure
 	pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
@@ -877,7 +877,7 @@ void Model::preparePipelines()
 	pipelineCreateInfo.pDynamicState = &dynamicState;
 
 	// Create rendering pipeline using the specified states
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(gVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
 
 }
 
@@ -903,19 +903,19 @@ void Model::prepareUniformBuffers()
 	bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 	// Create a new buffer
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferInfo, nullptr, &mUniformDataVS.buffer));
+	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferInfo, nullptr, &mUniformDataVS.buffer));
 	// Get memory requirements including size, alignment and memory type 
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, &memReqs);
+	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, &memReqs);
 	allocInfo.allocationSize = memReqs.size;
 	// Get the memory type index that supports host visibile memory access
 	// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
 	// We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
 	// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
-	allocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	allocInfo.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	// Allocate memory for the uniform buffer
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
 	// Bind memory to buffer
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
 
 	// Store information in the uniform's descriptor that is used by the descriptor set
 	mUniformDataVS.descriptor.buffer = mUniformDataVS.buffer;
@@ -935,9 +935,9 @@ void Model::updateUniformBuffers()
 	mUboVS.modelMatrix.rotateY(0.0f);
 	mUboVS.modelMatrix.rotateZ(0.0f);
 	uint8_t *pData;
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
+	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
 	memcpy(pData, &mUboVS, sizeof(mUboVS));
-	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
+	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
 }
 
 VkPipelineShaderStageCreateInfo Model::loadShader(std::string fileName, VkShaderStageFlagBits stage)
@@ -946,9 +946,9 @@ VkPipelineShaderStageCreateInfo Model::loadShader(std::string fileName, VkShader
 	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStage.stage = stage;
 #if defined(__ANDROID__)
-	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
 #else
-	shaderStage.module = vkTools::loadShader(fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+	shaderStage.module = vkTools::loadShader(fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
 #endif
 	shaderStage.pName = "main"; // todo : make param
 	assert(shaderStage.module != NULL);

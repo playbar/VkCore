@@ -1,7 +1,6 @@
 #include "VulkanBase.h"
 
 
-std::vector<const char*> VulkanBase::args;
 VkResult VulkanBase::createInstance(bool enableValidation)
 {
 	this->mEnableValidation = enableValidation;
@@ -48,7 +47,7 @@ VkResult VulkanBase::createInstance(bool enableValidation)
 
 std::string VulkanBase::getWindowTitle()
 {
-	std::string device(mVulkanDevice->mProperties.deviceName);
+	std::string device(gVulkanDevice->mProperties.deviceName);
 	std::string windowTitle;
 	windowTitle = title + " - " + device;
 	if (!mEnableTextOverlay)
@@ -61,11 +60,11 @@ std::string VulkanBase::getWindowTitle()
 uint32_t VulkanBase::getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
 {
 	// Iterate over all memory types available for the device used in this example
-	for (uint32_t i = 0; i < mVulkanDevice->mMemoryProperties.memoryTypeCount; i++)
+	for (uint32_t i = 0; i < gVulkanDevice->mMemoryProperties.memoryTypeCount; i++)
 	{
 		if ((typeBits & 1) == 1)
 		{
-			if ((mVulkanDevice->mMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			if ((gVulkanDevice->mMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
 			{
 				return i;
 			}
@@ -83,8 +82,8 @@ void VulkanBase::prepareSynchronizationPrimitives()
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 	semaphoreCreateInfo.pNext = nullptr;
 
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
 
 	VkFenceCreateInfo fenceCreateInfo = {};
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -92,7 +91,7 @@ void VulkanBase::prepareSynchronizationPrimitives()
 	mWaitFences.resize(mDrawCmdBuffers.size());
 	for (auto& fence : mWaitFences)
 	{
-		VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
+		VK_CHECK_RESULT(vkCreateFence(gVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
 	}
 }
 
@@ -108,7 +107,7 @@ VkCommandBuffer VulkanBase::getCommandBuffer(bool begin)
 	cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	cmdBufAllocateInfo.commandBufferCount = 1;
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(gVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 
 	// If requested, also start the new command buffer
 	if (begin)
@@ -138,15 +137,15 @@ void VulkanBase::flushCommandBuffer(VkCommandBuffer commandBuffer)
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceCreateInfo.flags = 0;
 	VkFence fence;
-	VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
+	VK_CHECK_RESULT(vkCreateFence(gVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
 
 	// Submit to the queue
-	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, fence));
+	VK_CHECK_RESULT(vkQueueSubmit(gVulkanDevice->mQueue, 1, &submitInfo, fence));
 	// Wait for the fence to signal that command buffer has finished executing
-	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+	VK_CHECK_RESULT(vkWaitForFences(gVulkanDevice->mLogicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
-	vkDestroyFence(mVulkanDevice->mLogicalDevice, fence, nullptr);
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
+	vkDestroyFence(gVulkanDevice->mLogicalDevice, fence, nullptr);
+	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
 }
 
 // Build separate command buffers for every framebuffer image
@@ -236,8 +235,8 @@ void VulkanBase::draw()
 	VK_CHECK_RESULT(mSwapChain.acquireNextImage(presentCompleteSemaphore, &mCurrentBuffer));
 
 	// Use a fence to wait until the command buffer has finished execution before using it again
-	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
-	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
+	VK_CHECK_RESULT(vkWaitForFences(gVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
+	VK_CHECK_RESULT(vkResetFences(gVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
 
 	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -253,12 +252,12 @@ void VulkanBase::draw()
 	submitInfo.commandBufferCount = 1;												// One command buffer
 
 																					// Submit to the graphics queue passing a wait fence
-	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
+	VK_CHECK_RESULT(vkQueueSubmit(gVulkanDevice->mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
 
 	// Present the current buffer to the swap chain
 	// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
 	// This ensures that the image is not presented to the windowing system until all commands have been submitted
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, renderCompleteSemaphore));
+	VK_CHECK_RESULT(mSwapChain.queuePresent(gVulkanDevice->mQueue, mCurrentBuffer, renderCompleteSemaphore));
 }
 
 void VulkanBase::updateUniformBuffers()
@@ -277,9 +276,9 @@ void VulkanBase::updateUniformBuffers()
 	mUboVS.modelMatrix.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
 	uint8_t *pData;
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
+	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
 	memcpy(pData, &mUboVS, sizeof(mUboVS));
-	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
+	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
 }
 
 // Prepare vertex and index buffers for an indexed triangle
@@ -349,27 +348,27 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 		// Buffer is used as the copy source
 		vertexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		// Create a host-visible buffer to copy the vertex data to (staging buffer)
-		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &stagingBuffers.vertices.buffer));
-		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, stagingBuffers.vertices.buffer, &memReqs);
+		VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &stagingBuffers.vertices.buffer));
+		vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, stagingBuffers.vertices.buffer, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		// Request a host visible memory type that can be used to copy our data do
 		// Also request it to be coherent, so that writes are visible to the GPU right after unmapping the buffer
 		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &stagingBuffers.vertices.memory));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &stagingBuffers.vertices.memory));
 		// Map and copy
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, stagingBuffers.vertices.memory, 0, memAlloc.allocationSize, 0, &data));
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, stagingBuffers.vertices.memory, 0, memAlloc.allocationSize, 0, &data));
 		memcpy(data, vertexBuffer.data(), vertexBufferSize);
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, stagingBuffers.vertices.memory);
-		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, stagingBuffers.vertices.buffer, stagingBuffers.vertices.memory, 0));
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, stagingBuffers.vertices.memory);
+		VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, stagingBuffers.vertices.buffer, stagingBuffers.vertices.memory, 0));
 
 		// Create a device local buffer to which the (host local) vertex data will be copied and which will be used for rendering
 		vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &mVertices.buffer));
-		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mVertices.buffer, &memReqs);
+		VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &mVertices.buffer));
+		vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mVertices.buffer, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mVertices.memory));
-		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mVertices.memory));
+		VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
 
 		// Index buffer
 		VkBufferCreateInfo indexbufferInfo = {};
@@ -377,24 +376,24 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 		indexbufferInfo.size = indexBufferSize;
 		indexbufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		// Copy index data to a buffer visible to the host (staging buffer)
-		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &stagingBuffers.indices.buffer));
-		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, stagingBuffers.indices.buffer, &memReqs);
+		VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &stagingBuffers.indices.buffer));
+		vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, stagingBuffers.indices.buffer, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &stagingBuffers.indices.memory));
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, stagingBuffers.indices.memory, 0, indexBufferSize, 0, &data));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &stagingBuffers.indices.memory));
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, stagingBuffers.indices.memory, 0, indexBufferSize, 0, &data));
 		memcpy(data, indexBuffer.data(), indexBufferSize);
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, stagingBuffers.indices.memory);
-		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, stagingBuffers.indices.buffer, stagingBuffers.indices.memory, 0));
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, stagingBuffers.indices.memory);
+		VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, stagingBuffers.indices.buffer, stagingBuffers.indices.memory, 0));
 
 		// Create destination buffer with device only visibility
 		indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &mIndices.buffer));
-		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mIndices.buffer, &memReqs);
+		VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &mIndices.buffer));
+		vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mIndices.buffer, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mIndices.memory));
-		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mIndices.buffer, mIndices.memory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mIndices.memory));
+		VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mIndices.buffer, mIndices.memory, 0));
 
 		VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
 		cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -416,10 +415,10 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 
 		// Destroy staging buffers
 		// Note: Staging buffer must not be deleted before the copies have been submitted and executed
-		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, stagingBuffers.vertices.buffer, nullptr);
-		vkFreeMemory(mVulkanDevice->mLogicalDevice, stagingBuffers.vertices.memory, nullptr);
-		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, stagingBuffers.indices.buffer, nullptr);
-		vkFreeMemory(mVulkanDevice->mLogicalDevice, stagingBuffers.indices.memory, nullptr);
+		vkDestroyBuffer(gVulkanDevice->mLogicalDevice, stagingBuffers.vertices.buffer, nullptr);
+		vkFreeMemory(gVulkanDevice->mLogicalDevice, stagingBuffers.vertices.memory, nullptr);
+		vkDestroyBuffer(gVulkanDevice->mLogicalDevice, stagingBuffers.indices.buffer, nullptr);
+		vkFreeMemory(gVulkanDevice->mLogicalDevice, stagingBuffers.indices.memory, nullptr);
 	}
 	else
 	{
@@ -433,15 +432,15 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 		vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
 		// Copy vertex data to a buffer visible to the host
-		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &mVertices.buffer));
-		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mVertices.buffer, &memReqs);
+		VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &mVertices.buffer));
+		vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mVertices.buffer, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mVertices.memory));
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, 0, memAlloc.allocationSize, 0, &data));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mVertices.memory));
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mVertices.memory, 0, memAlloc.allocationSize, 0, &data));
 		memcpy(data, vertexBuffer.data(), vertexBufferSize);
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory);
-		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, mVertices.memory);
+		VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
 
 		// Index buffer
 		VkBufferCreateInfo indexbufferInfo = {};
@@ -450,15 +449,15 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 		indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
 		// Copy index data to a buffer visible to the host
-		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &mIndices.buffer));
-		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mIndices.buffer, &memReqs);
+		VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &mIndices.buffer));
+		vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mIndices.buffer, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
 		memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mIndices.memory));
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mIndices.memory, 0, indexBufferSize, 0, &data));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mIndices.memory));
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mIndices.memory, 0, indexBufferSize, 0, &data));
 		memcpy(data, indexBuffer.data(), indexBufferSize);
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, mIndices.memory);
-		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mIndices.buffer, mIndices.memory, 0));
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, mIndices.memory);
+		VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mIndices.buffer, mIndices.memory, 0));
 	}
 
 	// Vertex input binding
@@ -514,7 +513,7 @@ void VulkanBase::setupDescriptorPool()
 	// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
 	descriptorPoolInfo.maxSets = 1;
 
-	VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+	VK_CHECK_RESULT(vkCreateDescriptorPool(gVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 }
 
 void VulkanBase::setupDescriptorSetLayout()
@@ -536,7 +535,7 @@ void VulkanBase::setupDescriptorSetLayout()
 	descriptorLayout.bindingCount = 1;
 	descriptorLayout.pBindings = &layoutBinding;
 
-	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
 
 	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
 	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
@@ -546,7 +545,7 @@ void VulkanBase::setupDescriptorSetLayout()
 	pPipelineLayoutCreateInfo.setLayoutCount = 1;
 	pPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
 
-	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+	VK_CHECK_RESULT(vkCreatePipelineLayout(gVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
 }
 
 void VulkanBase::setupDescriptorSet()
@@ -558,7 +557,7 @@ void VulkanBase::setupDescriptorSet()
 	allocInfo.descriptorSetCount = 1;
 	allocInfo.pSetLayouts = &mDescriptorSetLayout;
 
-	VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(gVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
 
 	// Update the descriptor set determining the shader binding points
 	// For every binding point used in a shader there needs to be one
@@ -575,7 +574,7 @@ void VulkanBase::setupDescriptorSet()
 	// Binds this uniform buffer to binding point 0
 	writeDescriptorSet.dstBinding = 0;
 
-	vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+	vkUpdateDescriptorSets(gVulkanDevice->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 }
 
 // Create the depth (and stencil) buffer attachments used by our framebuffers
@@ -595,17 +594,17 @@ void VulkanBase::setupDepthStencil()
 	image.tiling = VK_IMAGE_TILING_OPTIMAL;
 	image.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &image, nullptr, &depthStencil.image));
+	VK_CHECK_RESULT(vkCreateImage(gVulkanDevice->mLogicalDevice, &image, nullptr, &depthStencil.image));
 
 	// Allocate memory for the image (device local) and bind it to our image
 	VkMemoryAllocateInfo memAlloc = {};
 	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	VkMemoryRequirements memReqs;
-	vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
+	vkGetImageMemoryRequirements(gVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &depthStencil.mem));
-	VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &depthStencil.mem));
+	VK_CHECK_RESULT(vkBindImageMemory(gVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
 
 	// Create a view for the depth stencil image
 	// Images aren't directly accessed in Vulkan, but rather through views described by a subresource range
@@ -621,7 +620,7 @@ void VulkanBase::setupDepthStencil()
 	depthStencilView.subresourceRange.baseArrayLayer = 0;
 	depthStencilView.subresourceRange.layerCount = 1;
 	depthStencilView.image = depthStencil.image;
-	VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
+	VK_CHECK_RESULT(vkCreateImageView(gVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
 }
 
 // Create a frame buffer for each swap chain image
@@ -646,7 +645,7 @@ void VulkanBase::setupFrameBuffer()
 	for (size_t i = 0; i < mFrameBuffers.size(); i++)
 	{
 		attachments[0] = mSwapChain.buffers[i].view;
-		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
+		VK_CHECK_RESULT(vkCreateFramebuffer(gVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
 	}
 }
 
@@ -735,7 +734,7 @@ void VulkanBase::setupRenderPass()
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());	// Number of subpass dependencies
 	renderPassInfo.pDependencies = dependencies.data();								// Subpass dependencies used by the render pass
 
-	VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
+	VK_CHECK_RESULT(vkCreateRenderPass(gVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
 }
 
 void VulkanBase::preparePipelines()
@@ -842,7 +841,7 @@ void VulkanBase::preparePipelines()
 	pipelineCreateInfo.pDynamicState = &dynamicState;
 
 	// Create rendering pipeline using the specified states
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(gVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
 }
 
 void VulkanBase::prepareUniformBuffers()
@@ -865,9 +864,9 @@ void VulkanBase::prepareUniformBuffers()
 	bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
 	// Create a new buffer
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferInfo, nullptr, &mUniformDataVS.buffer));
+	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferInfo, nullptr, &mUniformDataVS.buffer));
 	// Get memory requirements including size, alignment and memory type 
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, &memReqs);
+	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, &memReqs);
 	allocInfo.allocationSize = memReqs.size;
 	// Get the memory type index that supports host visibile memory access
 	// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
@@ -875,9 +874,9 @@ void VulkanBase::prepareUniformBuffers()
 	// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
 	allocInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	// Allocate memory for the uniform buffer
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
 	// Bind memory to buffer
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
 
 	// Store information in the uniform's descriptor that is used by the descriptor set
 	mUniformDataVS.descriptor.buffer = mUniformDataVS.buffer;
@@ -932,54 +931,54 @@ void VulkanBase::createCommandBuffers()
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mDrawCmdBuffers.size()));
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(gVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
 }
 
 void VulkanBase::destroyCommandBuffers()
 {
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
+	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
 }
 
-void VulkanBase::createSetupCommandBuffer()
-{
-	if (setupCmdBuffer != VK_NULL_HANDLE)
-	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
-		setupCmdBuffer = VK_NULL_HANDLE; // todo : check if still necessary
-	}
+//void VulkanBase::createSetupCommandBuffer()
+//{
+//	if (setupCmdBuffer != VK_NULL_HANDLE)
+//	{
+//		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
+//		setupCmdBuffer = VK_NULL_HANDLE; // todo : check if still necessary
+//	}
+//
+//	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
+//		vkTools::initializers::commandBufferAllocateInfo(
+//			mCmdPool,
+//			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+//			1);
+//
+//	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &setupCmdBuffer));
+//
+//	VkCommandBufferBeginInfo cmdBufInfo = {};
+//	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+//
+//	VK_CHECK_RESULT(vkBeginCommandBuffer(setupCmdBuffer, &cmdBufInfo));
+//}
 
-	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
-			mCmdPool,
-			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			1);
-
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &setupCmdBuffer));
-
-	VkCommandBufferBeginInfo cmdBufInfo = {};
-	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-	VK_CHECK_RESULT(vkBeginCommandBuffer(setupCmdBuffer, &cmdBufInfo));
-}
-
-void VulkanBase::flushSetupCommandBuffer()
-{
-	if (setupCmdBuffer == VK_NULL_HANDLE)
-		return;
-
-	VK_CHECK_RESULT(vkEndCommandBuffer(setupCmdBuffer));
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &setupCmdBuffer;
-
-	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, VK_NULL_HANDLE));
-	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
-
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
-	setupCmdBuffer = VK_NULL_HANDLE; 
-}
+//void VulkanBase::flushSetupCommandBuffer()
+//{
+//	if (setupCmdBuffer == VK_NULL_HANDLE)
+//		return;
+//
+//	VK_CHECK_RESULT(vkEndCommandBuffer(setupCmdBuffer));
+//
+//	VkSubmitInfo submitInfo = {};
+//	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+//	submitInfo.commandBufferCount = 1;
+//	submitInfo.pCommandBuffers = &setupCmdBuffer;
+//
+//	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, VK_NULL_HANDLE));
+//	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
+//
+//	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
+//	setupCmdBuffer = VK_NULL_HANDLE; 
+//}
 
 VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool begin)
 {
@@ -991,7 +990,7 @@ VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool
 			level,
 			1);
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(gVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 
 	// If requested, also start the new command buffer
 	if (begin)
@@ -1022,7 +1021,7 @@ void VulkanBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue
 
 	if (free)
 	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
 	}
 }
 
@@ -1030,26 +1029,25 @@ void VulkanBase::createPipelineCache()
 {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	VK_CHECK_RESULT(vkCreatePipelineCache(mVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+	VK_CHECK_RESULT(vkCreatePipelineCache(gVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 }
 
 void VulkanBase::prepare()
 {
-	if (mVulkanDevice->mEnableDebugMarkers)
+	if (gVulkanDevice->mEnableDebugMarkers)
 	{
-		vkDebug::DebugMarker::setup(mVulkanDevice->mLogicalDevice);
+		vkDebug::DebugMarker::setup(gVulkanDevice->mLogicalDevice);
 	}
 	createCommandPool();
-	createSetupCommandBuffer();
+	//createSetupCommandBuffer();
 	setupSwapChain();
 	createCommandBuffers();
 	setupDepthStencil();
 	setupRenderPass();
 	createPipelineCache();
 	setupFrameBuffer();
-	flushSetupCommandBuffer();
+	//flushSetupCommandBuffer();
 	// Recreate setup command buffer for derived class
-	createSetupCommandBuffer();
 
 	prepareSynchronizationPrimitives();
 	prepareVertices(USE_STAGING);
@@ -1062,7 +1060,7 @@ void VulkanBase::prepare()
 	prepared = true;
 
 	// Create a simple texture loader class
-	textureLoader = new vkTools::VulkanTextureLoader(mVulkanDevice, mQueue, mCmdPool);
+	textureLoader = new vkTools::VulkanTextureLoader(gVulkanDevice, gVulkanDevice->mQueue, mCmdPool);
 #if defined(__ANDROID__)
 	textureLoader->assetManager = androidApp->activity->assetManager;
 #endif
@@ -1073,8 +1071,8 @@ void VulkanBase::prepare()
 		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
 		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 		mTextOverlay = new VulkanTextOverlay(
-			mVulkanDevice,
-			mQueue,
+			gVulkanDevice,
+			gVulkanDevice->mQueue,
 			mFrameBuffers,
 			mColorformat,
 			mDepthFormat,
@@ -1092,9 +1090,9 @@ VkPipelineShaderStageCreateInfo VulkanBase::loadShader(std::string fileName, VkS
 	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStage.stage = stage;
 #if defined(__ANDROID__)
-	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
 #else
-	shaderStage.module = vkTools::loadShader(fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+	shaderStage.module = vkTools::loadShader(fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
 #endif
 	shaderStage.pName = "main"; // todo : make param
 	assert(shaderStage.module != NULL);
@@ -1108,20 +1106,20 @@ VkBool32 VulkanBase::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropert
 	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
 	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
 
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
+	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
 
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, *buffer, &memReqs);
+	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, *buffer, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
+	memAlloc.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
 	if (data != nullptr)
 	{
 		void *mapped;
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
 		memcpy(mapped, data, size);
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, *memory);
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, *memory);
 	}
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
 
 	return true;
 }
@@ -1174,7 +1172,7 @@ void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshB
 
 void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, vkMeshLoader::MeshCreateInfo *meshCreateInfo)
 {
-	VulkanMeshLoader *mesh = new VulkanMeshLoader(mVulkanDevice);
+	VulkanMeshLoader *mesh = new VulkanMeshLoader(gVulkanDevice);
 
 #if defined(__ANDROID__)
 	mesh->assetManager = androidApp->activity->assetManager;
@@ -1191,9 +1189,9 @@ void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshB
 		meshCreateInfo,
 		true,
 		copyCmd,
-		mQueue);
+		gVulkanDevice->mQueue);
 
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &copyCmd);
+	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, 1, &copyCmd);
 
 	meshBuffer->dim = mesh->dim.size;
 
@@ -1261,7 +1259,7 @@ void VulkanBase::renderLoop()
 	}
 
 	// Flush device to make sure all resources can be freed 
-	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
+	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
 }
 
 void VulkanBase::updateTextOverlay()
@@ -1277,7 +1275,7 @@ void VulkanBase::updateTextOverlay()
 	ss << std::fixed << std::setprecision(3) << (frameTimer * 1000.0f) << "ms (" << lastFPS << " fps)";
 	mTextOverlay->addText(ss.str(), 5.0f, 25.0f, VulkanTextOverlay::alignLeft);
 
-	mTextOverlay->addText(mVulkanDevice->mProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
+	mTextOverlay->addText(gVulkanDevice->mProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
 
 	getOverlayText(mTextOverlay);
 
@@ -1289,88 +1287,19 @@ void VulkanBase::getOverlayText(VulkanTextOverlay *textOverlay)
 	// Can be overriden in derived class
 }
 
-void VulkanBase::prepareFrame()
-{
-	// Acquire the next image from the swap chaing
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(semaphores.presentComplete, &mCurrentBuffer));
-}
-
-void VulkanBase::submitFrame()
-{
-	bool submitTextOverlay = mEnableTextOverlay && mTextOverlay->mVisible;
-
-	if (submitTextOverlay)
-	{
-		// Wait for color attachment output to finish before rendering the text overlay
-		VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		mSubmitInfo.pWaitDstStageMask = &stageFlags;
-
-		// Set semaphores
-		// Wait for render complete semaphore
-		mSubmitInfo.waitSemaphoreCount = 1;
-		mSubmitInfo.pWaitSemaphores = &semaphores.renderComplete;
-		// Signal ready with text overlay complete semaphpre
-		mSubmitInfo.signalSemaphoreCount = 1;
-		mSubmitInfo.pSignalSemaphores = &semaphores.textOverlayComplete;
-
-		// Submit current text overlay command buffer
-		mSubmitInfo.commandBufferCount = 1;
-		mSubmitInfo.pCommandBuffers = &mTextOverlay->mCmdBuffers[mCurrentBuffer];
-		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
-
-		// Reset stage mask
-		mSubmitInfo.pWaitDstStageMask = &submitPipelineStages;
-		// Reset wait and signal semaphores for rendering next frame
-		// Wait for swap chain presentation to finish
-		mSubmitInfo.waitSemaphoreCount = 1;
-		mSubmitInfo.pWaitSemaphores = &semaphores.presentComplete;
-		// Signal ready with offscreen semaphore
-		mSubmitInfo.signalSemaphoreCount = 1;
-		mSubmitInfo.pSignalSemaphores = &semaphores.renderComplete;
-	}
-
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
-
-	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
-}
 
 VulkanBase::VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 {
-	// Parse command line arguments
-	for (auto arg : args)
-	{
-		if (arg == std::string("-validation"))
-		{
-			enableValidation = true;
-		}
-		if (arg == std::string("-vsync"))
-		{
-			enableVSync = true;
-		}
-	}
-#if defined(__ANDROID__)
-	// Vulkan library is loaded dynamically on Android
-	bool libLoaded = loadVulkanLibrary();
-	assert(libLoaded);
-#elif defined(_DIRECT2DISPLAY)
-
-#elif defined(__linux__)
-	initxcbConnection();
-#endif
 
 	if (enabledFeaturesFn != nullptr)
 	{
 		this->enabledFeatures = enabledFeaturesFn();
 	}
 
-#if defined(_WIN32)
-	// Enable console if validation is active
-	// Debug message callback will output to it
 	if (enableValidation)
 	{
 		setupConsole("VulkanExample");
 	}
-#endif
 
 #if !defined(__ANDROID__)
 	// Android Vulkan initialization is handled in APP_CMD_INIT_WINDOW event
@@ -1388,73 +1317,68 @@ VulkanBase::~VulkanBase()
 {
 	// Clean up used Vulkan resources 
 	// Note: Inherited destructor cleans up resources stored in base class
-	vkDestroyPipeline(mVulkanDevice->mLogicalDevice, mPipeline, nullptr);
+	vkDestroyPipeline(gVulkanDevice->mLogicalDevice, mPipeline, nullptr);
 
-	vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
+	vkDestroyPipelineLayout(gVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
+	vkDestroyDescriptorSetLayout(gVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
 
-	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mVertices.buffer, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, nullptr);
+	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mVertices.buffer, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, mVertices.memory, nullptr);
 
-	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mIndices.buffer, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, mIndices.memory, nullptr);
+	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mIndices.buffer, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, mIndices.memory, nullptr);
 
-	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
+	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
 
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, presentCompleteSemaphore, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, renderCompleteSemaphore, nullptr);
+	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, presentCompleteSemaphore, nullptr);
+	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, renderCompleteSemaphore, nullptr);
 
 	for (auto& fence : mWaitFences)
 	{
-		vkDestroyFence(mVulkanDevice->mLogicalDevice, fence, nullptr);
+		vkDestroyFence(gVulkanDevice->mLogicalDevice, fence, nullptr);
 	}
 
 	// Clean up Vulkan resources
 	mSwapChain.cleanup();
 	if (descriptorPool != VK_NULL_HANDLE)
 	{
-		vkDestroyDescriptorPool(mVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
+		vkDestroyDescriptorPool(gVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
 	}
-	if (setupCmdBuffer != VK_NULL_HANDLE)
-	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
-
-	}
+	//if (setupCmdBuffer != VK_NULL_HANDLE)
+	//{
+	//	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
+	//}
 	destroyCommandBuffers();
-	vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
+	vkDestroyRenderPass(gVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
 	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
+		vkDestroyFramebuffer(gVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
 	}
 
 	for (auto& shaderModule : shaderModules)
 	{
-		vkDestroyShaderModule(mVulkanDevice->mLogicalDevice, shaderModule, nullptr);
+		vkDestroyShaderModule(gVulkanDevice->mLogicalDevice, shaderModule, nullptr);
 	}
-	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
+	vkDestroyImageView(gVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+	vkDestroyImage(gVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
 
-	vkDestroyPipelineCache(mVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
+	vkDestroyPipelineCache(gVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
 
 	if (textureLoader)
 	{
 		delete textureLoader;
 	}
 
-	vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
-
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
+	vkDestroyCommandPool(gVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
 
 	if (mEnableTextOverlay)
 	{
 		delete mTextOverlay;
 	}
 
-	delete mVulkanDevice;
+	delete gVulkanDevice;
 
 	if (mEnableValidation)
 	{
@@ -1522,40 +1446,15 @@ void VulkanBase::initVulkan(bool enableValidation)
 	// Vulkan device creation
 	// This is handled by a separate class that gets a logical device representation
 	// and encapsulates functions related to a device
-	mVulkanDevice = new VkCoreDevice(physicalDevices[0]);
-	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(enabledFeatures));
-
-	// Get a graphics queue from the device
-	vkGetDeviceQueue(mVulkanDevice->mLogicalDevice, mVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
+	gVulkanDevice = new VkCoreDevice(physicalDevices[0]);
+	VK_CHECK_RESULT(gVulkanDevice->createLogicalDevice(enabledFeatures));
 
 	// Find a suitable depth format
-	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &mDepthFormat);
+	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(gVulkanDevice->mPhysicalDevice, &mDepthFormat);
 	assert(validDepthFormat);
 
-	mSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
-
-	// Create synchronization objects
-	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
-	// Create a semaphore used to synchronize image presentation
-	// Ensures that the image is displayed before we start submitting new commands to the queu
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
-	// Create a semaphore used to synchronize command submission
-	// Ensures that the image is not presented until all commands have been sumbitted and executed
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
-	// Create a semaphore used to synchronize command submission
-	// Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
-	// Will be inserted after the render complete semaphore if the text overlay is enabled
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
-
-	// Set up submit info structure
-	// Semaphores will stay the same during application lifetime
-	// Command buffer submission info is set by each example
-	mSubmitInfo = vkTools::initializers::submitInfo();
-	mSubmitInfo.pWaitDstStageMask = &submitPipelineStages;
-	mSubmitInfo.waitSemaphoreCount = 1;
-	mSubmitInfo.pWaitSemaphores = &semaphores.presentComplete;
-	mSubmitInfo.signalSemaphoreCount = 1;
-	mSubmitInfo.pSignalSemaphores = &semaphores.renderComplete;
+	mSwapChain.connect(mInstance, gVulkanDevice->mPhysicalDevice, gVulkanDevice->mLogicalDevice);
+	return;
 }
 
 // Win32 : Sets up a console window and redirects standard output to it
@@ -1573,13 +1472,6 @@ HWND VulkanBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 	this->mWindowInstance = hinstance;
 
 	bool fullscreen = false;
-	for (auto arg : args)
-	{
-		if (arg == std::string("-fullscreen"))
-		{
-			fullscreen = true;
-		}
-	}
 
 	WNDCLASSEX wndClass;
 
@@ -1840,7 +1732,7 @@ void VulkanBase::createCommandPool()
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
+	VK_CHECK_RESULT(vkCreateCommandPool(gVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
 }
 
 void VulkanBase::windowResize()
@@ -1854,23 +1746,23 @@ void VulkanBase::windowResize()
 	// Recreate swap chain
 	width = destWidth;
 	height = destHeight;
-	createSetupCommandBuffer();
+	//createSetupCommandBuffer();
 	setupSwapChain();
 
 	// Recreate the frame buffers
 
-	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
+	vkDestroyImageView(gVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+	vkDestroyImage(gVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
 	setupDepthStencil();
 	
 	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
+		vkDestroyFramebuffer(gVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
 	}
 	setupFrameBuffer();
 
-	flushSetupCommandBuffer();
+	//flushSetupCommandBuffer();
 
 	// Command buffers need to be recreated as they may store
 	// references to the recreated frame buffer
@@ -1878,8 +1770,8 @@ void VulkanBase::windowResize()
 	createCommandBuffers();
 	buildCommandBuffers();
 
-	vkQueueWaitIdle(mQueue);
-	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
+	vkQueueWaitIdle(gVulkanDevice->mQueue);
+	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
 
 	if (mEnableTextOverlay)
 	{

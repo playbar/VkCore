@@ -44,7 +44,7 @@ int main(const int argc, const char *argv[])
 	app_dummy();
 #endif	
 #if defined(_WIN32)
-	vulkanExample = new VulkanBase(true);
+	vulkanExample = new VulkanBase(false);
 	vulkanExample->setupWindow(hInstance, WndProc);
 	vulkanExample->initSwapchain();
 	vulkanExample->prepare();

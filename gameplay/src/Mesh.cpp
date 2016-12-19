@@ -29,8 +29,8 @@ Mesh::~Mesh()
         SAFE_DELETE_ARRAY(mParts);
     }
 
-	vkDestroyBuffer(mVulkanDevice->mLogicalDevice, mVertices.buffer, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, nullptr);
+	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mVertices.buffer, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, mVertices.memory, nullptr);
 
     //if (_vertexBuffer)
     //{
@@ -58,12 +58,12 @@ Mesh* Mesh::createMesh(const VertexFormat& vertexFormat, unsigned int vertexCoun
 	vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	vertexBufferInfo.size = vertexBufferSize;
 	vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &mesh->mVertices.buffer));
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, mesh->mVertices.buffer, &memReqs);
+	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &mesh->mVertices.buffer));
+	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mesh->mVertices.buffer, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mesh->mVertices.memory));
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mesh->mVertices.buffer, mesh->mVertices.memory, 0));
+	memAlloc.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mesh->mVertices.memory));
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mesh->mVertices.buffer, mesh->mVertices.memory, 0));
 	
 	// Vertex input binding
 	mesh->mVertices.inputBinding.binding = VERTEX_BUFFER_BIND_ID;
@@ -319,7 +319,7 @@ void* Mesh::mapVertexBuffer()
 	GP_ASSERT(false);
 	void *data;
 	uint32_t vertexBufferSize = mVertexFormat.getVertexSize() * mVertexCount;
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, 0, vertexBufferSize, 0, &data));
+	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mVertices.memory, 0, vertexBufferSize, 0, &data));
 	return data;
 }
 
@@ -327,17 +327,17 @@ bool Mesh::unmapVertexBuffer()
 {
 	GP_ASSERT(false);
     //return glUnmapBuffer(GL_ARRAY_BUFFER);
-	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory);
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
+	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mVertices.memory);
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
 	return true;
 }
 
 void Mesh::setVertexData(const void* vertexData, unsigned int vertexStart, unsigned int vertexCount)
 {
 	void *data;
-	VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory, vertexStart * mVertexFormat.getVertexSize(), vertexCount * mVertexFormat.getVertexSize(), 0, &data));
+	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mVertices.memory, vertexStart * mVertexFormat.getVertexSize(), vertexCount * mVertexFormat.getVertexSize(), 0, &data));
 	memcpy(data, vertexData, vertexCount * mVertexFormat.getVertexSize());
-	vkUnmapMemory(mVulkanDevice->mLogicalDevice, mVertices.memory);
+	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mVertices.memory);
 }
 
 MeshPart* Mesh::addPart(VkPrimitiveTopology primitiveType, IndexFormat indexFormat, unsigned int indexCount, bool dynamic)

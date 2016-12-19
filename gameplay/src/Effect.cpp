@@ -270,7 +270,7 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 	((uint32_t *)moduleCreateInfo.pCode)[2] = VK_SHADER_STAGE_VERTEX_BIT;
 	memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderSource.c_str(), shaderSource.length() + 1);
 
-	VK_CHECK_RESULT(vkCreateShaderModule(mVulkanDevice->mLogicalDevice, &moduleCreateInfo, NULL, &shaderModule));
+	VK_CHECK_RESULT(vkCreateShaderModule(gVulkanDevice->mLogicalDevice, &moduleCreateInfo, NULL, &shaderModule));
 	effect->shaderStages[0].module = shaderModule;
 	effect->shaderStages[0].pName = "main"; // todo : make param
 	effect->shaderModules.push_back(effect->shaderStages[0].module);
@@ -306,7 +306,7 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 	((uint32_t *)moduleCreateInfoFra.pCode)[1] = 0;
 	((uint32_t *)moduleCreateInfoFra.pCode)[2] = VK_SHADER_STAGE_FRAGMENT_BIT;
 	memcpy(((uint32_t *)moduleCreateInfoFra.pCode + 3), shaderSource.c_str(), shaderSource.length() + 1);
-	VK_CHECK_RESULT(vkCreateShaderModule(mVulkanDevice->mLogicalDevice, &moduleCreateInfoFra, NULL, &shaderModuleFra));
+	VK_CHECK_RESULT(vkCreateShaderModule(gVulkanDevice->mLogicalDevice, &moduleCreateInfoFra, NULL, &shaderModuleFra));
 
 	effect->shaderStages[1].module = shaderModuleFra;
 	effect->shaderStages[1].pName = "main"; // todo : make param
@@ -326,7 +326,7 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 	descriptorLayout.bindingCount = 1;
 	descriptorLayout.pBindings = &layoutBinding;
 
-	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &effect->mDescriptorSetLayout));
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &effect->mDescriptorSetLayout));
 
 	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
 	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
@@ -336,7 +336,7 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 	pPipelineLayoutCreateInfo.setLayoutCount = 1;
 	pPipelineLayoutCreateInfo.pSetLayouts = &effect->mDescriptorSetLayout;
 
-	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &effect->mPipelineLayout));
+	VK_CHECK_RESULT(vkCreatePipelineLayout(gVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &effect->mPipelineLayout));
 
   
 	///////////////////////////////////

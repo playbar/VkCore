@@ -25,6 +25,7 @@
     <ClCompile Include="vkcore\VkCoreDevice.cpp" />
     <ClCompile Include="vkcore\VulkanBase.cpp" />
     <ClCompile Include="vkcore\vulkandebug.cpp" />
+    <ClCompile Include="vkcore\vulkanswapchain.cpp" />
     <ClCompile Include="vkcore\vulkantextoverlay.cpp" />
     <ClCompile Include="vkcore\vulkantools.cpp" />
   </ItemGroup>

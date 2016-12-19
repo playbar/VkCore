@@ -212,7 +212,7 @@ VkResult Game::createInstance(bool enableValidation)
 
 std::string Game::getWindowTitle()
 {
-	std::string device(mVulkanDevice->mProperties.deviceName);
+	std::string device(gVulkanDevice->mProperties.deviceName);
 	std::string windowTitle;
 	windowTitle = title + " - " + device;
 	if (!mEnableTextOverlay)
@@ -225,9 +225,9 @@ std::string Game::getWindowTitle()
 
 void Game::prepare()
 {
-	if (mVulkanDevice->mEnableDebugMarkers)
+	if (gVulkanDevice->mEnableDebugMarkers)
 	{
-		vkDebug::DebugMarker::setup(mVulkanDevice->mLogicalDevice);
+		vkDebug::DebugMarker::setup(gVulkanDevice->mLogicalDevice);
 	}
 	setupSwapChain();
 	
@@ -292,7 +292,7 @@ void Game::renderLoop()
 	}
 
 	// Flush device to make sure all resources can be freed 
-	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
+	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
 
 }
 
@@ -305,13 +305,13 @@ void Game::getOverlayText(VulkanTextOverlay *textOverlay)
 void Game::prepareFrame()
 {
 	// Acquire the next image from the swap chaing
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(mVulkanDevice->presentCompleteSemaphore));
+	VK_CHECK_RESULT(mSwapChain.acquireNextImage(gVulkanDevice->presentCompleteSemaphore));
 }
 
 void Game::submitFrame()
 {
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mVulkanDevice->mQueue, mVulkanDevice->renderCompleteSemaphore));
-	VK_CHECK_RESULT(vkQueueWaitIdle(mVulkanDevice->mQueue));
+	VK_CHECK_RESULT(mSwapChain.queuePresent(gVulkanDevice->mQueue, gVulkanDevice->renderCompleteSemaphore));
+	VK_CHECK_RESULT(vkQueueWaitIdle(gVulkanDevice->mQueue));
 }
 
 
@@ -370,9 +370,9 @@ void Game::UnInitVulkan()
 	}
 
 
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
+	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
+	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
+	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
 
 
 	if (mEnableTextOverlay)
@@ -380,7 +380,7 @@ void Game::UnInitVulkan()
 		delete mTextOverlay;
 	}
 
-	delete mVulkanDevice;
+	delete gVulkanDevice;
 
 	if (mEnableValidation)
 	{
@@ -431,28 +431,28 @@ void Game::InitVulkan(bool enableValidation)
 		vkTools::exitFatal("Could not enumerate phyiscal devices : \n" + vkTools::errorString(err), "Fatal error");
 	}
 
-	mVulkanDevice = new VkCoreDevice(physicalDevices[0]);
-	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(mEnabledFeatures));
+	gVulkanDevice = new VkCoreDevice(physicalDevices[0]);
+	VK_CHECK_RESULT(gVulkanDevice->createLogicalDevice(mEnabledFeatures));
 
 
 	// Find a suitable depth format
-	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &mDepthFormat);
+	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(gVulkanDevice->mPhysicalDevice, &mDepthFormat);
 	assert(validDepthFormat);
 
-	mSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
+	mSwapChain.connect(mInstance, gVulkanDevice->mPhysicalDevice, gVulkanDevice->mLogicalDevice);
 
 	// Create synchronization objects
 	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
 	// Create a semaphore used to synchronize image presentation
 	// Ensures that the image is displayed before we start submitting new commands to the queu
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
 	// Create a semaphore used to synchronize command submission
 	// Ensures that the image is not presented until all commands have been sumbitted and executed
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
 	// Create a semaphore used to synchronize command submission
 	// Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
 	// Will be inserted after the render complete semaphore if the text overlay is enabled
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
 
 	// Set up submit info structure
 	// Semaphores will stay the same during application lifetime
@@ -1399,7 +1399,7 @@ void Game::frame()
     {
         // Perform lazy first time initialization
 		prepare();
-		mVulkanDevice->prepareSynchronizationPrimitives();
+		gVulkanDevice->prepareSynchronizationPrimitives();
 		initialize();
         _initialized = true;
 

@@ -1,6 +1,6 @@
 #include "VkCoreDevice.hpp"
 
-VkCoreDevice *mVulkanDevice = NULL;
+VkCoreDevice *gVulkanDevice = NULL;
 
 VkCoreDevice::VkCoreDevice(VkPhysicalDevice phyDevice)
 {
@@ -228,6 +228,9 @@ VkResult VkCoreDevice::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
 		// Create a default command pool for graphics command buffers
 		mCommandPool = createCommandPool(queueFamilyIndices.graphics);
 	}
+
+	// Get a graphics queue from the device
+	vkGetDeviceQueue(mLogicalDevice, queueFamilyIndices.graphics, 0, &mQueue);
 
 	return result;
 }
