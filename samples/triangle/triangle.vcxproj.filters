@@ -57,9 +57,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vkcore\VkTriangle.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
     <ClInclude Include="vkcore\VulkanBase.h">
       <Filter>vkcore</Filter>
     </ClInclude>
