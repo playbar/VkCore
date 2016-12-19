@@ -36,7 +36,7 @@
 #include "define.h"
 
 #define ENABLE_VALIDATION false
-#define USE_STAGING true
+#define USE_STAGING false
 
 
 // Function pointer for getting physical device fetures to be enabled
@@ -116,15 +116,7 @@ public:
 	// It connects the binding points of the different shaders with the buffers and images used for those bindings
 	VkDescriptorSet mDescriptorSet;
 
-	VkSemaphore presentCompleteSemaphore;
-	VkSemaphore renderCompleteSemaphore;
-
-	std::vector<VkFence> mWaitFences;
-	//////////////////////////////////
-
 	uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
-
-	void prepareSynchronizationPrimitives();
 
 	VkCommandBuffer getCommandBuffer(bool begin);
 
@@ -204,20 +196,13 @@ protected:
 	VkRenderPass mRenderPass;
 	// List of available frame buffers (same as number of swap chain images)
 	std::vector<VkFramebuffer>mFrameBuffers;
-	// Active frame buffer index
-	uint32_t mCurrentBuffer = 0;
+
 	// Descriptor set pool
 	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 	// List of shader modules created (stored for cleanup)
 	std::vector<VkShaderModule> shaderModules;
 	// Pipeline cache object
 	VkPipelineCache pipelineCache;
-	// Wraps the swap chain to present images (framebuffers) to the windowing system
-	VulkanSwapChain mSwapChain;
-
-	// Simple texture loader
-	vkTools::VulkanTextureLoader *textureLoader = nullptr;
-	// Returns the base asset path (for shaders, models, textures) depending on the os
 	
 public: 
 	bool prepared = false;
@@ -235,9 +220,6 @@ public:
 	float timerSpeed = 0.25f;
 	
 	bool paused = false;
-
-	bool mEnableTextOverlay = false;
-	VulkanTextOverlay *mTextOverlay;
 
 	// Use to adjust mouse rotation speed
 	float rotationSpeed = 0.5f;
@@ -328,11 +310,7 @@ public:
 	// Destroy all command buffers and set their handles to VK_NULL_HANDLE
 	// May be necessary during runtime if options are toggled 
 	void destroyCommandBuffers();
-	// Create command buffer for setup commands
-	void createSetupCommandBuffer();
-	// Finalize setup command bufferm submit it to the queue and remove it
-	void flushSetupCommandBuffer();
-
+	
 	// Command buffer creation
 	// Creates and returns a new command buffer
 	VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin);
@@ -349,39 +327,6 @@ public:
 	// Load a SPIR-V shader
 	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
 	
-	// Create a buffer, fill it with data (if != NULL) and bind buffer memory
-	VkBool32 createBuffer(
-		VkBufferUsageFlags usageFlags,
-		VkMemoryPropertyFlags memoryPropertyFlags,
-		VkDeviceSize size,
-		void *data,
-		VkBuffer *buffer,
-		VkDeviceMemory *memory);
-	// This version always uses HOST_VISIBLE memory
-	VkBool32 createBuffer(
-		VkBufferUsageFlags usage,
-		VkDeviceSize size,
-		void *data,
-		VkBuffer *buffer,
-		VkDeviceMemory *memory);
-	// Overload that assigns buffer info to descriptor
-	VkBool32 createBuffer(
-		VkBufferUsageFlags usage,
-		VkDeviceSize size,
-		void *data,
-		VkBuffer *buffer,
-		VkDeviceMemory *memory,
-		VkDescriptorBufferInfo *descriptor);
-	// Overload to pass memory property flags
-	VkBool32 createBuffer(
-		VkBufferUsageFlags usage,
-		VkMemoryPropertyFlags memoryPropertyFlags,
-		VkDeviceSize size,
-		void *data,
-		VkBuffer *buffer,
-		VkDeviceMemory *memory,
-		VkDescriptorBufferInfo *descriptor);
-
 	// Load a mesh (using ASSIMP) and create vulkan vertex and index buffers with given vertex layout
 	void loadMesh(
 		std::string fiename, 
@@ -397,13 +342,6 @@ public:
 
 	// Start the main render loop
 	void renderLoop();
-
-	void updateTextOverlay();
-
-	// Called when the text overlay is updating
-	// Can be overriden in derived class to add custom text to the overlay
-	virtual void getOverlayText(VulkanTextOverlay * textOverlay);
-
 
 
 };

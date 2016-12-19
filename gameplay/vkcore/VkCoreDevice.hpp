@@ -39,6 +39,7 @@ public:
 
 	~VkCoreDevice();
 
+	uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
 	uint32_t getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32 *memTypeFound = nullptr);
 
 	uint32_t getQueueFamiliyIndex(VkQueueFlagBits queueFlags);

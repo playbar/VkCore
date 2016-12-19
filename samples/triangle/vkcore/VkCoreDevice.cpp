@@ -1,4 +1,5 @@
 #include "VkCoreDevice.hpp"
+#include "vulkanswapchain.hpp"
 
 VkCoreDevice *gVulkanDevice = NULL;
 
@@ -25,6 +26,14 @@ VkCoreDevice::VkCoreDevice(VkPhysicalDevice phyDevice)
 
 VkCoreDevice::~VkCoreDevice()
 {
+	vkDestroySemaphore(mLogicalDevice, presentCompleteSemaphore, nullptr);
+	vkDestroySemaphore(mLogicalDevice, renderCompleteSemaphore, nullptr);
+
+	for (auto& fence : mWaitFences)
+	{
+		vkDestroyFence(mLogicalDevice, fence, nullptr);
+	}
+
 	if (mCommandPool)
 	{
 		vkDestroyCommandPool(mLogicalDevice, mCommandPool, nullptr);
@@ -34,6 +43,27 @@ VkCoreDevice::~VkCoreDevice()
 		vkDestroyDevice(mLogicalDevice, nullptr);
 	}
 }
+
+// Create the Vulkan synchronization primitives used in this example
+void VkCoreDevice::prepareSynchronizationPrimitives()
+{
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	semaphoreCreateInfo.pNext = nullptr;
+
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
+
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	mWaitFences.resize(gSwapChain.buffers.size());
+	for (auto& fence : mWaitFences)
+	{
+		VK_CHECK_RESULT(vkCreateFence(gVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
+	}
+}
+
 
 uint32_t VkCoreDevice::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32 *memTypeFound)
 {
@@ -235,6 +265,7 @@ VkResult VkCoreDevice::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
 	return result;
 }
 
+
 VkResult VkCoreDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
 	VkDeviceSize size, VkBuffer *buffer, VkDeviceMemory *memory, void *data)
 {
@@ -324,6 +355,68 @@ void VkCoreDevice::copyBuffer(vk::Buffer *src, vk::Buffer *dst, VkQueue queue, V
 	vkCmdCopyBuffer(copyCmd, src->buffer, dst->buffer, 1, &bufferCopy);
 
 	flushCommandBuffer(copyCmd, queue);
+}
+
+
+VkBool32 VkCoreDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory)
+{
+	VkMemoryRequirements memReqs;
+	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
+	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+
+	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
+
+	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, *buffer, &memReqs);
+	memAlloc.allocationSize = memReqs.size;
+	memAlloc.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
+	if (data != nullptr)
+	{
+		void *mapped;
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
+		memcpy(mapped, data, size);
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, *memory);
+	}
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
+
+	return true;
+}
+
+VkBool32 VkCoreDevice::createBuffer(VkBufferUsageFlags usage, VkDeviceSize size, void * data, VkBuffer *buffer, VkDeviceMemory *memory)
+{
+	return createBuffer(usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, size, data, buffer, memory);
+}
+
+VkBool32 VkCoreDevice::createBuffer(VkBufferUsageFlags usage, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory, VkDescriptorBufferInfo * descriptor)
+{
+	VkBool32 res = createBuffer(usage, size, data, buffer, memory);
+	if (res)
+	{
+		descriptor->offset = 0;
+		descriptor->buffer = *buffer;
+		descriptor->range = size;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+VkBool32 VkCoreDevice::createBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory, VkDescriptorBufferInfo * descriptor)
+{
+	VkBool32 res = createBuffer(usage, memoryPropertyFlags, size, data, buffer, memory);
+	if (res)
+	{
+		descriptor->offset = 0;
+		descriptor->buffer = *buffer;
+		descriptor->range = size;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 VkCommandPool VkCoreDevice::createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags)

@@ -67,7 +67,7 @@ public:
 	VkFormat colorFormat;
 	VkColorSpaceKHR colorSpace;
 	/** @brief Handle to the current swap chain, required for recreation */
-	VkSwapchainKHR mSwapChain = VK_NULL_HANDLE;	
+	VkSwapchainKHR mSwapChainKHR = VK_NULL_HANDLE;
 	uint32_t mImageCount = 0;
 	std::vector<VkImage> images;
 	std::vector<SwapChainBuffer> buffers;
@@ -109,4 +109,4 @@ public:
 	void cleanup();
 };
 
-extern VulkanSwapChain mSwapChain;
+extern VulkanSwapChain gSwapChain;

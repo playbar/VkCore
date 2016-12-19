@@ -47,12 +47,14 @@ typedef struct _SwapChainBuffers
 } SwapChainBuffer;
 
 class VulkanSwapChain
-{
+{	
 private: 
 	VkInstance instance;
 	VkDevice device;
 	VkPhysicalDevice physicalDevice;
 	VkSurfaceKHR surface;
+	// Active frame buffer index
+	
 	// Function pointers
 	PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
 	PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR; 
@@ -64,10 +66,11 @@ private:
 	PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR;
 	PFN_vkQueuePresentKHR fpQueuePresentKHR;
 public:
+	uint32_t mCurrentBuffer;
 	VkFormat colorFormat;
 	VkColorSpaceKHR colorSpace;
 	/** @brief Handle to the current swap chain, required for recreation */
-	VkSwapchainKHR mSwapChain = VK_NULL_HANDLE;	
+	VkSwapchainKHR mSwapChainKHR = VK_NULL_HANDLE;	
 	uint32_t mImageCount = 0;
 	std::vector<VkImage> images;
 	std::vector<SwapChainBuffer> buffers;
@@ -81,10 +84,12 @@ public:
 
 	void create(uint32_t *width, uint32_t *height, bool vsync = false);
 
-	VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *imageIndex);
+	VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore);
 
-	VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
+	VkResult queuePresent(VkQueue queue, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
 
 	void cleanup();
 
 };
+
+extern VulkanSwapChain gSwapChain;

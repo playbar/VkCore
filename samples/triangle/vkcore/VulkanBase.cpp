@@ -50,10 +50,7 @@ std::string VulkanBase::getWindowTitle()
 	std::string device(gVulkanDevice->mProperties.deviceName);
 	std::string windowTitle;
 	windowTitle = title + " - " + device;
-	if (!mEnableTextOverlay)
-	{
-		windowTitle += " - " + std::to_string(frameCounter) + " fps";
-	}
+	windowTitle += " - " + std::to_string(frameCounter) + " fps";
 	return windowTitle;
 }
 
@@ -73,26 +70,6 @@ uint32_t VulkanBase::getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags
 	}
 
 	throw "Could not find a suitable memory type!";
-}
-
-// Create the Vulkan synchronization primitives used in this example
-void VulkanBase::prepareSynchronizationPrimitives()
-{
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	semaphoreCreateInfo.pNext = nullptr;
-
-	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
-	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
-
-	VkFenceCreateInfo fenceCreateInfo = {};
-	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	mWaitFences.resize(mDrawCmdBuffers.size());
-	for (auto& fence : mWaitFences)
-	{
-		VK_CHECK_RESULT(vkCreateFence(gVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
-	}
 }
 
 // Get a new command buffer from the command pool
@@ -232,11 +209,12 @@ void VulkanBase::buildCommandBuffers()
 void VulkanBase::draw()
 {
 	// Get next image in the swap chain (back/front buffer)
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(presentCompleteSemaphore, &mCurrentBuffer));
+	VK_CHECK_RESULT(gSwapChain.acquireNextImage(gVulkanDevice->presentCompleteSemaphore ));
 
 	// Use a fence to wait until the command buffer has finished execution before using it again
-	VK_CHECK_RESULT(vkWaitForFences(gVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
-	VK_CHECK_RESULT(vkResetFences(gVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
+	int curIndex = gSwapChain.mCurrentBuffer;
+	VK_CHECK_RESULT(vkWaitForFences(gVulkanDevice->mLogicalDevice, 1, &gVulkanDevice->mWaitFences[curIndex], VK_TRUE, UINT64_MAX));
+	VK_CHECK_RESULT(vkResetFences(gVulkanDevice->mLogicalDevice, 1, &gVulkanDevice->mWaitFences[curIndex]));
 
 	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -244,20 +222,18 @@ void VulkanBase::draw()
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pWaitDstStageMask = &waitStageMask;									// Pointer to the list of pipeline stages that the semaphore waits will occur at
-	submitInfo.pWaitSemaphores = &presentCompleteSemaphore;							// Semaphore(s) to wait upon before the submitted command buffer starts executing
+	submitInfo.pWaitSemaphores = &gVulkanDevice->presentCompleteSemaphore;							// Semaphore(s) to wait upon before the submitted command buffer starts executing
 	submitInfo.waitSemaphoreCount = 1;												// One wait semaphore																				
-	submitInfo.pSignalSemaphores = &renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
+	submitInfo.pSignalSemaphores = &gVulkanDevice->renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
 	submitInfo.signalSemaphoreCount = 1;											// One signal semaphore
-	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];					// Command buffers(s) to execute in this batch (submission)
+	submitInfo.pCommandBuffers = &mDrawCmdBuffers[curIndex];					// Command buffers(s) to execute in this batch (submission)
 	submitInfo.commandBufferCount = 1;												// One command buffer
 
-																					// Submit to the graphics queue passing a wait fence
-	VK_CHECK_RESULT(vkQueueSubmit(gVulkanDevice->mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
+	VK_CHECK_RESULT(vkQueueSubmit(gVulkanDevice->mQueue, 1, &submitInfo, gVulkanDevice->mWaitFences[curIndex]));
 
-	// Present the current buffer to the swap chain
-	// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
-	// This ensures that the image is not presented to the windowing system until all commands have been submitted
-	VK_CHECK_RESULT(mSwapChain.queuePresent(gVulkanDevice->mQueue, mCurrentBuffer, renderCompleteSemaphore));
+	VK_CHECK_RESULT(gSwapChain.queuePresent(gVulkanDevice->mQueue, gVulkanDevice->renderCompleteSemaphore));
+
+	VK_CHECK_RESULT(vkQueueWaitIdle(gVulkanDevice->mQueue));
 }
 
 void VulkanBase::updateUniformBuffers()
@@ -294,8 +270,8 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 	{
 		{ { 0.9f,  1.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
 		{ { -1.0f,  1.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
-		{ { -1.0f, -1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
-		{ { 0.9f, -1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
+		{ { -1.0f, -1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
+		//{ { 0.9f, -1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
 	};
 	//std::vector<Vertex> vertexBuffer =
 	//{
@@ -308,7 +284,7 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 	uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(Vertex);
 
 	// Setup indices
-	std::vector<uint32_t> indexBuffer = { 1, 0, 2, 3 };
+	std::vector<uint32_t> indexBuffer = { 1, 0, 2 };
 	mIndices.count = static_cast<uint32_t>(indexBuffer.size());
 	uint32_t indexBufferSize = mIndices.count * sizeof(uint32_t);
 
@@ -320,17 +296,6 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 
 	if (useStagingBuffers)
 	{
-		// Static data like vertex and index buffer should be stored on the device memory 
-		// for optimal (and fastest) access by the GPU
-		//
-		// To achieve this we use so-called "staging buffers" :
-		// - Create a buffer that's visible to the host (and can be mapped)
-		// - Copy the data to this buffer
-		// - Create another buffer that's local on the device (VRAM) with the same size
-		// - Copy the data from the host to the device using a command buffer
-		// - Delete the host visible (staging) buffer
-		// - Use the device local buffers for rendering
-
 		struct StagingBuffer {
 			VkDeviceMemory memory;
 			VkBuffer buffer;
@@ -621,6 +586,7 @@ void VulkanBase::setupDepthStencil()
 	depthStencilView.subresourceRange.layerCount = 1;
 	depthStencilView.image = depthStencil.image;
 	VK_CHECK_RESULT(vkCreateImageView(gVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
+
 }
 
 // Create a frame buffer for each swap chain image
@@ -641,10 +607,10 @@ void VulkanBase::setupFrameBuffer()
 	frameBufferCreateInfo.layers = 1;
 
 	// Create a frame buffer for every image in the swapchain
-	mFrameBuffers.resize(mSwapChain.mImageCount);
+	mFrameBuffers.resize(gSwapChain.mImageCount);
 	for (size_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		attachments[0] = mSwapChain.buffers[i].view;
+		attachments[0] = gSwapChain.buffers[i].view;
 		VK_CHECK_RESULT(vkCreateFramebuffer(gVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
 	}
 }
@@ -923,7 +889,7 @@ bool VulkanBase::checkCommandBuffers()
 void VulkanBase::createCommandBuffers()
 {
 	// Create one command buffer for each swap chain image and reuse for rendering
-	mDrawCmdBuffers.resize(mSwapChain.mImageCount);
+	mDrawCmdBuffers.resize(gSwapChain.mImageCount);
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
 		vkTools::initializers::commandBufferAllocateInfo(
@@ -938,47 +904,6 @@ void VulkanBase::destroyCommandBuffers()
 {
 	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
 }
-
-//void VulkanBase::createSetupCommandBuffer()
-//{
-//	if (setupCmdBuffer != VK_NULL_HANDLE)
-//	{
-//		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
-//		setupCmdBuffer = VK_NULL_HANDLE; // todo : check if still necessary
-//	}
-//
-//	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-//		vkTools::initializers::commandBufferAllocateInfo(
-//			mCmdPool,
-//			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-//			1);
-//
-//	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &setupCmdBuffer));
-//
-//	VkCommandBufferBeginInfo cmdBufInfo = {};
-//	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-//
-//	VK_CHECK_RESULT(vkBeginCommandBuffer(setupCmdBuffer, &cmdBufInfo));
-//}
-
-//void VulkanBase::flushSetupCommandBuffer()
-//{
-//	if (setupCmdBuffer == VK_NULL_HANDLE)
-//		return;
-//
-//	VK_CHECK_RESULT(vkEndCommandBuffer(setupCmdBuffer));
-//
-//	VkSubmitInfo submitInfo = {};
-//	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-//	submitInfo.commandBufferCount = 1;
-//	submitInfo.pCommandBuffers = &setupCmdBuffer;
-//
-//	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, VK_NULL_HANDLE));
-//	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
-//
-//	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
-//	setupCmdBuffer = VK_NULL_HANDLE; 
-//}
 
 VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool begin)
 {
@@ -1038,18 +963,16 @@ void VulkanBase::prepare()
 	{
 		vkDebug::DebugMarker::setup(gVulkanDevice->mLogicalDevice);
 	}
-	createCommandPool();
-	//createSetupCommandBuffer();
 	setupSwapChain();
+	createCommandPool();	
 	createCommandBuffers();
 	setupDepthStencil();
 	setupRenderPass();
 	createPipelineCache();
 	setupFrameBuffer();
-	//flushSetupCommandBuffer();
-	// Recreate setup command buffer for derived class
+	
+	gVulkanDevice->prepareSynchronizationPrimitives();
 
-	prepareSynchronizationPrimitives();
 	prepareVertices(USE_STAGING);
 	prepareUniformBuffers();
 	setupDescriptorSetLayout();
@@ -1059,29 +982,6 @@ void VulkanBase::prepare()
 	buildCommandBuffers();
 	prepared = true;
 
-	// Create a simple texture loader class
-	textureLoader = new vkTools::VulkanTextureLoader(gVulkanDevice, gVulkanDevice->mQueue, mCmdPool);
-#if defined(__ANDROID__)
-	textureLoader->assetManager = androidApp->activity->assetManager;
-#endif
-	if (mEnableTextOverlay)
-	{
-		// Load the text rendering shaders
-		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
-		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
-		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
-		mTextOverlay = new VulkanTextOverlay(
-			gVulkanDevice,
-			gVulkanDevice->mQueue,
-			mFrameBuffers,
-			mColorformat,
-			mDepthFormat,
-			&width,
-			&height,
-			shaderStages
-			);
-		updateTextOverlay();
-	}
 }
 
 VkPipelineShaderStageCreateInfo VulkanBase::loadShader(std::string fileName, VkShaderStageFlagBits stage)
@@ -1098,67 +998,6 @@ VkPipelineShaderStageCreateInfo VulkanBase::loadShader(std::string fileName, VkS
 	assert(shaderStage.module != NULL);
 	shaderModules.push_back(shaderStage.module);
 	return shaderStage;
-}
-
-VkBool32 VulkanBase::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory)
-{
-	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
-	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
-
-	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
-
-	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, *buffer, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
-	if (data != nullptr)
-	{
-		void *mapped;
-		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
-		memcpy(mapped, data, size);
-		vkUnmapMemory(gVulkanDevice->mLogicalDevice, *memory);
-	}
-	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
-
-	return true;
-}
-
-VkBool32 VulkanBase::createBuffer(VkBufferUsageFlags usage, VkDeviceSize size, void * data, VkBuffer *buffer, VkDeviceMemory *memory)
-{
-	return createBuffer(usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, size, data, buffer, memory);
-}
-
-VkBool32 VulkanBase::createBuffer(VkBufferUsageFlags usage, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory, VkDescriptorBufferInfo * descriptor)
-{
-	VkBool32 res = createBuffer(usage, size, data, buffer, memory);
-	if (res)
-	{
-		descriptor->offset = 0;
-		descriptor->buffer = *buffer;
-		descriptor->range = size;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-VkBool32 VulkanBase::createBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory, VkDescriptorBufferInfo * descriptor)
-{
-	VkBool32 res = createBuffer(usage, memoryPropertyFlags, size, data, buffer, memory);
-	if (res)
-	{
-		descriptor->offset = 0;
-		descriptor->buffer = *buffer;
-		descriptor->range = size;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
 }
 
 void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, float scale)
@@ -1245,14 +1084,10 @@ void VulkanBase::renderLoop()
 		}
 		fpsTimer += (float)tDiff;
 		if (fpsTimer > 1000.0f)
-		{
-			if (!mEnableTextOverlay)
-			{
-				std::string windowTitle = getWindowTitle();
-				SetWindowText(mHwndWinow, windowTitle.c_str());
-			}
+		{	
+			std::string windowTitle = getWindowTitle();
+			SetWindowText(mHwndWinow, windowTitle.c_str());
 			lastFPS = roundf(1.0f / frameTimer);
-			updateTextOverlay();
 			fpsTimer = 0.0f;
 			frameCounter = 0;
 		}
@@ -1261,32 +1096,6 @@ void VulkanBase::renderLoop()
 	// Flush device to make sure all resources can be freed 
 	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
 }
-
-void VulkanBase::updateTextOverlay()
-{
-	if (!mEnableTextOverlay)
-		return;
-
-	mTextOverlay->beginTextUpdate();
-
-	mTextOverlay->addText(title, 5.0f, 5.0f, VulkanTextOverlay::alignLeft);
-
-	std::stringstream ss;
-	ss << std::fixed << std::setprecision(3) << (frameTimer * 1000.0f) << "ms (" << lastFPS << " fps)";
-	mTextOverlay->addText(ss.str(), 5.0f, 25.0f, VulkanTextOverlay::alignLeft);
-
-	mTextOverlay->addText(gVulkanDevice->mProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
-
-	getOverlayText(mTextOverlay);
-
-	mTextOverlay->endTextUpdate();
-}
-
-void VulkanBase::getOverlayText(VulkanTextOverlay *textOverlay)
-{
-	// Can be overriden in derived class
-}
-
 
 VulkanBase::VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 {
@@ -1331,16 +1140,9 @@ VulkanBase::~VulkanBase()
 	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
 	vkFreeMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
 
-	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, presentCompleteSemaphore, nullptr);
-	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, renderCompleteSemaphore, nullptr);
-
-	for (auto& fence : mWaitFences)
-	{
-		vkDestroyFence(gVulkanDevice->mLogicalDevice, fence, nullptr);
-	}
 
 	// Clean up Vulkan resources
-	mSwapChain.cleanup();
+	gSwapChain.cleanup();
 	if (descriptorPool != VK_NULL_HANDLE)
 	{
 		vkDestroyDescriptorPool(gVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
@@ -1366,17 +1168,7 @@ VulkanBase::~VulkanBase()
 
 	vkDestroyPipelineCache(gVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
 
-	if (textureLoader)
-	{
-		delete textureLoader;
-	}
-
 	vkDestroyCommandPool(gVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
-
-	if (mEnableTextOverlay)
-	{
-		delete mTextOverlay;
-	}
 
 	delete gVulkanDevice;
 
@@ -1453,7 +1245,7 @@ void VulkanBase::initVulkan(bool enableValidation)
 	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(gVulkanDevice->mPhysicalDevice, &mDepthFormat);
 	assert(validDepthFormat);
 
-	mSwapChain.connect(mInstance, gVulkanDevice->mPhysicalDevice, gVulkanDevice->mLogicalDevice);
+	gSwapChain.connect(mInstance, gVulkanDevice->mPhysicalDevice, gVulkanDevice->mLogicalDevice);
 	return;
 }
 
@@ -1603,10 +1395,6 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			paused = !paused;
 			break;
 		case Keyboard::KEY_F1:
-			if (mEnableTextOverlay)
-			{
-				mTextOverlay->mVisible = !mTextOverlay->mVisible;
-			}
 			break;
 		case Keyboard::KEY_ESCAPE:
 			PostQuitMessage(0);
@@ -1730,7 +1518,7 @@ void VulkanBase::createCommandPool()
 {
 	VkCommandPoolCreateInfo cmdPoolInfo = {};
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
+	cmdPoolInfo.queueFamilyIndex = gSwapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	VK_CHECK_RESULT(vkCreateCommandPool(gVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
 }
@@ -1773,12 +1561,6 @@ void VulkanBase::windowResize()
 	vkQueueWaitIdle(gVulkanDevice->mQueue);
 	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
 
-	if (mEnableTextOverlay)
-	{
-		mTextOverlay->reallocateCommandBuffers();
-		updateTextOverlay();
-	}
-
 	mCamera.updateAspectRatio((float)width / (float)height);
 
 	// Notify derived class
@@ -1796,17 +1578,17 @@ void VulkanBase::windowResized()
 void VulkanBase::initSwapchain()
 {
 #if defined(_WIN32)
-	mSwapChain.initSurface(mWindowInstance, mHwndWinow);
+	gSwapChain.initSurface(mWindowInstance, mHwndWinow);
 #elif defined(__ANDROID__)	
-	mSwapChain.initSurface(androidApp->window);
+	gSwapChain.initSurface(androidApp->window);
 #elif defined(_DIRECT2DISPLAY)
-	mSwapChain.initSurface(width, height);
+	gSwapChain.initSurface(width, height);
 #elif defined(__linux__)
-	mSwapChain.initSurface(connection, mHwndWinow);
+	gSwapChain.initSurface(connection, mHwndWinow);
 #endif
 }
 
 void VulkanBase::setupSwapChain()
 {
-	mSwapChain.create(&width, &height, enableVSync);
+	gSwapChain.create(&width, &height, enableVSync);
 }

@@ -53,7 +53,7 @@ public:
 	void setupRenderPass();
 	void setupFrameBuffer();
 	void preparePipelines();
-	virtual void prepareUniformBuffers();
+	void prepareUniformBuffers();
 	void updateUniformBuffers();
 
 	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
@@ -90,8 +90,8 @@ private:
 	
 	//////////////////////////
 
-	uint32_t width = 1280;
-	uint32_t height = 720;
+	uint32_t width = 800;
+	uint32_t height = 600;
 	struct
 	{
 		VkImage image;

@@ -297,20 +297,15 @@ void Game::renderLoop()
 }
 
 
-void Game::getOverlayText(VulkanTextOverlay *textOverlay)
-{
-	// Can be overriden in derived class
-}
-
 void Game::prepareFrame()
 {
 	// Acquire the next image from the swap chaing
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(gVulkanDevice->presentCompleteSemaphore));
+	VK_CHECK_RESULT(gSwapChain.acquireNextImage(gVulkanDevice->presentCompleteSemaphore));
 }
 
 void Game::submitFrame()
 {
-	VK_CHECK_RESULT(mSwapChain.queuePresent(gVulkanDevice->mQueue, gVulkanDevice->renderCompleteSemaphore));
+	VK_CHECK_RESULT(gSwapChain.queuePresent(gVulkanDevice->mQueue, gVulkanDevice->renderCompleteSemaphore));
 	VK_CHECK_RESULT(vkQueueWaitIdle(gVulkanDevice->mQueue));
 }
 
@@ -362,7 +357,7 @@ void Game::InitVulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledF
 void Game::UnInitVulkan()
 {
 	// Clean up Vulkan resources
-	mSwapChain.cleanup();
+	gSwapChain.cleanup();
 
 	if (textureLoader)
 	{
@@ -439,7 +434,7 @@ void Game::InitVulkan(bool enableValidation)
 	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(gVulkanDevice->mPhysicalDevice, &mDepthFormat);
 	assert(validDepthFormat);
 
-	mSwapChain.connect(mInstance, gVulkanDevice->mPhysicalDevice, gVulkanDevice->mLogicalDevice);
+	gSwapChain.connect(mInstance, gVulkanDevice->mPhysicalDevice, gVulkanDevice->mLogicalDevice);
 
 	// Create synchronization objects
 	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
@@ -1126,19 +1121,19 @@ void Game::windowResized()
 void Game::initSwapchain()
 {
 #if defined(_WIN32)
-	mSwapChain.initSurface(mWindowInstance, mHwndWinow);
+	gSwapChain.initSurface(mWindowInstance, mHwndWinow);
 #elif defined(__ANDROID__)	
-	mSwapChain.initSurface(androidApp->window);
+	gSwapChain.initSurface(androidApp->window);
 #elif defined(_DIRECT2DISPLAY)
-	mSwapChain.initSurface(width, height);
+	gSwapChain.initSurface(width, height);
 #elif defined(__linux__)
-	mSwapChain.initSurface(connection, mHwndWinow);
+	gSwapChain.initSurface(connection, mHwndWinow);
 #endif
 }
 
 void Game::setupSwapChain()
 {
-	mSwapChain.create(&width, &height, enableVSync);
+	gSwapChain.create(&width, &height, enableVSync);
 }
 
 

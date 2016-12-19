@@ -44,6 +44,25 @@ VkCoreDevice::~VkCoreDevice()
 	}
 }
 
+uint32_t VkCoreDevice::getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
+{
+	// Iterate over all memory types available for the device used in this example
+	for (uint32_t i = 0; i < mMemoryProperties.memoryTypeCount; i++)
+	{
+		if ((typeBits & 1) == 1)
+		{
+			if ((mMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			{
+				return i;
+			}
+		}
+		typeBits >>= 1;
+	}
+
+	throw "Could not find a suitable memory type!";
+}
+
+
 uint32_t VkCoreDevice::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32 *memTypeFound)
 {
 	for (uint32_t i = 0; i < mMemoryProperties.memoryTypeCount; i++)
@@ -475,7 +494,7 @@ void VkCoreDevice::prepareSynchronizationPrimitives()
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	// Create in signaled state so we don't wait on first render of each command buffer
 	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	mWaitFences.resize(mSwapChain.buffers.size());
+	mWaitFences.resize(gSwapChain.buffers.size());
 	for (auto& fence : mWaitFences)
 	{
 		VK_CHECK_RESULT(vkCreateFence(mLogicalDevice, &fenceCreateInfo, nullptr, &fence));

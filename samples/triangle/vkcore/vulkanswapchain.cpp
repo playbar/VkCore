@@ -1,5 +1,6 @@
 #include "vulkanswapchain.hpp"
 
+VulkanSwapChain gSwapChain;
 void VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
 {
 	VkResult err;
@@ -139,7 +140,7 @@ void VulkanSwapChain::connect(VkInstance instance, VkPhysicalDevice physicalDevi
 void VulkanSwapChain::create(uint32_t *width, uint32_t *height, bool vsync)
 {
 	VkResult err;
-	VkSwapchainKHR oldSwapchain = mSwapChain;
+	VkSwapchainKHR oldSwapchain = mSwapChainKHR;
 
 	// Get physical device surface properties and formats
 	VkSurfaceCapabilitiesKHR surfCaps;
@@ -238,7 +239,7 @@ void VulkanSwapChain::create(uint32_t *width, uint32_t *height, bool vsync)
 	swapchainCI.clipped = VK_TRUE;
 	swapchainCI.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
-	err = fpCreateSwapchainKHR(device, &swapchainCI, nullptr, &mSwapChain);
+	err = fpCreateSwapchainKHR(device, &swapchainCI, nullptr, &mSwapChainKHR);
 	assert(!err);
 
 	// If an existing sawp chain is re-created, destroy the old swap chain
@@ -252,12 +253,12 @@ void VulkanSwapChain::create(uint32_t *width, uint32_t *height, bool vsync)
 		fpDestroySwapchainKHR(device, oldSwapchain, nullptr);
 	}
 
-	err = fpGetSwapchainImagesKHR(device, mSwapChain, &mImageCount, NULL);
+	err = fpGetSwapchainImagesKHR(device, mSwapChainKHR, &mImageCount, NULL);
 	assert(!err);
 
 	// Get the swap chain images
 	images.resize(mImageCount);
-	err = fpGetSwapchainImagesKHR(device, mSwapChain, &mImageCount, images.data());
+	err = fpGetSwapchainImagesKHR(device, mSwapChainKHR, &mImageCount, images.data());
 	assert(!err);
 
 	// Get the swap chain buffers containing the image and imageview
@@ -301,11 +302,11 @@ void VulkanSwapChain::create(uint32_t *width, uint32_t *height, bool vsync)
 *
 * @return VkResult of the image acquisition
 */
-VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *imageIndex)
+VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore)
 {
 	// By setting timeout to UINT64_MAX we will always wait until the next image has been acquired or an actual error is thrown
 	// With that we don't have to handle VK_NOT_READY
-	return fpAcquireNextImageKHR(device, mSwapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, imageIndex);
+	return fpAcquireNextImageKHR(device, mSwapChainKHR, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &mCurrentBuffer);
 }
 
 /**
@@ -317,14 +318,14 @@ VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore,
 *
 * @return VkResult of the queue presentation
 */
-VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore )
+VkResult VulkanSwapChain::queuePresent(VkQueue queue, VkSemaphore waitSemaphore )
 {
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.pNext = NULL;
 	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &mSwapChain;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pSwapchains = &mSwapChainKHR;
+	presentInfo.pImageIndices = &mCurrentBuffer;
 	// Check if a wait semaphore has been specified to wait for before presenting the image
 	if (waitSemaphore != VK_NULL_HANDLE)
 	{
@@ -340,7 +341,7 @@ VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSem
 */
 void VulkanSwapChain::cleanup()
 {
-	if (mSwapChain != VK_NULL_HANDLE)
+	if (mSwapChainKHR != VK_NULL_HANDLE)
 	{
 		for (uint32_t i = 0; i < mImageCount; i++)
 		{
@@ -349,11 +350,11 @@ void VulkanSwapChain::cleanup()
 	}
 	if (surface != VK_NULL_HANDLE)
 	{
-		fpDestroySwapchainKHR(device, mSwapChain, nullptr);
+		fpDestroySwapchainKHR(device, mSwapChainKHR, nullptr);
 		vkDestroySurfaceKHR(instance, surface, nullptr);
 	}
 	surface = VK_NULL_HANDLE;
-	mSwapChain = VK_NULL_HANDLE;
+	mSwapChainKHR = VK_NULL_HANDLE;
 }
 
 
