@@ -1,4 +1,5 @@
 #include "VkCoreDevice.hpp"
+#include "vulkanswapchain.hpp"
 
 VkCoreDevice *mVulkanDevice = NULL;
 
@@ -25,6 +26,14 @@ VkCoreDevice::VkCoreDevice(VkPhysicalDevice phyDevice)
 
 VkCoreDevice::~VkCoreDevice()
 {
+	vkDestroySemaphore(mLogicalDevice, presentCompleteSemaphore, nullptr);
+	vkDestroySemaphore(mLogicalDevice, renderCompleteSemaphore, nullptr);
+
+	for (auto& fence : mWaitFences)
+	{
+		vkDestroyFence(mLogicalDevice, fence, nullptr);
+	}
+
 	if (mCommandPool)
 	{
 		vkDestroyCommandPool(mLogicalDevice, mCommandPool, nullptr);
@@ -448,6 +457,31 @@ void VkCoreDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue que
 	}
 }
 
+void VkCoreDevice::prepareSynchronizationPrimitives()
+{
+	// Semaphores (Used for correct command ordering)
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	semaphoreCreateInfo.pNext = nullptr;
+
+	// Semaphore used to ensures that image presentation is complete before starting to submit again
+	VK_CHECK_RESULT(vkCreateSemaphore(mLogicalDevice, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
+
+	// Semaphore used to ensures that all commands submitted have been finished before submitting the image to the queue
+	VK_CHECK_RESULT(vkCreateSemaphore(mLogicalDevice, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
+
+	// Fences (Used to check draw command buffer completion)
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	// Create in signaled state so we don't wait on first render of each command buffer
+	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	mWaitFences.resize(mSwapChain.buffers.size());
+	for (auto& fence : mWaitFences)
+	{
+		VK_CHECK_RESULT(vkCreateFence(mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
+	}
+	return;
+}
 
 const std::string VkCoreDevice::getAssetPath()
 {

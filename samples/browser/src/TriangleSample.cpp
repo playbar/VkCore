@@ -106,7 +106,7 @@ void TriangleSample::initialize()
     _model = Model::create(mesh);
     SAFE_RELEASE(mesh);
 
-    _model->setMaterial("res/shaders/colored.vert", "res/shaders/colored.frag", "VERTEX_COLOR");
+    //_model->setMaterial("res/shaders/colored.vert", "res/shaders/colored.frag", "VERTEX_COLOR");
 }
 
 void TriangleSample::finalize()
@@ -129,7 +129,7 @@ void TriangleSample::render(float elapsedTime)
     clear(CLEAR_COLOR_DEPTH, Vector4::zero(), 1.0f, 0);
     
     // Bind the view projection matrix to the model's parameter. This will transform the vertices when the model is drawn.
-    _model->getMaterial()->getParameter("u_worldViewProjectionMatrix")->setValue(_worldViewProjectionMatrix);
+    //_model->getMaterial()->getParameter("u_worldViewProjectionMatrix")->setValue(_worldViewProjectionMatrix);
     _model->draw();
 
     //drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());

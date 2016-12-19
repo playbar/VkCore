@@ -305,38 +305,13 @@ void Game::getOverlayText(VulkanTextOverlay *textOverlay)
 void Game::prepareFrame()
 {
 	// Acquire the next image from the swap chaing
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(semaphores.presentComplete));
+	VK_CHECK_RESULT(mSwapChain.acquireNextImage(mVulkanDevice->presentCompleteSemaphore));
 }
 
 void Game::submitFrame()
 {
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mVulkanDevice->mQueue, semaphores.renderComplete));
+	VK_CHECK_RESULT(mSwapChain.queuePresent(mVulkanDevice->mQueue, mVulkanDevice->renderCompleteSemaphore));
 	VK_CHECK_RESULT(vkQueueWaitIdle(mVulkanDevice->mQueue));
-}
-
-void Game::prepareSynchronizationPrimitives()
-{
-	// Semaphores (Used for correct command ordering)
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	semaphoreCreateInfo.pNext = nullptr;
-
-	// Semaphore used to ensures that image presentation is complete before starting to submit again
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &presentCompleteSemaphore));
-
-	// Semaphore used to ensures that all commands submitted have been finished before submitting the image to the queue
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &renderCompleteSemaphore));
-
-	// Fences (Used to check draw command buffer completion)
-	VkFenceCreateInfo fenceCreateInfo = {};
-	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	// Create in signaled state so we don't wait on first render of each command buffer
-	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	mWaitFences.resize(mSwapChain.buffers.size());
-	for (auto& fence : mWaitFences)
-	{
-		VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &fence));
-	}
 }
 
 
@@ -399,14 +374,6 @@ void Game::UnInitVulkan()
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
 	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
 
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, presentCompleteSemaphore, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, renderCompleteSemaphore, nullptr);
-
-
-	for (auto& fence : mWaitFences)
-	{
-		vkDestroyFence(mVulkanDevice->mLogicalDevice, fence, nullptr);
-	}
 
 	if (mEnableTextOverlay)
 	{
@@ -1432,7 +1399,7 @@ void Game::frame()
     {
         // Perform lazy first time initialization
 		prepare();
-		prepareSynchronizationPrimitives();
+		mVulkanDevice->prepareSynchronizationPrimitives();
 		initialize();
         _initialized = true;
 

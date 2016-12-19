@@ -378,19 +378,22 @@ unsigned int Model::draw(bool wireframe)
 {
     GP_ASSERT(_mesh);
 
-    unsigned int partCount = _mesh->getPartCount();
+	VkFence fence = mVulkanDevice->mWaitFences[mSwapChain.mCurrentBuffer];
+	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &fence, VK_TRUE, UINT64_MAX));
+	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &fence));
 
+    unsigned int partCount = _mesh->getPartCount();
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pWaitSemaphores = &mVulkanDevice->presentCompleteSemaphore;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = &mVulkanDevice->renderCompleteSemaphore;
+	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pCommandBuffers = &mDrawCmdBuffers[mSwapChain.mCurrentBuffer];
 	submitInfo.commandBufferCount = 1;
-
-	VK_CHECK_RESULT(vkQueueSubmit(mVulkanDevice->mQueue, 1, &submitInfo, mFence));
-
-	VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mFence, VK_TRUE, UINT64_MAX));
-	VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mFence));
-
+	
+	VK_CHECK_RESULT(vkQueueSubmit(mVulkanDevice->mQueue, 1, &submitInfo, fence));
 
     return partCount;
 }

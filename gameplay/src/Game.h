@@ -60,6 +60,7 @@ protected:
 	VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	VkSubmitInfo mSubmitInfo;	
 	
+public:
 
 	struct
 	{
@@ -69,9 +70,7 @@ protected:
 	} semaphores;
 	vkTools::VulkanTextureLoader *textureLoader = nullptr;
 
-	VkSemaphore presentCompleteSemaphore;
-	VkSemaphore renderCompleteSemaphore;
-	std::vector<VkFence> mWaitFences;
+
 
 public:
 	bool prepared = false;
@@ -203,12 +202,6 @@ public:
 	// Submit the frames' workload 
 	// - Submits the text overlay (if enabled)
 	void submitFrame();
-
-	////////////////////////
-
-	virtual void prepareSynchronizationPrimitives();
-
-
 
 
 	///////////////////////////////

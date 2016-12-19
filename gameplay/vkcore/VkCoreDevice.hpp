@@ -20,6 +20,10 @@ public:
 	/** @brief Default command pool for the graphics queue family index */
 	VkCommandPool mCommandPool = VK_NULL_HANDLE;
 
+	VkSemaphore presentCompleteSemaphore;
+	VkSemaphore renderCompleteSemaphore;
+	std::vector<VkFence> mWaitFences;
+
 	/** @brief Set to true when the debug marker extension is detected */
 	bool mEnableDebugMarkers = false;
 
@@ -90,6 +94,8 @@ public:
 	VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin = false);
 
 	void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free = true);
+
+	void prepareSynchronizationPrimitives();
 
 	const std::string getAssetPath();
 
