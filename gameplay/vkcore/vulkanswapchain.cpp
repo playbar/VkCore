@@ -10,7 +10,7 @@ VulkanSwapChain::VulkanSwapChain()
 
 VulkanSwapChain::~VulkanSwapChain()
 {
-
+	cleanup();
 }
 
 void VulkanSwapChain::initSurface(

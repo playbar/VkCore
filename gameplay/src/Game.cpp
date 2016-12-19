@@ -356,9 +356,6 @@ void Game::InitVulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledF
 
 void Game::UnInitVulkan()
 {
-	// Clean up Vulkan resources
-	gSwapChain.cleanup();
-
 	if (textureLoader)
 	{
 		delete textureLoader;

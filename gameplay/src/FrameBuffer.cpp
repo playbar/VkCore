@@ -35,8 +35,8 @@ FrameBuffer::~FrameBuffer()
         SAFE_RELEASE(_depthStencilTarget);
 
     // Release GL resource.
-    if (_handle)
-        GL_ASSERT( glDeleteFramebuffers(1, &_handle) );
+    //if (_handle)
+    //    GL_ASSERT( glDeleteFramebuffers(1, &_handle) );
 
     // Remove self from vector.
     std::vector<FrameBuffer*>::iterator it = std::find(_frameBuffers.begin(), _frameBuffers.end(), this);

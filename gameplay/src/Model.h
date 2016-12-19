@@ -38,7 +38,32 @@ public:
     MeshSkin* getSkin() const;
 
     unsigned int draw(bool wireframe = false);
+
+	struct Vertex
+	{
+		float position[3];
+		float color[3];
+	};
+	// Vertex buffer and attributes
+	struct
+	{
+		VkDeviceMemory memory;															// Handle to the device memory for this buffer
+		VkBuffer buffer;																// Handle to the Vulkan buffer object that the memory is bound to
+		VkPipelineVertexInputStateCreateInfo inputState;
+		VkVertexInputBindingDescription inputBinding;
+		std::vector<VkVertexInputAttributeDescription> inputAttributes;
+	} mVertices;
+
+
+	// Index buffer
+	struct
+	{
+		VkDeviceMemory memory;
+		VkBuffer buffer;
+		uint32_t count;
+	} mIndices;
 	
+	void prepareVertices();
 	void prepare();
 	void setupDepthStencil();
 	void createPipelineCache();
