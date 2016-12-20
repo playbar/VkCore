@@ -767,10 +767,10 @@ void Model::buildCommandBuffers()
 		vkCmdBindVertexBuffers(mDrawCmdBuffers[i], VERTEX_BUFFER_BIND_ID, 1, &_mesh->mVertices.buffer, offsets);
 
 		// Bind triangle index buffer
-		vkCmdBindIndexBuffer(mDrawCmdBuffers[i], mIndices.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(mDrawCmdBuffers[i], _mesh->getPart(0)->mIndices.mVKBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		// Draw indexed triangle
-		vkCmdDrawIndexed(mDrawCmdBuffers[i], mIndices.count, 1, 0, 0, 1);
+		vkCmdDrawIndexed(mDrawCmdBuffers[i], _mesh->getPart(0)->getIndexCount(), 1, 0, 0, 1);
 
 		vkCmdEndRenderPass(mDrawCmdBuffers[i]);
 

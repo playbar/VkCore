@@ -27,7 +27,7 @@ static Mesh* createTriangleMesh()
         p3.x, p3.y, 0.0f,     0.0f, 0.0f, 1.0f,
     };
 
-	float indexBuffer[] = { 1, 0, 2 };
+	int indexBuffer[] = { 1, 0, 2 };
     unsigned int vertexCount = 3;
     VertexFormat::Element elements[] =
     {
