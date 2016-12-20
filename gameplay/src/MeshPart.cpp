@@ -47,6 +47,9 @@ MeshPart* MeshPart::create(Mesh* mesh, unsigned int meshIndex, VkPrimitiveTopolo
     part->mMesh = mesh;
     part->mMeshIndex = meshIndex;
     part->mPrimitiveType = primitiveType;
+	part->inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	part->inputAssemblyState.topology = primitiveType;
+
     part->mIndexFormat = indexFormat;
     part->mIndexCount = indexCount;
 	part->mIndexSize = indexSize;

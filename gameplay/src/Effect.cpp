@@ -9,9 +9,135 @@
 namespace vkcore
 {
 
+
 // Cache of unique effects.
 static std::map<std::string, Effect*> __effectCache;
 static Effect* __currentEffect = NULL;
+
+
+static void replaceDefines(const char* defines, std::string& out)
+{
+	Properties* graphicsConfig = Game::getInstance()->getConfig()->getNamespace("graphics", true);
+	const char* globalDefines = graphicsConfig ? graphicsConfig->getString("shaderDefines") : NULL;
+
+	// Build full semicolon delimited list of defines
+#ifdef OPENGL_ES
+	out = OPENGL_ES_DEFINE;
+#else
+	out = "";
+#endif
+	if (globalDefines && strlen(globalDefines) > 0)
+	{
+		if (out.length() > 0)
+			out += ';';
+		out += globalDefines;
+	}
+	if (defines && strlen(defines) > 0)
+	{
+		if (out.length() > 0)
+			out += ';';
+		out += defines;
+	}
+
+	// Replace semicolons
+	if (out.length() > 0)
+	{
+		size_t pos;
+		out.insert(0, "#define ");
+		while ((pos = out.find(';')) != std::string::npos)
+		{
+			out.replace(pos, 1, "\n#define ");
+		}
+		out += "\n";
+	}
+}
+
+static void replaceIncludes(const char* filepath, const char* source, std::string& out)
+{
+	// Replace the #include "xxxx.xxx" with the sourced file contents of "filepath/xxxx.xxx"
+	std::string str = source;
+	size_t lastPos = 0;
+	size_t headPos = 0;
+	size_t fileLen = str.length();
+	size_t tailPos = fileLen;
+	while (headPos < fileLen)
+	{
+		lastPos = headPos;
+		if (headPos == 0)
+		{
+			// find the first "#include"
+			headPos = str.find("#include");
+		}
+		else
+		{
+			// find the next "#include"
+			headPos = str.find("#include", headPos + 1);
+		}
+
+		// If "#include" is found
+		if (headPos != std::string::npos)
+		{
+			// append from our last position for the legth (head - last position) 
+			out.append(str.substr(lastPos, headPos - lastPos));
+
+			// find the start quote "
+			size_t startQuote = str.find("\"", headPos) + 1;
+			if (startQuote == std::string::npos)
+			{
+				// We have started an "#include" but missing the leading quote "
+				GP_ERROR("Compile failed for shader '%s' missing leading \".", filepath);
+				return;
+			}
+			// find the end quote "
+			size_t endQuote = str.find("\"", startQuote);
+			if (endQuote == std::string::npos)
+			{
+				// We have a start quote but missing the trailing quote "
+				GP_ERROR("Compile failed for shader '%s' missing trailing \".", filepath);
+				return;
+			}
+
+			// jump the head position past the end quote
+			headPos = endQuote + 1;
+
+			// File path to include and 'stitch' in the value in the quotes to the file path and source it.
+			std::string filepathStr = filepath;
+			std::string directoryPath = filepathStr.substr(0, filepathStr.rfind('/') + 1);
+			size_t len = endQuote - (startQuote);
+			std::string includeStr = str.substr(startQuote, len);
+			directoryPath.append(includeStr);
+			const char* includedSource = FileSystem::readAll(directoryPath.c_str());
+			if (includedSource == NULL)
+			{
+				GP_ERROR("Compile failed for shader '%s' invalid filepath.", filepathStr.c_str());
+				return;
+			}
+			else
+			{
+				// Valid file so lets attempt to see if we need to append anything to it too (recurse...)
+				replaceIncludes(directoryPath.c_str(), includedSource, out);
+				SAFE_DELETE_ARRAY(includedSource);
+			}
+		}
+		else
+		{
+			// Append the remaining
+			out.append(str.c_str(), lastPos, tailPos);
+		}
+	}
+}
+
+static void writeShaderToErrorFile(const char* filePath, const char* source)
+{
+	std::string path = filePath;
+	path += ".err";
+	std::unique_ptr<Stream> stream(FileSystem::open(path.c_str(), FileSystem::WRITE));
+	if (stream.get() != NULL && stream->canWrite())
+	{
+		stream->write(source, 1, strlen(source));
+	}
+}
+
 
 Effect::Effect() : _program(0)
 {
@@ -104,129 +230,6 @@ Effect* Effect::createFromSource(const char* vshSource, const char* fshSource, c
     return createFromSource(NULL, vshSource, NULL, fshSource, defines);
 }
 
-static void replaceDefines(const char* defines, std::string& out)
-{
-    Properties* graphicsConfig = Game::getInstance()->getConfig()->getNamespace("graphics", true);
-    const char* globalDefines = graphicsConfig ? graphicsConfig->getString("shaderDefines") : NULL;
-
-    // Build full semicolon delimited list of defines
-#ifdef OPENGL_ES
-    out = OPENGL_ES_DEFINE;
-#else
-    out = "";
-#endif
-    if (globalDefines && strlen(globalDefines) > 0)
-    {
-        if (out.length() > 0)
-            out += ';';
-        out += globalDefines;
-    }
-    if (defines && strlen(defines) > 0)
-    {
-        if (out.length() > 0)
-            out += ';';
-        out += defines;
-    }
-
-    // Replace semicolons
-    if (out.length() > 0)
-    {
-        size_t pos;
-        out.insert(0, "#define ");
-        while ((pos = out.find(';')) != std::string::npos)
-        {
-            out.replace(pos, 1, "\n#define ");
-        }
-        out += "\n";
-    }
-}
-
-static void replaceIncludes(const char* filepath, const char* source, std::string& out)
-{
-    // Replace the #include "xxxx.xxx" with the sourced file contents of "filepath/xxxx.xxx"
-    std::string str = source;
-    size_t lastPos = 0;
-    size_t headPos = 0;
-    size_t fileLen = str.length();
-    size_t tailPos = fileLen;
-    while (headPos < fileLen)
-    {
-        lastPos = headPos;
-        if (headPos == 0)
-        {
-            // find the first "#include"
-            headPos = str.find("#include");
-        }
-        else
-        {
-            // find the next "#include"
-            headPos = str.find("#include", headPos + 1);
-        }
-
-        // If "#include" is found
-        if (headPos != std::string::npos)
-        {
-            // append from our last position for the legth (head - last position) 
-            out.append(str.substr(lastPos,  headPos - lastPos));
-
-            // find the start quote "
-            size_t startQuote = str.find("\"", headPos) + 1;
-            if (startQuote == std::string::npos)
-            {
-                // We have started an "#include" but missing the leading quote "
-                GP_ERROR("Compile failed for shader '%s' missing leading \".", filepath);
-                return;
-            }
-            // find the end quote "
-            size_t endQuote = str.find("\"", startQuote);
-            if (endQuote == std::string::npos)
-            {
-                // We have a start quote but missing the trailing quote "
-                GP_ERROR("Compile failed for shader '%s' missing trailing \".", filepath);
-                return;
-            }
-
-            // jump the head position past the end quote
-            headPos = endQuote + 1;
-            
-            // File path to include and 'stitch' in the value in the quotes to the file path and source it.
-            std::string filepathStr = filepath;
-            std::string directoryPath = filepathStr.substr(0, filepathStr.rfind('/') + 1);
-            size_t len = endQuote - (startQuote);
-            std::string includeStr = str.substr(startQuote, len);
-            directoryPath.append(includeStr);
-            const char* includedSource = FileSystem::readAll(directoryPath.c_str());
-            if (includedSource == NULL)
-            {
-                GP_ERROR("Compile failed for shader '%s' invalid filepath.", filepathStr.c_str());
-                return;
-            }
-            else
-            {
-                // Valid file so lets attempt to see if we need to append anything to it too (recurse...)
-                replaceIncludes(directoryPath.c_str(), includedSource, out);
-                SAFE_DELETE_ARRAY(includedSource);
-            }
-        }
-        else
-        {
-            // Append the remaining
-            out.append(str.c_str(), lastPos, tailPos);
-        }
-    }
-}
-
-static void writeShaderToErrorFile(const char* filePath, const char* source)
-{
-    std::string path = filePath;
-    path += ".err";
-    std::unique_ptr<Stream> stream(FileSystem::open(path.c_str(), FileSystem::WRITE));
-    if (stream.get() != NULL && stream->canWrite())
-    {
-        stream->write(source, 1, strlen(source));
-    }
-}
-
 Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, const char* fshPath,
 	const char* fshSource, const char* defines)
 {
@@ -310,8 +313,16 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 
 	effect->shaderStages[1].module = shaderModuleFra;
 	effect->shaderStages[1].pName = "main"; // todo : make param
-	effect->shaderModules.push_back(effect->shaderStages[0].module);
+	effect->shaderModules.push_back(effect->shaderStages[1].module);
 
+	effect->createPipelineLayout();
+  
+
+    return effect;
+}
+
+void Effect::createPipelineLayout()
+{
 	//////////////////////////////
 	// Binding 0: Uniform buffer (Vertex shader)
 	VkDescriptorSetLayoutBinding layoutBinding = {};
@@ -326,7 +337,7 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 	descriptorLayout.bindingCount = 1;
 	descriptorLayout.pBindings = &layoutBinding;
 
-	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &effect->mDescriptorSetLayout));
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
 
 	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
 	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
@@ -334,138 +345,10 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pPipelineLayoutCreateInfo.pNext = nullptr;
 	pPipelineLayoutCreateInfo.setLayoutCount = 1;
-	pPipelineLayoutCreateInfo.pSetLayouts = &effect->mDescriptorSetLayout;
+	pPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
 
-	VK_CHECK_RESULT(vkCreatePipelineLayout(gVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &effect->mPipelineLayout));
-
-  
-	///////////////////////////////////
-
-    //// Link program.
-    //GL_ASSERT( program = glCreateProgram() );
-    //GL_ASSERT( glAttachShader(program, vertexShader) );
-    //GL_ASSERT( glAttachShader(program, fragmentShader) );
-    //GL_ASSERT( glLinkProgram(program) );
-    //GL_ASSERT( glGetProgramiv(program, GL_LINK_STATUS, &success) );
-
-    //// Delete shaders after linking.
-    //GL_ASSERT( glDeleteShader(vertexShader) );
-    //GL_ASSERT( glDeleteShader(fragmentShader) );
-
-    //// Check link status.
-    //if (success != GL_TRUE)
-    //{
-    //    GL_ASSERT( glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length) );
-    //    if (length == 0)
-    //    {
-    //        length = 4096;
-    //    }
-    //    if (length > 0)
-    //    {
-    //        infoLog = new char[length];
-    //        GL_ASSERT( glGetProgramInfoLog(program, length, NULL, infoLog) );
-    //        infoLog[length-1] = '\0';
-    //    }
-    //    GP_ERROR("Linking program failed (%s,%s): %s", vshPath == NULL ? "NULL" : vshPath, fshPath == NULL ? "NULL" : fshPath, infoLog == NULL ? "" : infoLog);
-    //    SAFE_DELETE_ARRAY(infoLog);
-
-    //    // Clean up.
-    //    GL_ASSERT( glDeleteProgram(program) );
-
-    //    return NULL;
-    //}
-
-   
-    //// Query and store vertex attribute meta-data from the program.
-    //// NOTE: Rather than using glBindAttribLocation to explicitly specify our own
-    //// preferred attribute locations, we're going to query the locations that were
-    //// automatically bound by the GPU. While it can sometimes be convenient to use
-    //// glBindAttribLocation, some vendors actually reserve certain attribute indices
-    //// and therefore using this function can create compatibility issues between
-    //// different hardware vendors.
-    //GLint activeAttributes;
-    //GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes) );
-    //if (activeAttributes > 0)
-    //{
-    //    GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &length) );
-    //    if (length > 0)
-    //    {
-    //        GLchar* attribName = new GLchar[length + 1];
-    //        GLint attribSize;
-    //        GLenum attribType;
-    //        GLint attribLocation;
-    //        for (int i = 0; i < activeAttributes; ++i)
-    //        {
-    //            // Query attribute info.
-    //            GL_ASSERT( glGetActiveAttrib(program, i, length, NULL, &attribSize, &attribType, attribName) );
-    //            attribName[length] = '\0';
-
-    //            // Query the pre-assigned attribute location.
-    //            GL_ASSERT( attribLocation = glGetAttribLocation(program, attribName) );
-
-    //            // Assign the vertex attribute mapping for the effect.
-    //            effect->_vertexAttributes[attribName] = attribLocation;
-    //        }
-    //        SAFE_DELETE_ARRAY(attribName);
-    //    }
-    //}
-
-    //// Query and store uniforms from the program.
-    //GLint activeUniforms;
-    //GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &activeUniforms) );
-    //if (activeUniforms > 0)
-    //{
-    //    GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &length) );
-    //    if (length > 0)
-    //    {
-    //        GLchar* uniformName = new GLchar[length + 1];
-    //        GLint uniformSize;
-    //        GLenum uniformType;
-    //        GLint uniformLocation;
-    //        unsigned int samplerIndex = 0;
-    //        for (int i = 0; i < activeUniforms; ++i)
-    //        {
-    //            // Query uniform info.
-    //            GL_ASSERT( glGetActiveUniform(program, i, length, NULL, &uniformSize, &uniformType, uniformName) );
-    //            uniformName[length] = '\0';  // null terminate
-    //            if (length > 3)
-    //            {
-    //                // If this is an array uniform, strip array indexers off it since GL does not
-    //                // seem to be consistent across different drivers/implementations in how it returns
-    //                // array uniforms. On some systems it will return "u_matrixArray", while on others
-    //                // it will return "u_matrixArray[0]".
-    //                char* c = strrchr(uniformName, '[');
-    //                if (c)
-    //                {
-    //                    *c = '\0';
-    //                }
-    //            }
-
-    //            // Query the pre-assigned uniform location.
-    //            GL_ASSERT( uniformLocation = glGetUniformLocation(program, uniformName) );
-
-    //            Uniform* uniform = new Uniform();
-    //            uniform->_effect = effect;
-    //            uniform->_name = uniformName;
-    //            uniform->_location = uniformLocation;
-    //            uniform->_type = uniformType;
-    //            if (uniformType == GL_SAMPLER_2D || uniformType == GL_SAMPLER_CUBE)
-    //            {
-    //                uniform->_index = samplerIndex;
-    //                samplerIndex += uniformSize;
-    //            }
-    //            else
-    //            {
-    //                uniform->_index = 0;
-    //            }
-
-    //            effect->_uniforms[uniformName] = uniform;
-    //        }
-    //        SAFE_DELETE_ARRAY(uniformName);
-    //    }
-    //}
-
-    return effect;
+	VK_CHECK_RESULT(vkCreatePipelineLayout(gVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+	return;
 }
 
 const char* Effect::getId() const

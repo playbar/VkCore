@@ -1,5 +1,6 @@
 #include "TriangleSample.h"
 #include "SamplesGame.h"
+#include "VkCoreDevice.hpp"
 
 #if defined(ADD_SAMPLE)
     ADD_SAMPLE("Graphics", "Triangle", TriangleSample, 1);
@@ -14,7 +15,7 @@ TriangleSample game;
 static Mesh* createTriangleMesh()
 {
     // Calculate the vertices of the equilateral triangle.
-    float a = 0.5f;     // length of the side
+    float a = 1.0f;     // length of the side
     Vector2 p1(0.0f,       a / sqrtf(3.0f));
     Vector2 p2(-a / 2.0f, -a / (2.0f * sqrtf(3.0f)));
     Vector2 p3( a / 2.0f, -a / (2.0f * sqrtf(3.0f)));
@@ -106,7 +107,7 @@ void TriangleSample::initialize()
     _model = Model::create(mesh);
     SAFE_RELEASE(mesh);
 
-    //_model->setMaterial("res/shaders/colored.vert", "res/shaders/colored.frag", "VERTEX_COLOR");
+    _model->setMaterial("shaders/triangle.vert", "shaders/triangle.frag", "VERTEX_COLOR");
 }
 
 void TriangleSample::finalize()

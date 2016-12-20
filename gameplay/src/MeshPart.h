@@ -43,10 +43,10 @@ private:
     Mesh* mMesh;
     unsigned int mMeshIndex;
 	VkPrimitiveTopology mPrimitiveType;
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState;
     Mesh::IndexFormat mIndexFormat;
     unsigned int mIndexCount;
 	unsigned int mIndexSize;
-    //IndexBufferHandle _indexBuffer;
     bool mDynamic;
 };
 

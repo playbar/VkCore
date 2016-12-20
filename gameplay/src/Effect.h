@@ -65,6 +65,8 @@ public:
 
     static Effect* getCurrentEffect();
 
+	void createPipelineLayout();
+
 private:
     Effect();
     ~Effect();

@@ -51,6 +51,7 @@ VertexAttributeBinding* VertexAttributeBinding::create(Mesh* mesh, Effect* effec
             return b;
         }
     }
+	
 
     b = create(mesh, mesh->getVertexFormat(), 0, effect);
 
