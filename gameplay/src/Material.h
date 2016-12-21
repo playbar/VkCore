@@ -32,7 +32,27 @@ public:
 
     void setNodeBinding(Node* node);
 
+	void prepareUniformBuffers();
+	void updateUniformBuffers(Matrix *promat, Matrix *modelmat, Matrix *viewmat);
+	void updateUniformProMat(Matrix *proMat);
 	void createPipelineLayout();
+
+	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
+
+	// Uniform block object
+	struct
+	{
+		VkDeviceMemory memory;
+		VkBuffer buffer;
+		VkDescriptorBufferInfo descriptor;
+	}  mUniformDataVS;
+
+	struct
+	{
+		vkcore::Matrix projectionMatrix;
+		vkcore::Matrix modelMatrix;
+		vkcore::Matrix viewMatrix;
+	} mUboVS;
 
 	VkPipelineLayout mPipelineLayout;
 	VkDescriptorSetLayout mDescriptorSetLayout;

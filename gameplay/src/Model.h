@@ -53,10 +53,6 @@ public:
 	void setupRenderPass();
 	void setupFrameBuffer();
 	void preparePipelines();
-	void prepareUniformBuffers();
-	void updateUniformBuffers();
-
-	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
 
 
 private:
@@ -97,33 +93,10 @@ private:
 		VkImage image;
 		VkDeviceMemory mem;
 		VkImageView view;
-	} depthStencil;
-
-	// Uniform block object
-	struct
-	{
-		VkDeviceMemory memory;
-		VkBuffer buffer;
-		VkDescriptorBufferInfo descriptor;
-	}  mUniformDataVS;
-
-	// For simplicity we use the same uniform block layout as in the shader:
-	//	layout(set = 0, binding = 0) uniform UBO
-	//	{
-	//		mat4 projectionMatrix;
-	//		mat4 modelMatrix;
-	//		mat4 viewMatrix;
-	//	} ubo;
-	struct
-	{
-		vkcore::Matrix projectionMatrix;
-		vkcore::Matrix modelMatrix;
-		vkcore::Matrix viewMatrix;
-	} mUboVS;
+	} mDepthStencil;
 
 	VkFormat mColorformat = VK_FORMAT_B8G8R8A8_UNORM;
 	VkFormat mDepthFormat;
-	VkFence mFence;
 
 	VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;
 	VkDescriptorSetLayout mDescriptorSetLayout;
@@ -134,7 +107,6 @@ private:
 	VkCommandPool mCmdPool;
 	VkPipelineCache mPipelineCache;
 
-	std::vector<VkShaderModule> shaderModules;
 	std::vector<VkFramebuffer>mFrameBuffers;
 	std::vector<VkCommandBuffer> mDrawCmdBuffers;
 

@@ -31,8 +31,6 @@ static double __timeAbsolute;
 static bool __vsync = WINDOW_VSYNC;
 static HINSTANCE __hinstance = 0;
 static HWND __hwnd = 0;
-static HDC __hdc = 0;
-static HGLRC __hrc = 0;
 static bool __mouseCaptured = false;
 static POINT __mouseCapturePoint = { 0, 0 };
 static bool __multiSampling = false;
@@ -548,7 +546,7 @@ Platform* Platform::create(Game* game)
     // Get the application module handle.
     __hinstance = ::GetModuleHandle(NULL);
 
-	game->setupWindow(__hinstance, __WndProc);
+	__hwnd = game->setupWindow(__hinstance, __WndProc);
 	game->initSwapchain();
 	//game->prepare();
 	return platform;
@@ -689,12 +687,6 @@ void Platform::setVsync(bool enable)
         wglSwapIntervalEXT(__vsync ? 1 : 0);
     else 
         __vsync = false;
-}
-
-void Platform::swapBuffers()
-{
-    if (__hdc)
-        SwapBuffers(__hdc);
 }
 
 void Platform::sleep(long ms)

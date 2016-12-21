@@ -12,6 +12,7 @@ VkResult VulkanBase::createInstance(bool enableValidation)
 	appInfo.apiVersion = VK_API_VERSION_1_0;
 
 	std::vector<const char*> enabledExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+	//std::vector<const char*> enabledExtensions = { };
 
 	// Enable surface extensions depending on os
 #if defined(_WIN32)
@@ -790,8 +791,8 @@ void VulkanBase::preparePipelines()
 	// Vulkan loads it's shaders from an immediate binary representation called SPIR-V
 	// Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
 	std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
-	shaderStages[0] = loadShader(getAssetPath() + "shaders/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-	shaderStages[1] = loadShader(getAssetPath() + "shaders/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+	shaderStages[0] = loadShader(getAssetPath() + "shaders/triangle.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	shaderStages[1] = loadShader(getAssetPath() + "shaders/triangle.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 	// Assign the pipeline states to the pipeline creation info structure
 	pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
@@ -992,7 +993,9 @@ VkPipelineShaderStageCreateInfo VulkanBase::loadShader(std::string fileName, VkS
 #if defined(__ANDROID__)
 	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
 #else
-	shaderStage.module = vkTools::loadShader(fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
+	//shaderStage.module = vkTools::loadShader(fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
+	shaderStage.module = vkTools::loadShaderGLSL(fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
+	
 #endif
 	shaderStage.pName = "main"; // todo : make param
 	assert(shaderStage.module != NULL);

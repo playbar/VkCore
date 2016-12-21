@@ -31,8 +31,6 @@ public:
  
     int enterMessagePump();
 
-    static void swapBuffers();
-
 private:
 
     static void signalShutdown();

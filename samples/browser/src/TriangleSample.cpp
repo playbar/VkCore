@@ -107,30 +107,32 @@ void TriangleSample::initialize()
     _model = Model::create(mesh);
     SAFE_RELEASE(mesh);
 
-    _model->setMaterial("shaders/triangle.vert", "shaders/triangle.frag", "VERTEX_COLOR");
+    _model->setMaterial("shaders/triangle.vert", "shaders/triangle.frag" );
+	_model->getMaterial()->prepareUniformBuffers();
+	Matrix model, view;
+	_model->getMaterial()->updateUniformBuffers(&_worldViewProjectionMatrix, &model, &view);
+	_model->preparePipelines();
+	_model->setupDescriptorPool();
+	_model->setupDescriptorSet();
+	_model->buildCommandBuffers();
+
 }
 
 void TriangleSample::finalize()
 {
-    // Model and font are reference counted and should be released before closing this sample.
     SAFE_RELEASE(_model);
-    //SAFE_RELEASE(_font);
 }
 
 void TriangleSample::update(float elapsedTime)
 {
-    // Update the rotation of the triangle. The speed is 180 degrees per second.
     _worldViewProjectionMatrix.rotateZ( _spinDirection * MATH_PI * elapsedTime * 0.001f);
 }
 
 void TriangleSample::render(float elapsedTime)
 {
 	Game::prepareFrame();
-    // Clear the color and depth buffers
-    //clear(CLEAR_COLOR_DEPTH, Vector4::zero(), 1.0f, 0);
     
-    // Bind the view projection matrix to the model's parameter. This will transform the vertices when the model is drawn.
-    _model->getMaterial()->getParameter("u_worldViewProjectionMatrix")->setValue(_worldViewProjectionMatrix);
+	_model->getMaterial()->updateUniformProMat(&_worldViewProjectionMatrix);
     _model->draw();
 
     //drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());

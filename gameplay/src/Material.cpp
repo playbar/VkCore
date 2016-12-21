@@ -136,13 +136,102 @@ namespace vkcore
 	}
 
 
+	static bool isMaterialKeyword(const char* str)
+	{
+		GP_ASSERT(str);
+
+#define MATERIAL_KEYWORD_COUNT 3
+		static const char* reservedKeywords[MATERIAL_KEYWORD_COUNT] =
+		{
+			"vertexShader",
+			"fragmentShader",
+			"defines"
+		};
+		for (unsigned int i = 0; i < MATERIAL_KEYWORD_COUNT; ++i)
+		{
+			if (strcmp(reservedKeywords[i], str) == 0)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	static Texture::Filter parseTextureFilterMode(const char* str, Texture::Filter defaultValue)
+	{
+		if (str == NULL || strlen(str) == 0)
+		{
+			GP_ERROR("Texture filter mode string must be non-null and non-empty.");
+			return defaultValue;
+		}
+		else if (strcmp(str, "NEAREST") == 0)
+		{
+			return Texture::NEAREST;
+		}
+		else if (strcmp(str, "LINEAR") == 0)
+		{
+			return Texture::LINEAR;
+		}
+		else if (strcmp(str, "NEAREST_MIPMAP_NEAREST") == 0)
+		{
+			return Texture::NEAREST_MIPMAP_NEAREST;
+		}
+		else if (strcmp(str, "LINEAR_MIPMAP_NEAREST") == 0)
+		{
+			return Texture::LINEAR_MIPMAP_NEAREST;
+		}
+		else if (strcmp(str, "NEAREST_MIPMAP_LINEAR") == 0)
+		{
+			return Texture::NEAREST_MIPMAP_LINEAR;
+		}
+		else if (strcmp(str, "LINEAR_MIPMAP_LINEAR") == 0)
+		{
+			return Texture::LINEAR_MIPMAP_LINEAR;
+		}
+		else
+		{
+			GP_ERROR("Unsupported texture filter mode string ('%s').", str);
+			return defaultValue;
+		}
+	}
+
+	static Texture::Wrap parseTextureWrapMode(const char* str, Texture::Wrap defaultValue)
+	{
+		if (str == NULL || strlen(str) == 0)
+		{
+			GP_ERROR("Texture wrap mode string must be non-null and non-empty.");
+			return defaultValue;
+		}
+		else if (strcmp(str, "REPEAT") == 0)
+		{
+			return Texture::REPEAT;
+		}
+		else if (strcmp(str, "CLAMP") == 0)
+		{
+			return Texture::CLAMP;
+		}
+		else
+		{
+			GP_ERROR("Unsupported texture wrap mode string ('%s').", str);
+			return defaultValue;
+		}
+	}
+
+
 Material::Material()
 {
 }
 
 Material::~Material()
 {
-
+	for (auto& shaderModule : shaderModules)
+	{
+		vkDestroyShaderModule(gVulkanDevice->mLogicalDevice, shaderModule, nullptr);
+	}
+	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory, nullptr);
+	vkDestroyPipelineLayout(gVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
+	vkDestroyDescriptorSetLayout(gVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
 }
 
 Material* Material::create(const char* url)
@@ -189,104 +278,27 @@ Material* Material::create(Properties* materialProperties, PassCallback callback
     return material;
 }
 
+VkPipelineShaderStageCreateInfo Material::loadShader(std::string fileName, VkShaderStageFlagBits stage)
+{
+	VkPipelineShaderStageCreateInfo shaderStage = {};
+	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStage.stage = stage;
+	shaderStage.module = vkTools::loadShaderGLSL(fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
+	shaderStage.pName = "main"; // todo : make param
+	assert(shaderStage.module != NULL);
+	shaderModules.push_back(shaderStage.module);
+	return shaderStage;
+}
+
+
 Material* Material::create(const char* vshPath, const char* fshPath, const char* defines)
 {
     GP_ASSERT(vshPath);
     GP_ASSERT(fshPath);
 
-	// Read source from file.
-	char* vshSource = FileSystem::readAll(vshPath);
-	if (vshSource == NULL)
-	{
-		GP_ERROR("Failed to read vertex shader from file '%s'.", vshPath);
-		return NULL;
-	}
-	char* fshSource = FileSystem::readAll(fshPath);
-	if (fshSource == NULL)
-	{
-		GP_ERROR("Failed to read fragment shader from file '%s'.", fshPath);
-		SAFE_DELETE_ARRAY(vshSource);
-		return NULL;
-	}
-
-
     Material* material = new Material();
-
-	std::string shaderSource;
-
-	// Replace all comma separated definitions with #define prefix and \n suffix
-	std::string definesStr = "";
-	replaceDefines(defines, definesStr);
-
-	shaderSource = definesStr.c_str();
-	shaderSource += "\n";
-	std::string vshSourceStr = "";
-	if (vshPath)
-	{
-		replaceIncludes(vshPath, vshSource, vshSourceStr);
-		if (vshSource && strlen(vshSource) != 0)
-			vshSourceStr += "\n";
-	}
-	shaderSource += (vshPath ? vshSourceStr.c_str() : vshSource);
-
-	material->shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	material->shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-
-	VkShaderModule shaderModule;
-	VkShaderModuleCreateInfo moduleCreateInfo;
-	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	moduleCreateInfo.pNext = NULL;
-	moduleCreateInfo.codeSize = 3 * sizeof(uint32_t) + shaderSource.length() + 1;
-	moduleCreateInfo.pCode = (uint32_t*)malloc(moduleCreateInfo.codeSize);
-	moduleCreateInfo.flags = 0;
-
-	// Magic SPV number
-	((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203;
-	((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
-	((uint32_t *)moduleCreateInfo.pCode)[2] = VK_SHADER_STAGE_VERTEX_BIT;
-	memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderSource.c_str(), shaderSource.length() + 1);
-
-	VK_CHECK_RESULT(vkCreateShaderModule(gVulkanDevice->mLogicalDevice, &moduleCreateInfo, NULL, &shaderModule));
-	material->shaderStages[0].module = shaderModule;
-	material->shaderStages[0].pName = "main"; // todo : make param
-	material->shaderModules.push_back(material->shaderStages[0].module);
-
-	////////////////////////////////////////////////////////////
-
-	shaderSource.clear();
-	shaderSource = definesStr.c_str();
-	shaderSource += "\n";
-	// Compile the fragment shader.
-	std::string fshSourceStr;
-	if (fshPath)
-	{
-		replaceIncludes(fshPath, fshSource, fshSourceStr);
-		if (fshSource && strlen(fshSource) != 0)
-			fshSourceStr += "\n";
-	}
-
-	shaderSource = (fshPath ? fshSourceStr.c_str() : fshSource);
-	material->shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	material->shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	VkShaderModule shaderModuleFra;
-	VkShaderModuleCreateInfo moduleCreateInfoFra;
-	moduleCreateInfoFra.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	moduleCreateInfoFra.pNext = NULL;
-	moduleCreateInfoFra.codeSize = 3 * sizeof(uint32_t) + shaderSource.length() + 1;
-	moduleCreateInfoFra.pCode = (uint32_t*)malloc(moduleCreateInfoFra.codeSize);
-	moduleCreateInfoFra.flags = 0;
-
-	// Magic SPV number
-	((uint32_t *)moduleCreateInfoFra.pCode)[0] = 0x07230203;
-	((uint32_t *)moduleCreateInfoFra.pCode)[1] = 0;
-	((uint32_t *)moduleCreateInfoFra.pCode)[2] = VK_SHADER_STAGE_FRAGMENT_BIT;
-	memcpy(((uint32_t *)moduleCreateInfoFra.pCode + 3), shaderSource.c_str(), shaderSource.length() + 1);
-	VK_CHECK_RESULT(vkCreateShaderModule(gVulkanDevice->mLogicalDevice, &moduleCreateInfoFra, NULL, &shaderModuleFra));
-
-	material->shaderStages[1].module = shaderModuleFra;
-	material->shaderStages[1].pName = "main"; // todo : make param
-	material->shaderModules.push_back(material->shaderStages[1].module);
+	material->shaderStages[0] = material->loadShader(vshPath, VK_SHADER_STAGE_VERTEX_BIT);
+	material->shaderStages[1] = material->loadShader(fshPath, VK_SHADER_STAGE_FRAGMENT_BIT);
 
 	material->createPipelineLayout();
 
@@ -294,15 +306,72 @@ Material* Material::create(const char* vshPath, const char* fshPath, const char*
 }
 
 
-
-
-
-
-
 void Material::setNodeBinding(Node* node)
 {
     RenderState::setNodeBinding(node);
 }
+
+void Material::prepareUniformBuffers()
+{
+	// Prepare and initialize a uniform buffer block containing shader uniforms
+	// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
+	VkMemoryRequirements memReqs;
+
+	// Vertex shader uniform buffer block
+	VkBufferCreateInfo bufferInfo = {};
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.pNext = nullptr;
+	allocInfo.allocationSize = 0;
+	allocInfo.memoryTypeIndex = 0;
+
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = sizeof(mUboVS);
+	// This buffer will be used as a uniform buffer
+	bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+	// Create a new buffer
+	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferInfo, nullptr, &mUniformDataVS.buffer));
+	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, &memReqs);
+	allocInfo.allocationSize = memReqs.size;
+	allocInfo.memoryTypeIndex = gVulkanDevice->getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
+
+	// Store information in the uniform's descriptor that is used by the descriptor set
+	mUniformDataVS.descriptor.buffer = mUniformDataVS.buffer;
+	mUniformDataVS.descriptor.offset = 0;
+	mUniformDataVS.descriptor.range = sizeof(mUboVS);
+}
+
+void Material::updateUniformBuffers(Matrix *promat, Matrix *modelmat, Matrix *viewmat)
+{
+	mUboVS.projectionMatrix = *promat;
+	mUboVS.modelMatrix = *modelmat;
+	mUboVS.viewMatrix = *viewmat;
+	//// Update matrices
+	//float aspect = (float)800 / (float)600;
+	//Matrix::createOrthographic(aspect, 1.0f, -1.0f, 1.0f, &mUboVS.projectionMatrix);
+	//vkcore::Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
+	//Matrix::createTranslation(0.0f, 0.0f, -10.0f, &mUboVS.viewMatrix);
+	//Matrix::createRotationX(0.0f, &mUboVS.modelMatrix);
+	//mUboVS.modelMatrix.rotateY(0.0f);
+	//mUboVS.modelMatrix.rotateZ(0.0f);
+	uint8_t *pData;
+	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
+	memcpy(pData, &mUboVS, sizeof(mUboVS));
+	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
+}
+
+void Material::updateUniformProMat(Matrix *proMat)
+{
+	mUboVS.projectionMatrix = *proMat;
+	uint8_t *pData;
+	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
+	memcpy(pData, &mUboVS, sizeof(mUboVS));
+	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.memory);
+}
+
 
 void Material::createPipelineLayout()
 {
@@ -386,87 +455,6 @@ bool Material::loadPass(Technique* technique, Properties* passProperties, PassCa
     technique->_passes.push_back(pass);
 
     return true;
-}
-
-static bool isMaterialKeyword(const char* str)
-{
-    GP_ASSERT(str);
-
-    #define MATERIAL_KEYWORD_COUNT 3
-    static const char* reservedKeywords[MATERIAL_KEYWORD_COUNT] =
-    {
-        "vertexShader",
-        "fragmentShader",
-        "defines"
-    };
-    for (unsigned int i = 0; i < MATERIAL_KEYWORD_COUNT; ++i)
-    {
-        if (strcmp(reservedKeywords[i], str) == 0)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-static Texture::Filter parseTextureFilterMode(const char* str, Texture::Filter defaultValue)
-{
-    if (str == NULL || strlen(str) == 0)
-    {
-        GP_ERROR("Texture filter mode string must be non-null and non-empty.");
-        return defaultValue;
-    }
-    else if (strcmp(str, "NEAREST") == 0)
-    {
-        return Texture::NEAREST;
-    }
-    else if (strcmp(str, "LINEAR") == 0)
-    {
-        return Texture::LINEAR;
-    }
-    else if (strcmp(str, "NEAREST_MIPMAP_NEAREST") == 0)
-    {
-        return Texture::NEAREST_MIPMAP_NEAREST;
-    }
-    else if (strcmp(str, "LINEAR_MIPMAP_NEAREST") == 0)
-    {
-        return Texture::LINEAR_MIPMAP_NEAREST;
-    }
-    else if (strcmp(str, "NEAREST_MIPMAP_LINEAR") == 0)
-    {
-        return Texture::NEAREST_MIPMAP_LINEAR;
-    }
-    else if (strcmp(str, "LINEAR_MIPMAP_LINEAR") == 0)
-    {
-        return Texture::LINEAR_MIPMAP_LINEAR;
-    }
-    else
-    {
-        GP_ERROR("Unsupported texture filter mode string ('%s').", str);
-        return defaultValue;
-    }
-}
-
-static Texture::Wrap parseTextureWrapMode(const char* str, Texture::Wrap defaultValue)
-{
-    if (str == NULL || strlen(str) == 0)
-    {
-        GP_ERROR("Texture wrap mode string must be non-null and non-empty.");
-        return defaultValue;
-    }
-    else if (strcmp(str, "REPEAT") == 0)
-    {
-        return Texture::REPEAT;
-    }
-    else if (strcmp(str, "CLAMP") == 0)
-    {
-        return Texture::CLAMP;
-    }
-    else
-    {
-        GP_ERROR("Unsupported texture wrap mode string ('%s').", str);
-        return defaultValue;
-    }
 }
 
 void Material::loadRenderState(RenderState* renderState, Properties* properties)

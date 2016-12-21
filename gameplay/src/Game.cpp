@@ -1485,7 +1485,7 @@ void Game::frame()
 void Game::renderOnce(const char* function)
 {
     _scriptController->executeFunction<void>(function, NULL);
-    Platform::swapBuffers();
+    //Platform::swapBuffers();
 }
 
 void Game::updateOnce()
