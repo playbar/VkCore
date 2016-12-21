@@ -48,7 +48,7 @@ VkResult VkTexture::createInstance(bool enableValidation)
 
 std::string VkTexture::getWindowTitle()
 {
-	std::string device(mVulkanDevice->mProperties.deviceName);
+	std::string device(gVulkanDevice->mProperties.deviceName);
 	std::string windowTitle;
 	windowTitle = title + " - " + device;
 	if (!mEnableTextOverlay)
@@ -90,19 +90,19 @@ void VkTexture::createCommandBuffers()
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mDrawCmdBuffers.size()));
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(gVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
 }
 
 void VkTexture::destroyCommandBuffers()
 {
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
+	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
 }
 
 void VkTexture::createSetupCommandBuffer()
 {
 	if (setupCmdBuffer != VK_NULL_HANDLE)
 	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
+		vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
 		setupCmdBuffer = VK_NULL_HANDLE; // todo : check if still necessary
 	}
 
@@ -112,7 +112,7 @@ void VkTexture::createSetupCommandBuffer()
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			1);
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &setupCmdBuffer));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(gVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &setupCmdBuffer));
 
 	VkCommandBufferBeginInfo cmdBufInfo = {};
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -135,7 +135,7 @@ void VkTexture::flushSetupCommandBuffer()
 	VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, VK_NULL_HANDLE));
 	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
 
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
+	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
 	setupCmdBuffer = VK_NULL_HANDLE; 
 }
 
@@ -149,7 +149,7 @@ VkCommandBuffer VkTexture::createCommandBuffer(VkCommandBufferLevel level, bool 
 			level,
 			1);
 
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(gVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 
 	// If requested, also start the new command buffer
 	if (begin)
@@ -180,7 +180,7 @@ void VkTexture::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue,
 
 	if (free)
 	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, 1, &commandBuffer);
 	}
 }
 
@@ -188,14 +188,14 @@ void VkTexture::createPipelineCache()
 {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	VK_CHECK_RESULT(vkCreatePipelineCache(mVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+	VK_CHECK_RESULT(vkCreatePipelineCache(gVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 }
 
 void VkTexture::prepare()
 {
-	if (mVulkanDevice->mEnableDebugMarkers)
+	if (gVulkanDevice->mEnableDebugMarkers)
 	{
-		vkDebug::DebugMarker::setup(mVulkanDevice->mLogicalDevice);
+		vkDebug::DebugMarker::setup(gVulkanDevice->mLogicalDevice);
 	}
 	createCommandPool();
 	createSetupCommandBuffer();
@@ -209,7 +209,7 @@ void VkTexture::prepare()
 	// Recreate setup command buffer for derived class
 	createSetupCommandBuffer();
 	// Create a simple texture loader class
-	textureLoader = new vkTools::VulkanTextureLoader(mVulkanDevice, mQueue, mCmdPool);
+	textureLoader = new vkTools::VulkanTextureLoader(gVulkanDevice, mQueue, mCmdPool);
 #if defined(__ANDROID__)
 	textureLoader->assetManager = androidApp->activity->assetManager;
 #endif
@@ -220,7 +220,7 @@ void VkTexture::prepare()
 		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.vert.spv", VK_SHADER_STAGE_VERTEX_BIT));
 		shaderStages.push_back(loadShader(getAssetPath() + "shaders/base/textoverlay.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT));
 		mTextOverlay = new VulkanTextOverlay(
-			mVulkanDevice,
+			gVulkanDevice,
 			mQueue,
 			mFrameBuffers,
 			mColorformat,
@@ -254,9 +254,9 @@ VkPipelineShaderStageCreateInfo VkTexture::loadShader(std::string fileName, VkSh
 	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStage.stage = stage;
 #if defined(__ANDROID__)
-	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
 #else
-	shaderStage.module = vkTools::loadShader(fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+	shaderStage.module = vkTools::loadShader(fileName.c_str(), gVulkanDevice->mLogicalDevice, stage);
 #endif
 	shaderStage.pName = "main"; // todo : make param
 	assert(shaderStage.module != NULL);
@@ -270,20 +270,20 @@ VkBool32 VkTexture::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryProperty
 	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
 	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
 
-	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
+	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
 
-	vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, *buffer, &memReqs);
+	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, *buffer, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
+	memAlloc.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, memory));
 	if (data != nullptr)
 	{
 		void *mapped;
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, *memory, 0, size, 0, &mapped));
 		memcpy(mapped, data, size);
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, *memory);
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, *memory);
 	}
-	VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
+	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, *buffer, *memory, 0));
 
 	return true;
 }
@@ -336,7 +336,7 @@ void VkTexture::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBu
 
 void VkTexture::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, vkMeshLoader::MeshCreateInfo *meshCreateInfo)
 {
-	VulkanMeshLoader *mesh = new VulkanMeshLoader(mVulkanDevice);
+	VulkanMeshLoader *mesh = new VulkanMeshLoader(gVulkanDevice);
 
 #if defined(__ANDROID__)
 	mesh->assetManager = androidApp->activity->assetManager;
@@ -355,7 +355,7 @@ void VkTexture::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBu
 		copyCmd,
 		mQueue);
 
-	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &copyCmd);
+	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, 1, &copyCmd);
 
 	meshBuffer->dim = mesh->dim.size;
 
@@ -422,7 +422,7 @@ void VkTexture::renderLoop()
 	}
 
 	// Flush device to make sure all resources can be freed 
-	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
+	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
 }
 
 void VkTexture::updateTextOverlay()
@@ -438,7 +438,7 @@ void VkTexture::updateTextOverlay()
 	ss << std::fixed << std::setprecision(3) << (frameTimer * 1000.0f) << "ms (" << lastFPS << " fps)";
 	mTextOverlay->addText(ss.str(), 5.0f, 25.0f, VulkanTextOverlay::alignLeft);
 
-	mTextOverlay->addText(mVulkanDevice->mProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
+	mTextOverlay->addText(gVulkanDevice->mProperties.deviceName, 5.0f, 45.0f, VulkanTextOverlay::alignLeft);
 
 	getOverlayText(mTextOverlay);
 
@@ -546,10 +546,10 @@ VkTexture::~VkTexture()
 
 	destroyTextureImage(mTexture);
 
-	vkDestroyPipeline(mVulkanDevice->mLogicalDevice, mPipelines.solid, nullptr);
+	vkDestroyPipeline(gVulkanDevice->mLogicalDevice, mPipelines.solid, nullptr);
 
-	vkDestroyPipelineLayout(mVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(mVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
+	vkDestroyPipelineLayout(gVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
+	vkDestroyDescriptorSetLayout(gVulkanDevice->mLogicalDevice, mDescriptorSetLayout, nullptr);
 
 	mVertexBuffer.destroy();
 	mIndexBuffer.destroy();
@@ -559,47 +559,47 @@ VkTexture::~VkTexture()
 	gSwapChain.cleanup();
 	if (descriptorPool != VK_NULL_HANDLE)
 	{
-		vkDestroyDescriptorPool(mVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
+		vkDestroyDescriptorPool(gVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
 	}
 	if (setupCmdBuffer != VK_NULL_HANDLE)
 	{
-		vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
+		vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, 1, &setupCmdBuffer);
 
 	}
 	destroyCommandBuffers();
-	vkDestroyRenderPass(mVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
+	vkDestroyRenderPass(gVulkanDevice->mLogicalDevice, mRenderPass, nullptr);
 	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
+		vkDestroyFramebuffer(gVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
 	}
 
 	for (auto& shaderModule : shaderModules)
 	{
-		vkDestroyShaderModule(mVulkanDevice->mLogicalDevice, shaderModule, nullptr);
+		vkDestroyShaderModule(gVulkanDevice->mLogicalDevice, shaderModule, nullptr);
 	}
-	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
+	vkDestroyImageView(gVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+	vkDestroyImage(gVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
 
-	vkDestroyPipelineCache(mVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
+	vkDestroyPipelineCache(gVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
 
 	if (textureLoader)
 	{
 		delete textureLoader;
 	}
 
-	vkDestroyCommandPool(mVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
+	vkDestroyCommandPool(gVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
 
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
-	vkDestroySemaphore(mVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
+	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, semaphores.presentComplete, nullptr);
+	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, semaphores.renderComplete, nullptr);
+	vkDestroySemaphore(gVulkanDevice->mLogicalDevice, semaphores.textOverlayComplete, nullptr);
 
 	if (mEnableTextOverlay)
 	{
 		delete mTextOverlay;
 	}
 
-	delete mVulkanDevice;
+	delete gVulkanDevice;
 
 	if (mEnableValidation)
 	{
@@ -706,7 +706,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 	mTexture.mipLevels = static_cast<uint32_t>(tex2D.levels());
 
 	// Get device properites for the requested texture format
-	vkGetPhysicalDeviceFormatProperties(mVulkanDevice->mPhysicalDevice, format, &formatProperties);
+	vkGetPhysicalDeviceFormatProperties(gVulkanDevice->mPhysicalDevice, format, &formatProperties);
 
 	// Only use linear tiling if requested (and supported by the device)
 	// Support for linear tiling is mostly limited, so prefer to use
@@ -737,23 +737,23 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+		VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 
 		// Get memory requirements for the staging buffer (alignment, memory type bits)
-		vkGetBufferMemoryRequirements(mVulkanDevice->mLogicalDevice, stagingBuffer, &memReqs);
+		vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, stagingBuffer, &memReqs);
 
 		memAllocInfo.allocationSize = memReqs.size;
 		// Get memory type index for a host visible buffer
-		memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		memAllocInfo.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &stagingMemory));
-		VK_CHECK_RESULT(vkBindBufferMemory(mVulkanDevice->mLogicalDevice, stagingBuffer, stagingMemory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &stagingMemory));
+		VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, stagingBuffer, stagingMemory, 0));
 
 		// Copy texture data into staging buffer
 		uint8_t *data;
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, stagingMemory, 0, memReqs.size, 0, (void **)&data));
 		memcpy(data, tex2D.data(), tex2D.size());
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, stagingMemory);
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, stagingMemory);
 
 		// Setup buffer copy regions for each mip level
 		std::vector<VkBufferImageCopy> bufferCopyRegions;
@@ -791,15 +791,15 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		imageCreateInfo.extent = { mTexture.width, mTexture.height, 1 };
 		imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &mTexture.image));
+		VK_CHECK_RESULT(vkCreateImage(gVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &mTexture.image));
 
-		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, mTexture.image, &memReqs);
+		vkGetImageMemoryRequirements(gVulkanDevice->mLogicalDevice, mTexture.image, &memReqs);
 
 		memAllocInfo.allocationSize = memReqs.size;
-		memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		memAllocInfo.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &mTexture.deviceMemory));
-		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, mTexture.image, mTexture.deviceMemory, 0));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &mTexture.deviceMemory));
+		VK_CHECK_RESULT(vkBindImageMemory(gVulkanDevice->mLogicalDevice, mTexture.image, mTexture.deviceMemory, 0));
 
 		VkCommandBuffer copyCmd = createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
@@ -848,8 +848,8 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		flushCommandBuffer(copyCmd, mQueue, true);
 
 		// Clean up staging resources
-		vkFreeMemory(mVulkanDevice->mLogicalDevice, stagingMemory, nullptr);
-		vkDestroyBuffer(mVulkanDevice->mLogicalDevice, stagingBuffer, nullptr);
+		vkFreeMemory(gVulkanDevice->mLogicalDevice, stagingMemory, nullptr);
+		vkDestroyBuffer(gVulkanDevice->mLogicalDevice, stagingBuffer, nullptr);
 	}
 	else
 	{
@@ -872,22 +872,22 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
 		imageCreateInfo.extent = { mTexture.width, mTexture.height, 1 };
-		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &mappableImage));
+		VK_CHECK_RESULT(vkCreateImage(gVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &mappableImage));
 
 		// Get memory requirements for this image 
 		// like size and alignment
-		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, mappableImage, &memReqs);
+		vkGetImageMemoryRequirements(gVulkanDevice->mLogicalDevice, mappableImage, &memReqs);
 		// Set memory allocation size to required memory size
 		memAllocInfo.allocationSize = memReqs.size;
 
 		// Get memory type that can be mapped to host memory
-		memAllocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		memAllocInfo.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 		// Allocate host memory
-		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &mappableMemory));
+		VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &mappableMemory));
 
 		// Bind allocated image for use
-		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, mappableImage, mappableMemory, 0));
+		VK_CHECK_RESULT(vkBindImageMemory(gVulkanDevice->mLogicalDevice, mappableImage, mappableMemory, 0));
 
 		// Get sub resource layout
 		// Mip map count, array layer, etc.
@@ -899,15 +899,15 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 
 		// Get sub resources layout 
 		// Includes row pitch, size offsets, etc.
-		vkGetImageSubresourceLayout(mVulkanDevice->mLogicalDevice, mappableImage, &subRes, &subResLayout);
+		vkGetImageSubresourceLayout(gVulkanDevice->mLogicalDevice, mappableImage, &subRes, &subResLayout);
 
 		// Map image memory
-		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mappableMemory, 0, memReqs.size, 0, &data));
+		VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mappableMemory, 0, memReqs.size, 0, &data));
 
 		// Copy image data into memory
 		memcpy(data, tex2D[subRes.mipLevel].data(), tex2D[subRes.mipLevel].size());
 
-		vkUnmapMemory(mVulkanDevice->mLogicalDevice, mappableMemory);
+		vkUnmapMemory(gVulkanDevice->mLogicalDevice, mappableMemory);
 
 		// Linear tiled images don't need to be staged
 		// and can be directly used as textures
@@ -962,10 +962,10 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 	samplerCreateInfo.maxLod = (useStaging) ? (float)mTexture.mipLevels : 0.0f;
 	// Enable anisotropic filtering
 	// This feature is optional, so we must check if it's supported on the device
-	if (mVulkanDevice->mFeatures.samplerAnisotropy)
+	if (gVulkanDevice->mFeatures.samplerAnisotropy)
 	{
 		// Use max. level of anisotropy for this example
-		samplerCreateInfo.maxAnisotropy = mVulkanDevice->mProperties.limits.maxSamplerAnisotropy;
+		samplerCreateInfo.maxAnisotropy = gVulkanDevice->mProperties.limits.maxSamplerAnisotropy;
 		samplerCreateInfo.anisotropyEnable = VK_TRUE;
 	}
 	else
@@ -975,7 +975,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		samplerCreateInfo.anisotropyEnable = VK_FALSE;
 	}
 	samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-	VK_CHECK_RESULT(vkCreateSampler(mVulkanDevice->mLogicalDevice, &samplerCreateInfo, nullptr, &mTexture.sampler));
+	VK_CHECK_RESULT(vkCreateSampler(gVulkanDevice->mLogicalDevice, &samplerCreateInfo, nullptr, &mTexture.sampler));
 
 	// Create image view
 	// Textures are not directly accessed by the shaders and
@@ -996,7 +996,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 	// Only set mip map count if optimal tiling is used
 	viewCreateInfo.subresourceRange.levelCount = (useStaging) ? mTexture.mipLevels : 1;
 	viewCreateInfo.image = mTexture.image;
-	VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &viewCreateInfo, nullptr, &mTexture.imageView));
+	VK_CHECK_RESULT(vkCreateImageView(gVulkanDevice->mLogicalDevice, &viewCreateInfo, nullptr, &mTexture.imageView));
 
 	// Fill image descriptor image info that can be used during the descriptor set setup
 	mTexture.descriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -1007,10 +1007,10 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 // Free all Vulkan resources used a texture object
 void VkTexture::destroyTextureImage(Texture texture)
 {
-	vkDestroyImageView(mVulkanDevice->mLogicalDevice, texture.imageView, nullptr);
-	vkDestroyImage(mVulkanDevice->mLogicalDevice, texture.image, nullptr);
-	vkDestroySampler(mVulkanDevice->mLogicalDevice, texture.sampler, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, texture.deviceMemory, nullptr);
+	vkDestroyImageView(gVulkanDevice->mLogicalDevice, texture.imageView, nullptr);
+	vkDestroyImage(gVulkanDevice->mLogicalDevice, texture.image, nullptr);
+	vkDestroySampler(gVulkanDevice->mLogicalDevice, texture.sampler, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, texture.deviceMemory, nullptr);
 }
 
 void VkTexture::buildCommandBuffers()
@@ -1092,14 +1092,14 @@ void VkTexture::generateQuad()
 	// Create buffers
 	// For the sake of simplicity we won't stage the vertex data to the gpu memory
 	// Vertex buffer
-	VK_CHECK_RESULT(mVulkanDevice->createBuffer(
+	VK_CHECK_RESULT(gVulkanDevice->createBuffer(
 		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		&mVertexBuffer,
 		vertices.size() * sizeof(Vertex),
 		vertices.data()));
 	// Index buffer
-	VK_CHECK_RESULT(mVulkanDevice->createBuffer(
+	VK_CHECK_RESULT(gVulkanDevice->createBuffer(
 		VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		&mIndexBuffer,
@@ -1164,7 +1164,7 @@ void VkTexture::setupDescriptorPool()
 			poolSizes.data(),
 			2);
 
-	VK_CHECK_RESULT(vkCreateDescriptorPool(mVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+	VK_CHECK_RESULT(vkCreateDescriptorPool(gVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 }
 
 void VkTexture::setupDescriptorSetLayout()
@@ -1188,14 +1188,14 @@ void VkTexture::setupDescriptorSetLayout()
 			setLayoutBindings.data(),
 			static_cast<uint32_t>(setLayoutBindings.size()));
 
-	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
 
 	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
 		vkTools::initializers::pipelineLayoutCreateInfo(
 			&mDescriptorSetLayout,
 			1);
 
-	VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+	VK_CHECK_RESULT(vkCreatePipelineLayout(gVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
 }
 
 void VkTexture::setupDescriptorSet()
@@ -1206,7 +1206,7 @@ void VkTexture::setupDescriptorSet()
 			&mDescriptorSetLayout,
 			1);
 
-	VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(gVulkanDevice->mLogicalDevice, &allocInfo, &mDescriptorSet));
 
 	std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 	{
@@ -1224,7 +1224,7 @@ void VkTexture::setupDescriptorSet()
 			&mTexture.descriptor)
 	};
 
-	vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
+	vkUpdateDescriptorSets(gVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 }
 
 void VkTexture::preparePipelines()
@@ -1299,14 +1299,14 @@ void VkTexture::preparePipelines()
 	pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 	pipelineCreateInfo.pStages = shaderStages.data();
 
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipelines.solid));
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(gVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipelines.solid));
 }
 
 // Prepare and initialize uniform buffer containing shader uniforms
 void VkTexture::prepareUniformBuffers()
 {
 	// Vertex shader uniform buffer block
-	VK_CHECK_RESULT(mVulkanDevice->createBuffer(
+	VK_CHECK_RESULT(gVulkanDevice->createBuffer(
 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		&mUniformBufferVS,
@@ -1444,30 +1444,30 @@ void VkTexture::initVulkan(bool enableValidation)
 	// Vulkan device creation
 	// This is handled by a separate class that gets a logical device representation
 	// and encapsulates functions related to a device
-	mVulkanDevice = new VkCoreDevice(physicalDevices[0]);
-	VK_CHECK_RESULT(mVulkanDevice->createLogicalDevice(enabledFeatures));
+	gVulkanDevice = new VkCoreDevice(physicalDevices[0]);
+	VK_CHECK_RESULT(gVulkanDevice->createLogicalDevice(enabledFeatures));
 
 	// Get a graphics queue from the device
-	vkGetDeviceQueue(mVulkanDevice->mLogicalDevice, mVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
+	vkGetDeviceQueue(gVulkanDevice->mLogicalDevice, gVulkanDevice->queueFamilyIndices.graphics, 0, &mQueue);
 
 	// Find a suitable depth format
-	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &mDepthFormat);
+	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(gVulkanDevice->mPhysicalDevice, &mDepthFormat);
 	assert(validDepthFormat);
 
-	gSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
+	gSwapChain.connect(mInstance, gVulkanDevice->mPhysicalDevice, gVulkanDevice->mLogicalDevice);
 
 	// Create synchronization objects
 	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
 	// Create a semaphore used to synchronize image presentation
 	// Ensures that the image is displayed before we start submitting new commands to the queu
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
 	// Create a semaphore used to synchronize command submission
 	// Ensures that the image is not presented until all commands have been sumbitted and executed
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
 	// Create a semaphore used to synchronize command submission
 	// Ensures that the image is not presented until all commands for the text overlay have been sumbitted and executed
 	// Will be inserted after the render complete semaphore if the text overlay is enabled
-	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
+	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.textOverlayComplete));
 
 	// Set up submit info structure
 	// Semaphores will stay the same during application lifetime
@@ -1757,7 +1757,7 @@ void VkTexture::createCommandPool()
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmdPoolInfo.queueFamilyIndex = gSwapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
+	VK_CHECK_RESULT(vkCreateCommandPool(gVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
 }
 
 void VkTexture::setupDepthStencil()
@@ -1796,15 +1796,15 @@ void VkTexture::setupDepthStencil()
 
 	VkMemoryRequirements memReqs;
 
-	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &depthStencil.image));
-	vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
+	VK_CHECK_RESULT(vkCreateImage(gVulkanDevice->mLogicalDevice, &imageCreateInfo, nullptr, &depthStencil.image));
+	vkGetImageMemoryRequirements(gVulkanDevice->mLogicalDevice, depthStencil.image, &memReqs);
 	memAllocateInfo.allocationSize = memReqs.size;
-	memAllocateInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAllocateInfo, nullptr, &depthStencil.mem));
-	VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
+	memAllocateInfo.memoryTypeIndex = gVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAllocateInfo, nullptr, &depthStencil.mem));
+	VK_CHECK_RESULT(vkBindImageMemory(gVulkanDevice->mLogicalDevice, depthStencil.image, depthStencil.mem, 0));
 
 	depthStencilView.image = depthStencil.image;
-	VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
+	VK_CHECK_RESULT(vkCreateImageView(gVulkanDevice->mLogicalDevice, &depthStencilView, nullptr, &depthStencil.view));
 }
 
 void VkTexture::setupFrameBuffer()
@@ -1829,7 +1829,7 @@ void VkTexture::setupFrameBuffer()
 	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
 		attachments[0] = gSwapChain.buffers[i].view;
-		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
+		VK_CHECK_RESULT(vkCreateFramebuffer(gVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
 	}
 }
 
@@ -1902,7 +1902,7 @@ void VkTexture::setupRenderPass()
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	renderPassInfo.pDependencies = dependencies.data();
 
-	VK_CHECK_RESULT(vkCreateRenderPass(mVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
+	VK_CHECK_RESULT(vkCreateRenderPass(gVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
 }
 
 void VkTexture::windowResize()
@@ -1921,14 +1921,14 @@ void VkTexture::windowResize()
 
 	// Recreate the frame buffers
 
-	vkDestroyImageView(mVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
-	vkDestroyImage(mVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
-	vkFreeMemory(mVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
+	vkDestroyImageView(gVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
+	vkDestroyImage(gVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
 	setupDepthStencil();
 	
 	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		vkDestroyFramebuffer(mVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
+		vkDestroyFramebuffer(gVulkanDevice->mLogicalDevice, mFrameBuffers[i], nullptr);
 	}
 	setupFrameBuffer();
 
@@ -1941,7 +1941,7 @@ void VkTexture::windowResize()
 	buildCommandBuffers();
 
 	vkQueueWaitIdle(mQueue);
-	vkDeviceWaitIdle(mVulkanDevice->mLogicalDevice);
+	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
 
 	if (mEnableTextOverlay)
 	{

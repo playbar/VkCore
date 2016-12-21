@@ -7,7 +7,7 @@ std::vector<std::string>* SamplesGame::_categories = NULL;
 std::vector<SamplesGame::SampleRecordList>* SamplesGame::_samples = NULL;
 
 // Declare our game instance
-SamplesGame game;
+//SamplesGame game;
 
 SamplesGame::SamplesGame() : Game(false, NULL),
 	_activeSample(NULL), _font(NULL),  _sampleSelectForm(NULL)
@@ -334,6 +334,6 @@ void SamplesGame::addSample(const char* category, const char* title, void* func,
 
 SamplesGame* SamplesGame::getInstance()
 {
-	//return NULL;
-    return &game;
+	return NULL;
+    //return &game;
 }

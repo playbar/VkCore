@@ -48,7 +48,7 @@
 #include "VkTexturesparseresidency.hpp"
 #include "VkTriangle.hpp"
 
-VkTriangle *vulkanExample;
+VkTexture *vulkanExample;
 
 #if defined(_WIN32)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -85,7 +85,7 @@ int main(const int argc, const char *argv[])
 	app_dummy();
 #endif	
 #if defined(_WIN32)
-	vulkanExample = new VkTriangle();
+	vulkanExample = new VkTexture();
 	vulkanExample->setupWindow(hInstance, WndProc);
 	vulkanExample->initSwapchain();
 	vulkanExample->prepare();

@@ -18,10 +18,6 @@ class TriangleSample : public Sample
 		float color[3];
 	};
 
-public:
-
-	void Init();
-
 
 	////////////////////////////////////////////////
 public:
@@ -43,7 +39,7 @@ protected:
 
 private:
 
-    //Font* _font;
+    Font* _font;
     Model* _model;
     float _spinDirection;
     Matrix _worldViewProjectionMatrix;

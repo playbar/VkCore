@@ -7,7 +7,7 @@
 #endif
 
 
-//TriangleSample game;
+TriangleSample game;
 
 /**
  * Creates a triangle mesh with vertex colors.
@@ -53,7 +53,7 @@ TriangleSample::TriangleSample() :
 	_model(NULL),
 	_spinDirection(-1.0f)
 {
-	//_font = NULL;
+	_font = NULL;
 }
 
 TriangleSample::~TriangleSample()
@@ -63,7 +63,7 @@ TriangleSample::~TriangleSample()
 void TriangleSample::initialize()
 {
     // Create the font for drawing the framerate.
-    //_font = Font::create("res/ui/arial.gpb");
+    _font = Font::create("res/ui/arial.gpb");
 
     // Create an orthographic projection matrix.
     float width = getWidth() / (float)getHeight();
@@ -102,7 +102,7 @@ void TriangleSample::render(float elapsedTime)
 	_model->getMaterial()->updateUniformProMat(&_worldViewProjectionMatrix);
     _model->draw();
 
-    //drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());	
+    drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());	
 }
 
 void TriangleSample::touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int contactIndex)

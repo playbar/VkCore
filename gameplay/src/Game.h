@@ -226,7 +226,7 @@ public:
         CLEAR_COLOR_DEPTH_STENCIL = CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL
     };
  
-	Game(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn);
+	Game(bool enableValidation = false, PFN_GetEnabledFeatures enabledFeaturesFn = NULL );
 
     virtual ~Game();
 

@@ -176,7 +176,6 @@ protected:
 	uint32_t lastFPS = 0;
 	// Vulkan instance, stores all per-application states
 	VkInstance mInstance;
-	VkCoreDevice *mVulkanDevice;
 
 	// Device features enabled by the example
 	// If not set, no additional features are enabled (may result in validation layer errors)

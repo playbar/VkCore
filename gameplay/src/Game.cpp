@@ -980,6 +980,7 @@ void Game::frame()
         // Update Time.
         float elapsedTime = (frameTime - lastFrameTime);
         lastFrameTime = frameTime;
+		prepareFrame();
 
         //// Update the scheduled and running animations.
         //_animationController->update(elapsedTime);
@@ -1008,6 +1009,8 @@ void Game::frame()
 
         // Graphics Rendering.
         render(elapsedTime);
+
+		submitFrame();
 	
         //// Run script render.
         //if (_scriptTarget)
