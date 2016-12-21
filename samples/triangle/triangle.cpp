@@ -6,7 +6,6 @@
 #include <exception>
 #include "VKTriangle.h"
 
-
 VKTriangle *vulkanExample;
 
 #if defined(_WIN32)

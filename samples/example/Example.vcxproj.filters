@@ -53,6 +53,9 @@
     <ClCompile Include="..\..\gameplay\src\Frustum.cpp">
       <Filter>math</Filter>
     </ClCompile>
+    <ClCompile Include="texture\VkTexture.cpp">
+      <Filter>texture</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vkcore">
@@ -60,6 +63,9 @@
     </Filter>
     <Filter Include="math">
       <UniqueIdentifier>{1ed5ad8c-612c-48fd-9265-5bb35e11a340}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="texture">
+      <UniqueIdentifier>{ff5dd736-00e1-408a-88ca-093d9750228b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -228,24 +234,6 @@
     <ClInclude Include="vkcore\VkTextOverLay.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>
-    <ClInclude Include="vkcore\VkTexture.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexture3d.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTextureArray.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexturecubemap.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexturemipmapgen.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\VkTexturesparseresidency.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\gameplay\src\Matrix.h">
       <Filter>math</Filter>
     </ClInclude>
@@ -275,6 +263,24 @@
     </ClInclude>
     <ClInclude Include="..\..\gameplay\src\Frustum.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="texture\VkTexture3d.hpp">
+      <Filter>texture</Filter>
+    </ClInclude>
+    <ClInclude Include="texture\VkTextureArray.hpp">
+      <Filter>texture</Filter>
+    </ClInclude>
+    <ClInclude Include="texture\VkTexturecubemap.hpp">
+      <Filter>texture</Filter>
+    </ClInclude>
+    <ClInclude Include="texture\VkTexturemipmapgen.hpp">
+      <Filter>texture</Filter>
+    </ClInclude>
+    <ClInclude Include="texture\VkTexturesparseresidency.hpp">
+      <Filter>texture</Filter>
+    </ClInclude>
+    <ClInclude Include="texture\VkTexture.h">
+      <Filter>texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -27,9 +27,6 @@ void SamplesGame::initialize()
         std::sort((*_samples)[i].begin(), (*_samples)[i].end());
     }
 
-    // Load camera script
-    getScriptController()->loadScript("res/common/camera.lua");
-
     // Create the selection form
     _sampleSelectForm = Form::create("sampleSelect", NULL, Layout::LAYOUT_VERTICAL);
     _sampleSelectForm->setWidth(220);

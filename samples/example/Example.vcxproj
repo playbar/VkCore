@@ -22,6 +22,7 @@
     <ClCompile Include="..\..\gameplay\src\Vector3.cpp" />
     <ClCompile Include="..\..\gameplay\src\Vector4.cpp" />
     <ClCompile Include="Example.cpp" />
+    <ClCompile Include="texture\VkTexture.cpp" />
     <ClCompile Include="vkcore\VkCoreDevice.cpp" />
     <ClCompile Include="vkcore\vulkanandroid.cpp" />
     <ClCompile Include="vkcore\VulkanBase.cpp" />
@@ -41,6 +42,12 @@
     <ClInclude Include="..\..\gameplay\src\Vector2.h" />
     <ClInclude Include="..\..\gameplay\src\Vector3.h" />
     <ClInclude Include="..\..\gameplay\src\Vector4.h" />
+    <ClInclude Include="texture\VkTexture.h" />
+    <ClInclude Include="texture\VkTexture3d.hpp" />
+    <ClInclude Include="texture\VkTextureArray.hpp" />
+    <ClInclude Include="texture\VkTexturecubemap.hpp" />
+    <ClInclude Include="texture\VkTexturemipmapgen.hpp" />
+    <ClInclude Include="texture\VkTexturesparseresidency.hpp" />
     <ClInclude Include="vkcore\define.h" />
     <ClInclude Include="vkcore\frustum.hpp" />
     <ClInclude Include="vkcore\threadpool.hpp" />
@@ -83,12 +90,6 @@
     <ClInclude Include="vkcore\VkTerraintessellation.hpp" />
     <ClInclude Include="vkcore\VkTessellation.hpp" />
     <ClInclude Include="vkcore\VkTextOverLay.hpp" />
-    <ClInclude Include="vkcore\VkTexture.hpp" />
-    <ClInclude Include="vkcore\VkTexture3d.hpp" />
-    <ClInclude Include="vkcore\VkTextureArray.hpp" />
-    <ClInclude Include="vkcore\VkTexturecubemap.hpp" />
-    <ClInclude Include="vkcore\VkTexturemipmapgen.hpp" />
-    <ClInclude Include="vkcore\VkTexturesparseresidency.hpp" />
     <ClInclude Include="vkcore\VkTriangle.hpp" />
     <ClInclude Include="vkcore\vulkanandroid.h" />
     <ClInclude Include="vkcore\VulkanBase.h" />
@@ -157,7 +158,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\gameplay\src;..\..\external\glm;..\..\external\gli;..\..\external\assimp;..\..\external;..\..\external-deps\include;.\vkcore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\gameplay\src;..\..\external\glm;..\..\external\gli;..\..\external\assimp;..\..\external;..\..\external-deps\include;.\vkcore;.\texture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
