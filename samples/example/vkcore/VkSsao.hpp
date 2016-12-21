@@ -1074,7 +1074,7 @@ public:
 		// Scene rendering
 		mSubmitInfo.pWaitSemaphores = &offscreenSemaphore;
 		mSubmitInfo.pSignalSemaphores = &semaphores.renderComplete;
-		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
+		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[gSwapChain.mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
 		VulkanBase::submitFrame();

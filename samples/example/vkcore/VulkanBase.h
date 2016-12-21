@@ -90,7 +90,7 @@ protected:
 	// List of available frame buffers (same as number of swap chain images)
 	std::vector<VkFramebuffer>mFrameBuffers;
 	// Active frame buffer index
-	uint32_t mCurrentBuffer = 0;
+	//uint32_t mCurrentBuffer = 0;
 	// Descriptor set pool
 	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 	// List of shader modules created (stored for cleanup)
@@ -98,7 +98,7 @@ protected:
 	// Pipeline cache object
 	VkPipelineCache pipelineCache;
 	// Wraps the swap chain to present images (framebuffers) to the windowing system
-	VulkanSwapChain mSwapChain;
+	//VulkanSwapChain gSwapChain;
 	// Synchronization semaphores
 	struct
 	{

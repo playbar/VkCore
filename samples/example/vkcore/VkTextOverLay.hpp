@@ -515,7 +515,7 @@ public:
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
-		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
+		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[gSwapChain.mCurrentBuffer];
 
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
@@ -523,7 +523,7 @@ public:
 		// Submit text overlay to queue
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		mTextOverlay->submit(mQueue, mCurrentBuffer);
+		mTextOverlay->submit(mQueue, gSwapChain.mCurrentBuffer);
 
 		VulkanBase::submitFrame();
 	}

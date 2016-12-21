@@ -319,11 +319,11 @@ public:
 	void draw()
 	{
 		// Get next image in the swap chain (back/front buffer)
-		VK_CHECK_RESULT(mSwapChain.acquireNextImage(presentCompleteSemaphore, &mCurrentBuffer));
+		VK_CHECK_RESULT(gSwapChain.acquireNextImage(presentCompleteSemaphore ));
 
 		// Use a fence to wait until the command buffer has finished execution before using it again
-		VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer], VK_TRUE, UINT64_MAX));
-		VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[mCurrentBuffer]));
+		VK_CHECK_RESULT(vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[gSwapChain.mCurrentBuffer], VK_TRUE, UINT64_MAX));
+		VK_CHECK_RESULT(vkResetFences(mVulkanDevice->mLogicalDevice, 1, &mWaitFences[gSwapChain.mCurrentBuffer]));
 
 		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -335,16 +335,16 @@ public:
 		submitInfo.waitSemaphoreCount = 1;												// One wait semaphore																				
 		submitInfo.pSignalSemaphores = &renderCompleteSemaphore;						// Semaphore(s) to be signaled when command buffers have completed
 		submitInfo.signalSemaphoreCount = 1;											// One signal semaphore
-		submitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];					// Command buffers(s) to execute in this batch (submission)
+		submitInfo.pCommandBuffers = &mDrawCmdBuffers[gSwapChain.mCurrentBuffer];					// Command buffers(s) to execute in this batch (submission)
 		submitInfo.commandBufferCount = 1;												// One command buffer
 
 																						// Submit to the graphics queue passing a wait fence
-		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, mWaitFences[mCurrentBuffer]));
+		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &submitInfo, mWaitFences[gSwapChain.mCurrentBuffer]));
 
 		// Present the current buffer to the swap chain
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
 		// This ensures that the image is not presented to the windowing system until all commands have been submitted
-		VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, renderCompleteSemaphore));
+		VK_CHECK_RESULT(gSwapChain.queuePresent(mQueue, renderCompleteSemaphore));
 	}
 
 	void updateUniformBuffers()
@@ -715,11 +715,11 @@ public:
 	void setupFrameBuffer()
 	{
 		// Create a frame buffer for every image in the swapchain
-		mFrameBuffers.resize(mSwapChain.mImageCount);
+		mFrameBuffers.resize(gSwapChain.mImageCount);
 		for (size_t i = 0; i < mFrameBuffers.size(); i++)
 		{
 			std::array<VkImageView, 2> attachments;
-			attachments[0] = mSwapChain.buffers[i].view;									// Color attachment is the view of the swapchain image			
+			attachments[0] = gSwapChain.buffers[i].view;									// Color attachment is the view of the swapchain image			
 			attachments[1] = depthStencil.view;											// Depth/Stencil attachment is the same for all frame buffers			
 
 			VkFramebufferCreateInfo frameBufferCreateInfo = {};

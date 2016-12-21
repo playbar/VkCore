@@ -56,6 +56,9 @@
     <ClCompile Include="texture\VkTexture.cpp">
       <Filter>texture</Filter>
     </ClCompile>
+    <ClCompile Include="vkcore\vulkanswapchain.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vkcore">
@@ -69,9 +72,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vkcore\VkTriangle.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
     <ClInclude Include="vkcore\vulkanandroid.h">
       <Filter>vkcore</Filter>
     </ClInclude>
@@ -281,6 +281,9 @@
     </ClInclude>
     <ClInclude Include="texture\VkTexture.h">
       <Filter>texture</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VkTriangle.hpp">
+      <Filter>vkcore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

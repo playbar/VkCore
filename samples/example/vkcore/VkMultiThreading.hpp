@@ -193,7 +193,7 @@ public:
 
 			// Create one command pool for each thread
 			VkCommandPoolCreateInfo cmdPoolInfo = vkTools::initializers::commandPoolCreateInfo();
-			cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
+			cmdPoolInfo.queueFamilyIndex = gSwapChain.queueNodeIndex;
 			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 			VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &thread->commandPool));
 
@@ -592,7 +592,7 @@ public:
 	{
 		VulkanBase::prepareFrame();
 
-		updateCommandBuffers(mFrameBuffers[mCurrentBuffer]);
+		updateCommandBuffers(mFrameBuffers[gSwapChain.mCurrentBuffer]);
 
 		mSubmitInfo.commandBufferCount = 1;
 		mSubmitInfo.pCommandBuffers = &primaryCommandBuffer;

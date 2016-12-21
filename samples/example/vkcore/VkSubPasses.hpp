@@ -218,10 +218,10 @@ public:
 		frameBufferCreateInfo.layers = 1;
 
 		// Create frame buffers for every swap chain image
-		mFrameBuffers.resize(mSwapChain.mImageCount);
+		mFrameBuffers.resize(gSwapChain.mImageCount);
 		for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 		{
-			attachments[0] = mSwapChain.buffers[i].view;
+			attachments[0] = gSwapChain.buffers[i].view;
 			attachments[1] = this->attachments.position.view;
 			attachments[2] = this->attachments.normal.view;
 			attachments[3] = this->attachments.albedo.view;
@@ -857,7 +857,7 @@ public:
 
 		// Command buffer to be sumitted to the queue
 		mSubmitInfo.commandBufferCount = 1;
-		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[mCurrentBuffer];
+		mSubmitInfo.pCommandBuffers = &mDrawCmdBuffers[gSwapChain.mCurrentBuffer];
 
 		// Submit to queue
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));

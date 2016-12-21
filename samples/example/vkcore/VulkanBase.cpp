@@ -82,7 +82,7 @@ bool VulkanBase::checkCommandBuffers()
 void VulkanBase::createCommandBuffers()
 {
 	// Create one command buffer for each swap chain image and reuse for rendering
-	mDrawCmdBuffers.resize(mSwapChain.mImageCount);
+	mDrawCmdBuffers.resize(gSwapChain.mImageCount);
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
 		vkTools::initializers::commandBufferAllocateInfo(
@@ -626,7 +626,7 @@ void VulkanBase::getOverlayText(VulkanTextOverlay *textOverlay)
 void VulkanBase::prepareFrame()
 {
 	// Acquire the next image from the swap chaing
-	VK_CHECK_RESULT(mSwapChain.acquireNextImage(semaphores.presentComplete, &mCurrentBuffer));
+	VK_CHECK_RESULT(gSwapChain.acquireNextImage(semaphores.presentComplete ));
 }
 
 void VulkanBase::submitFrame()
@@ -649,7 +649,7 @@ void VulkanBase::submitFrame()
 
 		// Submit current text overlay command buffer
 		mSubmitInfo.commandBufferCount = 1;
-		mSubmitInfo.pCommandBuffers = &mTextOverlay->mCmdBuffers[mCurrentBuffer];
+		mSubmitInfo.pCommandBuffers = &mTextOverlay->mCmdBuffers[gSwapChain.mCurrentBuffer];
 		VK_CHECK_RESULT(vkQueueSubmit(mQueue, 1, &mSubmitInfo, VK_NULL_HANDLE));
 
 		// Reset stage mask
@@ -663,7 +663,7 @@ void VulkanBase::submitFrame()
 		mSubmitInfo.pSignalSemaphores = &semaphores.renderComplete;
 	}
 
-	VK_CHECK_RESULT(mSwapChain.queuePresent(mQueue, mCurrentBuffer, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
+	VK_CHECK_RESULT(gSwapChain.queuePresent(mQueue, submitTextOverlay ? semaphores.textOverlayComplete : semaphores.renderComplete));
 
 	VK_CHECK_RESULT(vkQueueWaitIdle(mQueue));
 }
@@ -715,7 +715,7 @@ VulkanBase::VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeat
 VulkanBase::~VulkanBase()
 {
 	// Clean up Vulkan resources
-	mSwapChain.cleanup();
+	gSwapChain.cleanup();
 	if (descriptorPool != VK_NULL_HANDLE)
 	{
 		vkDestroyDescriptorPool(mVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
@@ -836,7 +836,7 @@ void VulkanBase::initVulkan(bool enableValidation)
 	VkBool32 validDepthFormat = vkTools::getSupportedDepthFormat(mVulkanDevice->mPhysicalDevice, &mDepthFormat);
 	assert(validDepthFormat);
 
-	mSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
+	gSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
 
 	// Create synchronization objects
 	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
@@ -1233,7 +1233,7 @@ void VulkanBase::handleAppCommand(android_app * app, int32_t cmd)
 	case APP_CMD_TERM_WINDOW:
 		// Window is hidden or closed, clean up resources
 		LOGD("APP_CMD_TERM_WINDOW");
-		vulkanExample->mSwapChain.cleanup();
+		vulkanExample->gSwapChain.cleanup();
 		break;
 	}
 }
@@ -1464,7 +1464,7 @@ void VulkanBase::createCommandPool()
 {
 	VkCommandPoolCreateInfo cmdPoolInfo = {};
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	cmdPoolInfo.queueFamilyIndex = mSwapChain.queueNodeIndex;
+	cmdPoolInfo.queueFamilyIndex = gSwapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
 }
@@ -1534,10 +1534,10 @@ void VulkanBase::setupFrameBuffer()
 	frameBufferCreateInfo.layers = 1;
 
 	// Create frame buffers for every swap chain image
-	mFrameBuffers.resize(mSwapChain.mImageCount);
+	mFrameBuffers.resize(gSwapChain.mImageCount);
 	for (uint32_t i = 0; i < mFrameBuffers.size(); i++)
 	{
-		attachments[0] = mSwapChain.buffers[i].view;
+		attachments[0] = gSwapChain.buffers[i].view;
 		VK_CHECK_RESULT(vkCreateFramebuffer(mVulkanDevice->mLogicalDevice, &frameBufferCreateInfo, nullptr, &mFrameBuffers[i]));
 	}
 }
@@ -1675,17 +1675,17 @@ void VulkanBase::windowResized()
 void VulkanBase::initSwapchain()
 {
 #if defined(_WIN32)
-	mSwapChain.initSurface(mWindowInstance, mHwndWinow);
+	gSwapChain.initSurface(mWindowInstance, mHwndWinow);
 #elif defined(__ANDROID__)	
-	mSwapChain.initSurface(androidApp->window);
+	gSwapChain.initSurface(androidApp->window);
 #elif defined(_DIRECT2DISPLAY)
-	mSwapChain.initSurface(width, height);
+	gSwapChain.initSurface(width, height);
 #elif defined(__linux__)
-	mSwapChain.initSurface(connection, mHwndWinow);
+	gSwapChain.initSurface(connection, mHwndWinow);
 #endif
 }
 
 void VulkanBase::setupSwapChain()
 {
-	mSwapChain.create(&width, &height, enableVSync);
+	gSwapChain.create(&width, &height, enableVSync);
 }

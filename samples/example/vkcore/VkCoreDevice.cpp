@@ -1,6 +1,6 @@
 #include "VkCoreDevice.hpp"
 
-VkCoreDevice *mVulkanDevice = NULL;
+VkCoreDevice *gVulkanDevice = NULL;
 
 VkCoreDevice::VkCoreDevice(VkPhysicalDevice phyDevice)
 {
