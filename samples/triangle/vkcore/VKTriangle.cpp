@@ -1,7 +1,7 @@
-#include "VulkanBase.h"
+#include "VKTriangle.h"
 
 
-VkResult VulkanBase::createInstance(bool enableValidation)
+VkResult VKTriangle::createInstance(bool enableValidation)
 {
 	this->mEnableValidation = enableValidation;
 
@@ -46,7 +46,7 @@ VkResult VulkanBase::createInstance(bool enableValidation)
 	return vkCreateInstance(&instanceCreateInfo, nullptr, &mInstance);
 }
 
-std::string VulkanBase::getWindowTitle()
+std::string VKTriangle::getWindowTitle()
 {
 	std::string device(gVulkanDevice->mProperties.deviceName);
 	std::string windowTitle;
@@ -55,7 +55,7 @@ std::string VulkanBase::getWindowTitle()
 	return windowTitle;
 }
 
-uint32_t VulkanBase::getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
+uint32_t VKTriangle::getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
 {
 	// Iterate over all memory types available for the device used in this example
 	for (uint32_t i = 0; i < gVulkanDevice->mMemoryProperties.memoryTypeCount; i++)
@@ -75,7 +75,7 @@ uint32_t VulkanBase::getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags
 
 // Get a new command buffer from the command pool
 // If begin is true, the command buffer is also started so we can start adding commands
-VkCommandBuffer VulkanBase::getCommandBuffer(bool begin)
+VkCommandBuffer VKTriangle::getCommandBuffer(bool begin)
 {
 	VkCommandBuffer cmdBuffer;
 
@@ -99,7 +99,7 @@ VkCommandBuffer VulkanBase::getCommandBuffer(bool begin)
 
 // End the command buffer and submit it to the queue
 // Uses a fence to ensure command buffer has finished executing before deleting it
-void VulkanBase::flushCommandBuffer(VkCommandBuffer commandBuffer)
+void VKTriangle::flushCommandBuffer(VkCommandBuffer commandBuffer)
 {
 	assert(commandBuffer != VK_NULL_HANDLE);
 
@@ -129,7 +129,7 @@ void VulkanBase::flushCommandBuffer(VkCommandBuffer commandBuffer)
 // Build separate command buffers for every framebuffer image
 // Unlike in OpenGL all rendering commands are recorded once into command buffers that are then resubmitted to the queue
 // This allows to generate work upfront and from multiple threads, one of the biggest advantages of Vulkan
-void VulkanBase::buildCommandBuffers()
+void VKTriangle::buildCommandBuffers()
 {
 	VkCommandBufferBeginInfo cmdBufInfo = {};
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -207,7 +207,7 @@ void VulkanBase::buildCommandBuffers()
 	}
 }
 
-void VulkanBase::draw()
+void VKTriangle::draw()
 {
 	// Get next image in the swap chain (back/front buffer)
 	VK_CHECK_RESULT(gSwapChain.acquireNextImage(gVulkanDevice->presentCompleteSemaphore ));
@@ -237,7 +237,7 @@ void VulkanBase::draw()
 	VK_CHECK_RESULT(vkQueueWaitIdle(gVulkanDevice->mQueue));
 }
 
-void VulkanBase::updateUniformBuffers()
+void VKTriangle::updateUniformBuffers()
 {
 	// Update matrices
 	float aspect = (float)width / (float)height;
@@ -260,7 +260,7 @@ void VulkanBase::updateUniformBuffers()
 
 // Prepare vertex and index buffers for an indexed triangle
 // Also uploads them to device local memory using staging and initializes vertex input and attribute binding to match the vertex shader
-void VulkanBase::prepareVertices(bool useStagingBuffers)
+void VKTriangle::prepareVertices(bool useStagingBuffers)
 {
 	// A note on memory management in Vulkan in general:
 	//	This is a very complex topic and while it's fine for an example application to to small individual memory allocations that is not
@@ -457,7 +457,7 @@ void VulkanBase::prepareVertices(bool useStagingBuffers)
 	mVertices.inputState.pVertexAttributeDescriptions = mVertices.inputAttributes.data();
 }
 
-void VulkanBase::setupDescriptorPool()
+void VKTriangle::setupDescriptorPool()
 {
 	// We need to tell the API the number of max. requested descriptors per type
 	VkDescriptorPoolSize typeCounts[1];
@@ -482,7 +482,7 @@ void VulkanBase::setupDescriptorPool()
 	VK_CHECK_RESULT(vkCreateDescriptorPool(gVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
 }
 
-void VulkanBase::setupDescriptorSetLayout()
+void VKTriangle::setupDescriptorSetLayout()
 {
 	// Setup layout of descriptors used in this example
 	// Basically connects the different shader stages to descriptors for binding uniform buffers, image samplers, etc.
@@ -514,7 +514,7 @@ void VulkanBase::setupDescriptorSetLayout()
 	VK_CHECK_RESULT(vkCreatePipelineLayout(gVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
 }
 
-void VulkanBase::setupDescriptorSet()
+void VKTriangle::setupDescriptorSet()
 {
 	// Allocate a new descriptor set from the global descriptor pool
 	VkDescriptorSetAllocateInfo allocInfo = {};
@@ -545,7 +545,7 @@ void VulkanBase::setupDescriptorSet()
 
 // Create the depth (and stencil) buffer attachments used by our framebuffers
 // Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
-void VulkanBase::setupDepthStencil()
+void VKTriangle::setupDepthStencil()
 {
 	// Create an optimal image used as the depth stencil attachment
 	VkImageCreateInfo image = {};
@@ -592,7 +592,7 @@ void VulkanBase::setupDepthStencil()
 
 // Create a frame buffer for each swap chain image
 // Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
-void VulkanBase::setupFrameBuffer()
+void VKTriangle::setupFrameBuffer()
 {
 	std::array<VkImageView, 2> attachments;
 	attachments[1] = depthStencil.view;														
@@ -621,7 +621,7 @@ void VulkanBase::setupFrameBuffer()
 // This allows the driver to know up-front what the rendering will look like and is a good opportunity to optimize especially on tile-based renderers (with multiple subpasses)
 // Using sub pass dependencies also adds implicit layout transitions for the attachment used, so we don't need to add explicit image memory barriers to transform them
 // Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
-void VulkanBase::setupRenderPass()
+void VKTriangle::setupRenderPass()
 {
 	// This example will use a single render pass with one subpass
 
@@ -704,7 +704,7 @@ void VulkanBase::setupRenderPass()
 	VK_CHECK_RESULT(vkCreateRenderPass(gVulkanDevice->mLogicalDevice, &renderPassInfo, nullptr, &mRenderPass));
 }
 
-void VulkanBase::preparePipelines()
+void VKTriangle::preparePipelines()
 {
 	// Create the graphics pipeline used in this example
 	// Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine
@@ -811,7 +811,7 @@ void VulkanBase::preparePipelines()
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(gVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
 }
 
-void VulkanBase::prepareUniformBuffers()
+void VKTriangle::prepareUniformBuffers()
 {
 	// Prepare and initialize a uniform buffer block containing shader uniforms
 	// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
@@ -853,20 +853,20 @@ void VulkanBase::prepareUniformBuffers()
 	updateUniformBuffers();
 }
 
-void VulkanBase::render()
+void VKTriangle::render()
 {
 	if (!prepared)
 		return;
 	draw();
 }
 
-void VulkanBase::viewChanged()
+void VKTriangle::viewChanged()
 {
 	// This function is called by the base example class each time the view is changed by user input
 	updateUniformBuffers();
 }
 
-const std::string VulkanBase::getAssetPath()
+const std::string VKTriangle::getAssetPath()
 {
 #if defined(__ANDROID__)
 	return "";
@@ -875,7 +875,7 @@ const std::string VulkanBase::getAssetPath()
 #endif
 }
 
-bool VulkanBase::checkCommandBuffers()
+bool VKTriangle::checkCommandBuffers()
 {
 	for (auto& cmdBuffer : mDrawCmdBuffers)
 	{
@@ -887,7 +887,7 @@ bool VulkanBase::checkCommandBuffers()
 	return true;
 }
 
-void VulkanBase::createCommandBuffers()
+void VKTriangle::createCommandBuffers()
 {
 	// Create one command buffer for each swap chain image and reuse for rendering
 	mDrawCmdBuffers.resize(gSwapChain.mImageCount);
@@ -901,12 +901,12 @@ void VulkanBase::createCommandBuffers()
 	VK_CHECK_RESULT(vkAllocateCommandBuffers(gVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, mDrawCmdBuffers.data()));
 }
 
-void VulkanBase::destroyCommandBuffers()
+void VKTriangle::destroyCommandBuffers()
 {
 	vkFreeCommandBuffers(gVulkanDevice->mLogicalDevice, mCmdPool, static_cast<uint32_t>(mDrawCmdBuffers.size()), mDrawCmdBuffers.data());
 }
 
-VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool begin)
+VkCommandBuffer VKTriangle::createCommandBuffer(VkCommandBufferLevel level, bool begin)
 {
 	VkCommandBuffer cmdBuffer;
 
@@ -928,7 +928,7 @@ VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool
 	return cmdBuffer;
 }
 
-void VulkanBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
+void VKTriangle::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
 {
 	if (commandBuffer == VK_NULL_HANDLE)
 	{
@@ -951,14 +951,14 @@ void VulkanBase::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue
 	}
 }
 
-void VulkanBase::createPipelineCache()
+void VKTriangle::createPipelineCache()
 {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	VK_CHECK_RESULT(vkCreatePipelineCache(gVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 }
 
-void VulkanBase::prepare()
+void VKTriangle::prepare()
 {
 	if (gVulkanDevice->mEnableDebugMarkers)
 	{
@@ -985,7 +985,7 @@ void VulkanBase::prepare()
 
 }
 
-VkPipelineShaderStageCreateInfo VulkanBase::loadShader(std::string fileName, VkShaderStageFlagBits stage)
+VkPipelineShaderStageCreateInfo VKTriangle::loadShader(std::string fileName, VkShaderStageFlagBits stage)
 {
 	VkPipelineShaderStageCreateInfo shaderStage = {};
 	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1003,7 +1003,7 @@ VkPipelineShaderStageCreateInfo VulkanBase::loadShader(std::string fileName, VkS
 	return shaderStage;
 }
 
-void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, float scale)
+void VKTriangle::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, float scale)
 {
 	vkMeshLoader::MeshCreateInfo meshCreateInfo;
 	meshCreateInfo.scale = glm::vec3(scale);
@@ -1012,7 +1012,7 @@ void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshB
 	loadMesh(filename, meshBuffer, vertexLayout, &meshCreateInfo);
 }
 
-void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, vkMeshLoader::MeshCreateInfo *meshCreateInfo)
+void VKTriangle::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshBuffer, std::vector<vkMeshLoader::VertexLayout> vertexLayout, vkMeshLoader::MeshCreateInfo *meshCreateInfo)
 {
 	VulkanMeshLoader *mesh = new VulkanMeshLoader(gVulkanDevice);
 
@@ -1023,7 +1023,7 @@ void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshB
 	mesh->LoadMesh(filename);
 	assert(mesh->m_Entries.size() > 0);
 
-	VkCommandBuffer copyCmd = VulkanBase::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+	VkCommandBuffer copyCmd = VKTriangle::createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 
 	mesh->createBuffers(
 		meshBuffer,
@@ -1040,7 +1040,7 @@ void VulkanBase::loadMesh(std::string filename, vkMeshLoader::MeshBuffer * meshB
 	delete(mesh);
 }
 
-void VulkanBase::renderLoop()
+void VKTriangle::renderLoop()
 {
 	destWidth = width;
 	destHeight = height;
@@ -1100,7 +1100,7 @@ void VulkanBase::renderLoop()
 	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
 }
 
-VulkanBase::VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
+VKTriangle::VKTriangle(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 {
 
 	if (enabledFeaturesFn != nullptr)
@@ -1125,7 +1125,7 @@ VulkanBase::VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeat
 
 }
 
-VulkanBase::~VulkanBase()
+VKTriangle::~VKTriangle()
 {
 	// Clean up used Vulkan resources 
 	// Note: Inherited destructor cleans up resources stored in base class
@@ -1194,7 +1194,7 @@ VulkanBase::~VulkanBase()
 #endif
 }
 
-void VulkanBase::initVulkan(bool enableValidation)
+void VKTriangle::initVulkan(bool enableValidation)
 {
 	VkResult err;
 
@@ -1253,7 +1253,7 @@ void VulkanBase::initVulkan(bool enableValidation)
 }
 
 // Win32 : Sets up a console window and redirects standard output to it
-void VulkanBase::setupConsole(std::string title)
+void VKTriangle::setupConsole(std::string title)
 {
 	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
@@ -1262,7 +1262,7 @@ void VulkanBase::setupConsole(std::string title)
 	SetConsoleTitle(TEXT(title.c_str()));
 }
 
-HWND VulkanBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
+HWND VKTriangle::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 {
 	this->mWindowInstance = hinstance;
 
@@ -1379,7 +1379,7 @@ HWND VulkanBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 	return mHwndWinow;
 }
 
-void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void VKTriangle::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
@@ -1512,12 +1512,12 @@ void VulkanBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 
-void VulkanBase::keyPressed(uint32_t keyCode)
+void VKTriangle::keyPressed(uint32_t keyCode)
 {
 	// Can be overriden in derived class
 }
 
-void VulkanBase::createCommandPool()
+void VKTriangle::createCommandPool()
 {
 	VkCommandPoolCreateInfo cmdPoolInfo = {};
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -1526,7 +1526,7 @@ void VulkanBase::createCommandPool()
 	VK_CHECK_RESULT(vkCreateCommandPool(gVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCmdPool));
 }
 
-void VulkanBase::windowResize()
+void VKTriangle::windowResize()
 {
 	if (!prepared)
 	{
@@ -1573,12 +1573,12 @@ void VulkanBase::windowResize()
 	prepared = true;
 }
 
-void VulkanBase::windowResized()
+void VKTriangle::windowResized()
 {
 	// Can be overriden in derived class
 }
 
-void VulkanBase::initSwapchain()
+void VKTriangle::initSwapchain()
 {
 #if defined(_WIN32)
 	gSwapChain.initSurface(mWindowInstance, mHwndWinow);
@@ -1591,7 +1591,7 @@ void VulkanBase::initSwapchain()
 #endif
 }
 
-void VulkanBase::setupSwapChain()
+void VKTriangle::setupSwapChain()
 {
 	gSwapChain.create(&width, &height, enableVSync);
 }

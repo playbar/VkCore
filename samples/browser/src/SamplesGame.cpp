@@ -7,11 +7,15 @@ std::vector<std::string>* SamplesGame::_categories = NULL;
 std::vector<SamplesGame::SampleRecordList>* SamplesGame::_samples = NULL;
 
 // Declare our game instance
-//SamplesGame game;
+SamplesGame game;
 
-SamplesGame::SamplesGame()
-    : _activeSample(NULL), _font(NULL),  _sampleSelectForm(NULL)
+SamplesGame::SamplesGame() : Game(false, NULL),
+	_activeSample(NULL), _font(NULL),  _sampleSelectForm(NULL)
 {
+	width = 800;
+	height = 600;
+	mZoom = -10.0f;
+	title = "VkCore";
 }
 
 void SamplesGame::initialize()
@@ -101,6 +105,7 @@ void SamplesGame::update(float elapsedTime)
 
 void SamplesGame::render(float elapsedTime)
 {
+	Game::prepareFrame();
     if (_activeSample)
     {
         _activeSample->render(elapsedTime);
@@ -109,11 +114,13 @@ void SamplesGame::render(float elapsedTime)
         _font->start();
         _font->drawText("<<", getWidth() - 40, 20, Vector4::one(), 28);
         _font->finish();
+		Game::submitFrame();
         return;
     }
     // Clear the color and depth buffers
     clear(CLEAR_COLOR_DEPTH, Vector4::zero(), 1.0f, 0);
     _sampleSelectForm->draw();
+	Game::submitFrame();
 }
 
 void SamplesGame::resizeEvent(unsigned int width, unsigned int height)
@@ -274,6 +281,21 @@ void SamplesGame::exitActiveSample()
     setMouseCaptured(false);
 }
 
+
+void SamplesGame::prepare()
+{
+	Game::prepare();
+	//prepareSynchronizationPrimitives();
+	////prepareVertices(true);
+	//prepareUniformBuffers();
+	//setupDescriptorSetLayout();
+	//preparePipelines();
+	//setupDescriptorPool();
+	//setupDescriptorSet();
+	//buildCommandBuffers();
+	prepared = true;
+}
+
 void SamplesGame::addSample(const char* category, const char* title, void* func, unsigned int order)
 {
     if (_samples == NULL)
@@ -315,6 +337,6 @@ void SamplesGame::addSample(const char* category, const char* title, void* func,
 
 SamplesGame* SamplesGame::getInstance()
 {
-	return NULL;
-    //return &game;
+	//return NULL;
+    return &game;
 }

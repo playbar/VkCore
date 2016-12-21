@@ -6,9 +6,7 @@
 
 using namespace vkcore;
 
-/**
- * Macro for adding a sample. The purpose is to put the code that adds the sample in the class's cpp file.
- */
+
 #define ADD_SAMPLE(cateogry, title, className, order) \
     static className* _createSample() \
     { \
@@ -23,17 +21,10 @@ using namespace vkcore;
     }; \
     static _foo ## className _f;
 
-/**
- * Main game class.
- */
-
 class SamplesGame : public Game, Control::Listener
 {
 public:
 
-    /**
-     * Constructor.
-     */
     SamplesGame();
 
     void resizeEvent(unsigned int width, unsigned int height);
@@ -62,71 +53,27 @@ public:
 
     void gamepadEvent(Gamepad::GamepadEvent evt, Gamepad* gamepad, unsigned int analogIndex = 0);
 
-    /**
-     * Adds a sample.
-     * 
-     * @param category The cateogry title to group the sample in.
-     * @param title The title string of the sample.
-     * @param func The function pointer that is used to create the sample.
-     * @param order The order of the sample. Samples are sorted lowest order to highest.
-     */
     static void addSample(const char* category, const char* title, void* func, unsigned int order);
 
     static SamplesGame* getInstance();
     
 protected:
 
-    /**
-     * @see Game::initialize
-     */
     void initialize();
 
-    /**
-     * @see Game::finalize
-     */
     void finalize();
 
-    /**
-     * @see Game::update
-     */
-    void update(float elapsedTime);
-
-    /**
-     * @see Game::render
-     */
-    void render(float elapsedTime);
+    void update(float elapsedTime) override;
+    void render(float elapsedTime) override;
+	void prepare() override;
 
 private:
 
-    /**
-     * Function pointer type that is used to create a SampleGame.
-     */
     typedef void*(*SampleGameCreatePtr)();
 
-    /**
-     * Run the given sample.
-     * 
-     * @param func The function pointer that creates the SampleGame.
-     */
     void runSample(void* func);
 
-    /**
-     * Handles the activate when the user touches or clicks on a part of the screen.
-     * 
-     * @param x The x-coordinate in screen space where the user clicked.
-     * @param y The y-coordinate in screen space where the user clicked.
-     */
-    void activate(int x, int y);
-
-    /**
-     * Exits the active sample and returns to the main menu.
-     */
     void exitActiveSample();
-    
-    /**
-     * Draws the main menu, which is a list of all the available samples.
-     */
-    void drawTextMenu();
 
 private:
 
@@ -153,19 +100,8 @@ private:
         }
     };
 
-
-    /**
-     * The list of category title strings.
-     */
     static std::vector<std::string>* _categories;
 
-    /**
-     * The collection of sample titles and the function pointers that create the samples.
-     * The pair represents the string title of the sample and the function pointer that is used to create the sample.
-     * The inner vector is a list of those pairs in the order that they were added.
-     * The outer vector represents the list of categories that contain the list of samples in the category.
-     * The index of _categories maps to the index of the outer vector. (Therefore their size should always be the same).
-     */
     typedef std::vector<SampleRecord> SampleRecordList;
     static std::vector<SampleRecordList>* _samples;
 

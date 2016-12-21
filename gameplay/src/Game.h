@@ -81,8 +81,6 @@ public:
 
 	float mZoom = 0;
 
-	static std::vector<const char*> args;
-
 	// Defines a frame rate independent timer value clamped from -1.0...1.0
 	// For use in animations, rotations, etc.
 	float timer = 0.0f;
@@ -162,7 +160,6 @@ public:
 	void initxcbConnection();
 	void handleEvent(const xcb_generic_event_t *event);
 #endif
-	virtual void render();
 
 	virtual void viewChanged();
 
@@ -184,11 +181,6 @@ public:
 
 	// Prepare commonly used Vulkan functions
 	virtual void prepare();
-
-
-
-	// Start the main render loop
-	void renderLoop();
 
 	// Prepare the frame for workload submission
 	// - Acquires the next image from the swap chain 
@@ -233,18 +225,9 @@ public:
         CLEAR_DEPTH_STENCIL = CLEAR_DEPTH | CLEAR_STENCIL,
         CLEAR_COLOR_DEPTH_STENCIL = CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL
     };
-
-    /**
-     * Constructor.
-     */
-    Game();
-
-
+ 
 	Game(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn);
 
-    /**
-     * Destructor.
-     */
     virtual ~Game();
 
     /**

@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="vkcore\VulkanBase.cpp">
-      <Filter>vkcore</Filter>
-    </ClCompile>
     <ClCompile Include="vkcore\vulkandebug.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
@@ -50,6 +47,9 @@
     <ClCompile Include="vkcore\vulkanswapchain.cpp">
       <Filter>vkcore</Filter>
     </ClCompile>
+    <ClCompile Include="vkcore\VKTriangle.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vkcore">
@@ -60,9 +60,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vkcore\VulkanBase.h">
-      <Filter>vkcore</Filter>
-    </ClInclude>
     <ClInclude Include="vkcore\vulkanbuffer.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>
@@ -137,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="..\..\gameplay\src\Frustum.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\VKTriangle.h">
+      <Filter>vkcore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

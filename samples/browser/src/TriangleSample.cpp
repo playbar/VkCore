@@ -7,7 +7,7 @@
 #endif
 
 
-TriangleSample game;
+//TriangleSample game;
 
 /**
  * Creates a triangle mesh with vertex colors.
@@ -49,42 +49,11 @@ static Mesh* createTriangleMesh()
     return mesh;
 }
 
-
-void TriangleSample::Init()
-{
-	width = 800;
-	height = 600;
-	mZoom = -10.0f;
-	title = "VkCore";
-}
-
-void TriangleSample::prepare()
-{
-	Game::prepare();
-	//prepareSynchronizationPrimitives();
-	////prepareVertices(true);
-	//prepareUniformBuffers();
-	//setupDescriptorSetLayout();
-	//preparePipelines();
-	//setupDescriptorPool();
-	//setupDescriptorSet();
-	//buildCommandBuffers();
-	prepared = true;
-}
-
-void TriangleSample::render()
-{
-	if (!prepared)
-		return;
-	Game::render();
-}
-
 TriangleSample::TriangleSample() :
 	_model(NULL),
 	_spinDirection(-1.0f)
 {
 	//_font = NULL;
-	Init();
 }
 
 TriangleSample::~TriangleSample()
@@ -130,13 +99,10 @@ void TriangleSample::update(float elapsedTime)
 
 void TriangleSample::render(float elapsedTime)
 {
-	Game::prepareFrame();
-    
 	_model->getMaterial()->updateUniformProMat(&_worldViewProjectionMatrix);
     _model->draw();
 
-    //drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());
-	Game::submitFrame();
+    //drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 5, 1, getFrameRate());	
 }
 
 void TriangleSample::touchEvent(Touch::TouchEvent evt, int x, int y, unsigned int contactIndex)

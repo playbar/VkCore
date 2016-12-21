@@ -42,7 +42,7 @@
 // Function pointer for getting physical device fetures to be enabled
 typedef VkPhysicalDeviceFeatures (*PFN_GetEnabledFeatures)();
 
-class VulkanBase
+class VKTriangle
 {
 public:
 	struct Vertex
@@ -270,9 +270,9 @@ public:
 	xcb_intern_atom_reply_t *atom_wm_delete_window;
 #endif
 
-	VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn = nullptr);
+	VKTriangle(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn = nullptr);
 
-	~VulkanBase();
+	~VKTriangle();
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
 	void initVulkan(bool enableValidation);

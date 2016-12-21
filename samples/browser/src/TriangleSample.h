@@ -22,9 +22,6 @@ public:
 
 	void Init();
 
-	void prepare();
-
-	virtual void render();
 
 	////////////////////////////////////////////////
 public:

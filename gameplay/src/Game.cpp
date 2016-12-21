@@ -60,21 +60,6 @@ public:
     }
 };
 
-std::vector<const char*> Game::args;
-
-Game::Game()
-    : _initialized(false), _state(UNINITIALIZED), _pausedCount(0),
-      _frameLastFPS(0), _frameCount(0), _frameRate(0), _width(0), _height(0),
-      _clearDepth(1.0f), _clearStencil(0), _properties(NULL),
-      _animationController(NULL), _audioController(NULL),
-      _physicsController(NULL), _aiController(NULL), _audioListener(NULL),
-      _timeEvents(NULL), _scriptController(NULL), _scriptTarget(NULL)
-{
-    GP_ASSERT(__gameInstance == NULL);
-
-    __gameInstance = this;
-    _timeEvents = new std::priority_queue<TimeEvent, std::vector<TimeEvent>, std::less<TimeEvent> >();
-}
 
 Game::Game(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 	: _initialized(false), _state(UNINITIALIZED), _pausedCount(0),
@@ -89,18 +74,7 @@ Game::Game(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 	__gameInstance = this;
 	_timeEvents = new std::priority_queue<TimeEvent, std::vector<TimeEvent>, std::less<TimeEvent> >();
 	/////
-	// Parse command line arguments
-	for (auto arg : args)
-	{
-		if (arg == std::string("-validation"))
-		{
-			enableValidation = true;
-		}
-		if (arg == std::string("-vsync"))
-		{
-			enableVSync = true;
-		}
-	}
+
 #if defined(__ANDROID__)
 	// Vulkan library is loaded dynamically on Android
 	bool libLoaded = loadVulkanLibrary();
@@ -233,70 +207,6 @@ void Game::prepare()
 	
 }
 
-void Game::renderLoop()
-{
-	destWidth = width;
-	destHeight = height;
-	MSG msg;
-	while (TRUE)
-	{
-		auto tStart = std::chrono::high_resolution_clock::now();
-		if (viewUpdated)
-		{
-			viewUpdated = false;
-			viewChanged();
-		}
-
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if (msg.message == WM_QUIT)
-		{
-			break;
-		}
-
-		render();
-		frameCounter++;
-		auto tEnd = std::chrono::high_resolution_clock::now();
-		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-		frameTimer = (float)tDiff / 1000.0f;
-		mCamera.update(frameTimer);
-		if (mCamera.moving())
-		{
-			viewUpdated = true;
-		}
-		// Convert to clamped timer value
-		if (!paused)
-		{
-			timer += timerSpeed * frameTimer;
-			if (timer > 1.0)
-			{
-				timer -= 1.0f;
-			}
-		}
-		fpsTimer += (float)tDiff;
-		if (fpsTimer > 1000.0f)
-		{
-			if (!mEnableTextOverlay)
-			{
-				std::string windowTitle = getWindowTitle();
-				SetWindowText(mHwndWinow, windowTitle.c_str());
-			}
-			lastFPS = roundf(1.0f / frameTimer);
-			fpsTimer = 0.0f;
-			frameCounter = 0;
-		}
-	}
-
-	// Flush device to make sure all resources can be freed 
-	vkDeviceWaitIdle(gVulkanDevice->mLogicalDevice);
-
-}
-
-
 void Game::prepareFrame()
 {
 	// Acquire the next image from the swap chaing
@@ -312,18 +222,7 @@ void Game::submitFrame()
 
 void Game::InitVulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn)
 {
-	// Parse command line arguments
-	for (auto arg : args)
-	{
-		if (arg == std::string("-validation"))
-		{
-			enableValidation = true;
-		}
-		if (arg == std::string("-vsync"))
-		{
-			enableVSync = true;
-		}
-	}
+
 #if defined(__ANDROID__)
 	// Vulkan library is loaded dynamically on Android
 	bool libLoaded = loadVulkanLibrary();
@@ -338,15 +237,6 @@ void Game::InitVulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledF
 	{
 		this->mEnabledFeatures = enabledFeaturesFn();
 	}
-
-#if defined(_WIN32)
-	// Enable console if validation is active
-	// Debug message callback will output to it
-	if (enableValidation)
-	{
-		setupConsole("VulkanExample");
-	}
-#endif
 
 #if !defined(__ANDROID__)
 	// Android Vulkan initialization is handled in APP_CMD_INIT_WINDOW event
@@ -457,7 +347,7 @@ void Game::InitVulkan(bool enableValidation)
 	mSubmitInfo.pSignalSemaphores = &semaphores.renderComplete;
 }
 
-#if defined(_WIN32)
+
 // Win32 : Sets up a console window and redirects standard output to it
 void Game::setupConsole(std::string title)
 {
@@ -473,13 +363,6 @@ HWND Game::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
 	this->mWindowInstance = hinstance;
 
 	bool fullscreen = false;
-	for (auto arg : args)
-	{
-		if (arg == std::string("-fullscreen"))
-		{
-			fullscreen = true;
-		}
-	}
 
 	WNDCLASSEX wndClass;
 
@@ -725,324 +608,6 @@ void Game::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		resizing = false;
 		break;
 	}
-}
-#elif defined(__ANDROID__)
-int32_t Game::handleAppInput(struct android_app* app, AInputEvent* event)
-{
-	VulkanBase* vulkanExample = reinterpret_cast<VulkanBase*>(app->userData);
-	if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION)
-	{
-		if (AInputEvent_getSource(event) == AINPUT_SOURCE_JOYSTICK)
-		{
-			// Left thumbstick
-			vulkanExample->gamePadState.axisLeft.x = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X, 0);
-			vulkanExample->gamePadState.axisLeft.y = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y, 0);
-			// Right thumbstick
-			vulkanExample->gamePadState.axisRight.x = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Z, 0);
-			vulkanExample->gamePadState.axisRight.y = AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RZ, 0);
-		}
-		else
-		{
-			// todo : touch input
-		}
-		return 1;
-	}
-
-	if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY)
-	{
-		int32_t keyCode = AKeyEvent_getKeyCode((const AInputEvent*)event);
-		int32_t action = AKeyEvent_getAction((const AInputEvent*)event);
-		int32_t button = 0;
-
-		if (action == AKEY_EVENT_ACTION_UP)
-			return 0;
-
-		switch (keyCode)
-		{
-		case AKEYCODE_BUTTON_A:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_A);
-			break;
-		case AKEYCODE_BUTTON_B:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_B);
-			break;
-		case AKEYCODE_BUTTON_X:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_X);
-			break;
-		case AKEYCODE_BUTTON_Y:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_Y);
-			break;
-		case AKEYCODE_BUTTON_L1:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_L1);
-			break;
-		case AKEYCODE_BUTTON_R1:
-			vulkanExample->keyPressed(GAMEPAD_BUTTON_R1);
-			break;
-		case AKEYCODE_BUTTON_START:
-			vulkanExample->paused = !vulkanExample->paused;
-			break;
-		};
-
-		LOGD("Button %d pressed", keyCode);
-	}
-
-	return 0;
-}
-
-void Game::handleAppCommand(android_app * app, int32_t cmd)
-{
-	assert(app->userData != NULL);
-	VulkanBase* vulkanExample = reinterpret_cast<VulkanBase*>(app->userData);
-	switch (cmd)
-	{
-	case APP_CMD_SAVE_STATE:
-		LOGD("APP_CMD_SAVE_STATE");
-		/*
-		vulkanExample->app->savedState = malloc(sizeof(struct saved_state));
-		*((struct saved_state*)vulkanExample->app->savedState) = vulkanExample->state;
-		vulkanExample->app->savedStateSize = sizeof(struct saved_state);
-		*/
-		break;
-	case APP_CMD_INIT_WINDOW:
-		LOGD("APP_CMD_INIT_WINDOW");
-		if (vulkanExample->androidApp->window != NULL)
-		{
-			vulkanExample->initVulkan(false);
-			vulkanExample->initSwapchain();
-			vulkanExample->prepare();
-			assert(vulkanExample->prepared);
-		}
-		else
-		{
-			LOGE("No window assigned!");
-		}
-		break;
-	case APP_CMD_LOST_FOCUS:
-		LOGD("APP_CMD_LOST_FOCUS");
-		vulkanExample->focused = false;
-		break;
-	case APP_CMD_GAINED_FOCUS:
-		LOGD("APP_CMD_GAINED_FOCUS");
-		vulkanExample->focused = true;
-		break;
-	case APP_CMD_TERM_WINDOW:
-		// Window is hidden or closed, clean up resources
-		LOGD("APP_CMD_TERM_WINDOW");
-		vulkanExample->mSwapChain.cleanup();
-		break;
-	}
-}
-#elif defined(_DIRECT2DISPLAY)
-#elif defined(__linux__)
-// Set up a window using XCB and request event types
-xcb_window_t Game::setupWindow()
-{
-	uint32_t value_mask, value_list[32];
-
-	mHwndWinow = xcb_generate_id(connection);
-
-	value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
-	value_list[0] = screen->black_pixel;
-	value_list[1] =
-		XCB_EVENT_MASK_KEY_RELEASE |
-		XCB_EVENT_MASK_KEY_PRESS |
-		XCB_EVENT_MASK_EXPOSURE |
-		XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-		XCB_EVENT_MASK_POINTER_MOTION |
-		XCB_EVENT_MASK_BUTTON_PRESS |
-		XCB_EVENT_MASK_BUTTON_RELEASE;
-
-	xcb_create_window(connection,
-		XCB_COPY_FROM_PARENT,
-		mHwndWinow, screen->root,
-		0, 0, width, height, 0,
-		XCB_WINDOW_CLASS_INPUT_OUTPUT,
-		screen->root_visual,
-		value_mask, value_list);
-
-	/* Magic code that will send notification when window is destroyed */
-	xcb_intern_atom_cookie_t cookie = xcb_intern_atom(connection, 1, 12, "WM_PROTOCOLS");
-	xcb_intern_atom_reply_t* reply = xcb_intern_atom_reply(connection, cookie, 0);
-
-	xcb_intern_atom_cookie_t cookie2 = xcb_intern_atom(connection, 0, 16, "WM_DELETE_WINDOW");
-	atom_wm_delete_window = xcb_intern_atom_reply(connection, cookie2, 0);
-
-	xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-		mHwndWinow, (*reply).atom, 4, 32, 1,
-		&(*atom_wm_delete_window).atom);
-
-	std::string windowTitle = getWindowTitle();
-	xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
-		mHwndWinow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-		title.size(), windowTitle.c_str());
-
-	free(reply);
-
-	xcb_map_window(connection, mHwndWinow);
-
-	return(mHwndWinow);
-}
-
-// Initialize XCB connection
-void Game::initxcbConnection()
-{
-	const xcb_setup_t *setup;
-	xcb_screen_iterator_t iter;
-	int scr;
-
-	connection = xcb_connect(NULL, &scr);
-	if (connection == NULL) {
-		printf("Could not find a compatible Vulkan ICD!\n");
-		fflush(stdout);
-		exit(1);
-	}
-
-	setup = xcb_get_setup(connection);
-	iter = xcb_setup_roots_iterator(setup);
-	while (scr-- > 0)
-		xcb_screen_next(&iter);
-	screen = iter.data;
-}
-
-void Game::handleEvent(const xcb_generic_event_t *event)
-{
-	switch (event->response_type & 0x7f)
-	{
-	case XCB_CLIENT_MESSAGE:
-		if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
-			(*atom_wm_delete_window).atom) {
-			quit = true;
-		}
-		break;
-	case XCB_MOTION_NOTIFY:
-	{
-		xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
-		if (mouseButtons.left)
-		{
-			rotation.x += (mousePos.y - (float)motion->event_y) * 1.25f;
-			rotation.y -= (mousePos.x - (float)motion->event_x) * 1.25f;
-			mCamera.rotate(glm::vec3((mousePos.y - (float)motion->event_y) * mCamera.rotationSpeed, -(mousePos.x - (float)motion->event_x) * mCamera.rotationSpeed, 0.0f));
-			viewUpdated = true;
-		}
-		if (mouseButtons.right)
-		{
-			mZoom += (mousePos.y - (float)motion->event_y) * .005f;
-			mCamera.translate(glm::vec3(-0.0f, 0.0f, (mousePos.y - (float)motion->event_y) * .005f * zoomSpeed));
-			viewUpdated = true;
-		}
-		if (mouseButtons.middle)
-		{
-			cameraPos.x -= (mousePos.x - (float)motion->event_x) * 0.01f;
-			cameraPos.y -= (mousePos.y - (float)motion->event_y) * 0.01f;
-			mCamera.translate(glm::vec3(-(mousePos.x - (float)(float)motion->event_x) * 0.01f, -(mousePos.y - (float)motion->event_y) * 0.01f, 0.0f));
-			viewUpdated = true;
-			mousePos.x = (float)motion->event_x;
-			mousePos.y = (float)motion->event_y;
-		}
-		mousePos = glm::vec2((float)motion->event_x, (float)motion->event_y);
-	}
-	break;
-	case XCB_BUTTON_PRESS:
-	{
-		xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
-		if (press->detail == XCB_BUTTON_INDEX_1)
-			mouseButtons.left = true;
-		if (press->detail == XCB_BUTTON_INDEX_2)
-			mouseButtons.middle = true;
-		if (press->detail == XCB_BUTTON_INDEX_3)
-			mouseButtons.right = true;
-	}
-	break;
-	case XCB_BUTTON_RELEASE:
-	{
-		xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
-		if (press->detail == XCB_BUTTON_INDEX_1)
-			mouseButtons.left = false;
-		if (press->detail == XCB_BUTTON_INDEX_2)
-			mouseButtons.middle = false;
-		if (press->detail == XCB_BUTTON_INDEX_3)
-			mouseButtons.right = false;
-	}
-	break;
-	case XCB_KEY_PRESS:
-	{
-		const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
-		switch (keyEvent->detail)
-		{
-		case KEY_W:
-			mCamera.keys.up = true;
-			break;
-		case KEY_S:
-			mCamera.keys.down = true;
-			break;
-		case KEY_A:
-			mCamera.keys.left = true;
-			break;
-		case KEY_D:
-			mCamera.keys.right = true;
-			break;
-		case KEY_P:
-			paused = !paused;
-			break;
-		case KEY_F1:
-			if (mEnableTextOverlay)
-			{
-				mTextOverlay->mVisible = !mTextOverlay->mVisible;
-			}
-			break;
-		}
-	}
-	break;
-	case XCB_KEY_RELEASE:
-	{
-		const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
-		switch (keyEvent->detail)
-		{
-		case KEY_W:
-			mCamera.keys.up = false;
-			break;
-		case KEY_S:
-			mCamera.keys.down = false;
-			break;
-		case KEY_A:
-			mCamera.keys.left = false;
-			break;
-		case KEY_D:
-			mCamera.keys.right = false;
-			break;
-		case KEY_ESCAPE:
-			quit = true;
-			break;
-		}
-		keyPressed(keyEvent->detail);
-	}
-	break;
-	case XCB_DESTROY_NOTIFY:
-		quit = true;
-		break;
-	case XCB_CONFIGURE_NOTIFY:
-	{
-		const xcb_configure_notify_event_t *cfgEvent = (const xcb_configure_notify_event_t *)event;
-		if ((prepared) && ((cfgEvent->width != width) || (cfgEvent->height != height)))
-		{
-			destWidth = cfgEvent->width;
-			destHeight = cfgEvent->height;
-			if ((destWidth > 0) && (destHeight > 0))
-			{
-				windowResize();
-			}
-		}
-	}
-	break;
-	default:
-		break;
-	}
-}
-#endif
-
-void Game::render()
-{
-	
-
 }
 
 void Game::viewChanged()
