@@ -36,7 +36,6 @@
 #include "Material.h"
 #include "RenderState.h"
 #include "VertexFormat.h"
-#include "VertexAttributeBinding.h"
 #include "Drawable.h"
 #include "Model.h"
 #include "Camera.h"

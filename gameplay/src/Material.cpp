@@ -6,23 +6,143 @@
 #include "Pass.h"
 #include "Properties.h"
 #include "Node.h"
+#include "Game.h"
 
 namespace vkcore
 {
 
-Material::Material() :
-    _currentTechnique(NULL)
+
+	static void replaceDefines(const char* defines, std::string& out)
+	{
+		Properties* graphicsConfig = Game::getInstance()->getConfig()->getNamespace("graphics", true);
+		const char* globalDefines = graphicsConfig ? graphicsConfig->getString("shaderDefines") : NULL;
+
+		// Build full semicolon delimited list of defines
+#ifdef OPENGL_ES
+		out = OPENGL_ES_DEFINE;
+#else
+		out = "";
+#endif
+		if (globalDefines && strlen(globalDefines) > 0)
+		{
+			if (out.length() > 0)
+				out += ';';
+			out += globalDefines;
+		}
+		if (defines && strlen(defines) > 0)
+		{
+			if (out.length() > 0)
+				out += ';';
+			out += defines;
+		}
+
+		// Replace semicolons
+		if (out.length() > 0)
+		{
+			size_t pos;
+			out.insert(0, "#define ");
+			while ((pos = out.find(';')) != std::string::npos)
+			{
+				out.replace(pos, 1, "\n#define ");
+			}
+			out += "\n";
+		}
+	}
+
+	static void replaceIncludes(const char* filepath, const char* source, std::string& out)
+	{
+		// Replace the #include "xxxx.xxx" with the sourced file contents of "filepath/xxxx.xxx"
+		std::string str = source;
+		size_t lastPos = 0;
+		size_t headPos = 0;
+		size_t fileLen = str.length();
+		size_t tailPos = fileLen;
+		while (headPos < fileLen)
+		{
+			lastPos = headPos;
+			if (headPos == 0)
+			{
+				// find the first "#include"
+				headPos = str.find("#include");
+			}
+			else
+			{
+				// find the next "#include"
+				headPos = str.find("#include", headPos + 1);
+			}
+
+			// If "#include" is found
+			if (headPos != std::string::npos)
+			{
+				// append from our last position for the legth (head - last position) 
+				out.append(str.substr(lastPos, headPos - lastPos));
+
+				// find the start quote "
+				size_t startQuote = str.find("\"", headPos) + 1;
+				if (startQuote == std::string::npos)
+				{
+					// We have started an "#include" but missing the leading quote "
+					GP_ERROR("Compile failed for shader '%s' missing leading \".", filepath);
+					return;
+				}
+				// find the end quote "
+				size_t endQuote = str.find("\"", startQuote);
+				if (endQuote == std::string::npos)
+				{
+					// We have a start quote but missing the trailing quote "
+					GP_ERROR("Compile failed for shader '%s' missing trailing \".", filepath);
+					return;
+				}
+
+				// jump the head position past the end quote
+				headPos = endQuote + 1;
+
+				// File path to include and 'stitch' in the value in the quotes to the file path and source it.
+				std::string filepathStr = filepath;
+				std::string directoryPath = filepathStr.substr(0, filepathStr.rfind('/') + 1);
+				size_t len = endQuote - (startQuote);
+				std::string includeStr = str.substr(startQuote, len);
+				directoryPath.append(includeStr);
+				const char* includedSource = FileSystem::readAll(directoryPath.c_str());
+				if (includedSource == NULL)
+				{
+					GP_ERROR("Compile failed for shader '%s' invalid filepath.", filepathStr.c_str());
+					return;
+				}
+				else
+				{
+					// Valid file so lets attempt to see if we need to append anything to it too (recurse...)
+					replaceIncludes(directoryPath.c_str(), includedSource, out);
+					SAFE_DELETE_ARRAY(includedSource);
+				}
+			}
+			else
+			{
+				// Append the remaining
+				out.append(str.c_str(), lastPos, tailPos);
+			}
+		}
+	}
+
+	static void writeShaderToErrorFile(const char* filePath, const char* source)
+	{
+		std::string path = filePath;
+		path += ".err";
+		std::unique_ptr<Stream> stream(FileSystem::open(path.c_str(), FileSystem::WRITE));
+		if (stream.get() != NULL && stream->canWrite())
+		{
+			stream->write(source, 1, strlen(source));
+		}
+	}
+
+
+Material::Material()
 {
 }
 
 Material::~Material()
 {
-    // Destroy all the techniques.
-    for (size_t i = 0, count = _techniques.size(); i < count; ++i)
-    {
-        Technique* technique = _techniques[i];
-        SAFE_RELEASE(technique);
-    }
+
 }
 
 Material* Material::create(const char* url)
@@ -66,50 +186,6 @@ Material* Material::create(Properties* materialProperties, PassCallback callback
     // Load uniform value parameters for this material.
     loadRenderState(material, materialProperties);
 
-    // Go through all the material properties and create techniques under this material.
-    Properties* techniqueProperties = NULL;
-    while ((techniqueProperties = materialProperties->getNextNamespace()))
-    {
-        if (strcmp(techniqueProperties->getNamespace(), "technique") == 0)
-        {
-            if (!loadTechnique(material, techniqueProperties, callback, cookie))
-            {
-                GP_ERROR("Failed to load technique for material.");
-                SAFE_RELEASE(material);
-                return NULL;
-            }
-        }
-    }
-
-    // Set the current technique to the first found technique.
-    if (material->getTechniqueCount() > 0)
-    {
-        Technique* t = material->getTechniqueByIndex(0);
-        if (t)
-        {
-            material->_currentTechnique = t;
-        }
-    }
-    return material;
-}
-
-Material* Material::create(Effect* effect)
-{
-    GP_ASSERT(effect);
-
-    // Create a new material with a single technique and pass for the given effect.
-    Material* material = new Material();
-
-    Technique* technique = new Technique(NULL, material);
-    material->_techniques.push_back(technique);
-
-    Pass* pass = new Pass(NULL, technique);
-    pass->_effect = effect;
-    technique->_passes.push_back(pass);
-    effect->addRef();
-
-    material->_currentTechnique = technique;
-
     return material;
 }
 
@@ -118,75 +194,144 @@ Material* Material::create(const char* vshPath, const char* fshPath, const char*
     GP_ASSERT(vshPath);
     GP_ASSERT(fshPath);
 
+	// Read source from file.
+	char* vshSource = FileSystem::readAll(vshPath);
+	if (vshSource == NULL)
+	{
+		GP_ERROR("Failed to read vertex shader from file '%s'.", vshPath);
+		return NULL;
+	}
+	char* fshSource = FileSystem::readAll(fshPath);
+	if (fshSource == NULL)
+	{
+		GP_ERROR("Failed to read fragment shader from file '%s'.", fshPath);
+		SAFE_DELETE_ARRAY(vshSource);
+		return NULL;
+	}
+
+
     Material* material = new Material();
 
-    Technique* technique = new Technique(NULL, material);
-    material->_techniques.push_back(technique);
+	std::string shaderSource;
 
-    Pass* pass = new Pass(NULL, technique);
-    if (!pass->initialize(vshPath, fshPath, defines))
-    {
-        GP_WARN("Failed to create pass for material: vertexShader = %s, fragmentShader = %s, defines = %s", vshPath, fshPath, defines ? defines : "");
-        SAFE_RELEASE(pass);
-        SAFE_RELEASE(material);
-        return NULL;
-    }
-    technique->_passes.push_back(pass);
+	// Replace all comma separated definitions with #define prefix and \n suffix
+	std::string definesStr = "";
+	replaceDefines(defines, definesStr);
 
-    material->_currentTechnique = technique;
+	shaderSource = definesStr.c_str();
+	shaderSource += "\n";
+	std::string vshSourceStr = "";
+	if (vshPath)
+	{
+		replaceIncludes(vshPath, vshSource, vshSourceStr);
+		if (vshSource && strlen(vshSource) != 0)
+			vshSourceStr += "\n";
+	}
+	shaderSource += (vshPath ? vshSourceStr.c_str() : vshSource);
+
+	material->shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	material->shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkShaderModule shaderModule;
+	VkShaderModuleCreateInfo moduleCreateInfo;
+	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	moduleCreateInfo.pNext = NULL;
+	moduleCreateInfo.codeSize = 3 * sizeof(uint32_t) + shaderSource.length() + 1;
+	moduleCreateInfo.pCode = (uint32_t*)malloc(moduleCreateInfo.codeSize);
+	moduleCreateInfo.flags = 0;
+
+	// Magic SPV number
+	((uint32_t *)moduleCreateInfo.pCode)[0] = 0x07230203;
+	((uint32_t *)moduleCreateInfo.pCode)[1] = 0;
+	((uint32_t *)moduleCreateInfo.pCode)[2] = VK_SHADER_STAGE_VERTEX_BIT;
+	memcpy(((uint32_t *)moduleCreateInfo.pCode + 3), shaderSource.c_str(), shaderSource.length() + 1);
+
+	VK_CHECK_RESULT(vkCreateShaderModule(gVulkanDevice->mLogicalDevice, &moduleCreateInfo, NULL, &shaderModule));
+	material->shaderStages[0].module = shaderModule;
+	material->shaderStages[0].pName = "main"; // todo : make param
+	material->shaderModules.push_back(material->shaderStages[0].module);
+
+	////////////////////////////////////////////////////////////
+
+	shaderSource.clear();
+	shaderSource = definesStr.c_str();
+	shaderSource += "\n";
+	// Compile the fragment shader.
+	std::string fshSourceStr;
+	if (fshPath)
+	{
+		replaceIncludes(fshPath, fshSource, fshSourceStr);
+		if (fshSource && strlen(fshSource) != 0)
+			fshSourceStr += "\n";
+	}
+
+	shaderSource = (fshPath ? fshSourceStr.c_str() : fshSource);
+	material->shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	material->shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	VkShaderModule shaderModuleFra;
+	VkShaderModuleCreateInfo moduleCreateInfoFra;
+	moduleCreateInfoFra.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	moduleCreateInfoFra.pNext = NULL;
+	moduleCreateInfoFra.codeSize = 3 * sizeof(uint32_t) + shaderSource.length() + 1;
+	moduleCreateInfoFra.pCode = (uint32_t*)malloc(moduleCreateInfoFra.codeSize);
+	moduleCreateInfoFra.flags = 0;
+
+	// Magic SPV number
+	((uint32_t *)moduleCreateInfoFra.pCode)[0] = 0x07230203;
+	((uint32_t *)moduleCreateInfoFra.pCode)[1] = 0;
+	((uint32_t *)moduleCreateInfoFra.pCode)[2] = VK_SHADER_STAGE_FRAGMENT_BIT;
+	memcpy(((uint32_t *)moduleCreateInfoFra.pCode + 3), shaderSource.c_str(), shaderSource.length() + 1);
+	VK_CHECK_RESULT(vkCreateShaderModule(gVulkanDevice->mLogicalDevice, &moduleCreateInfoFra, NULL, &shaderModuleFra));
+
+	material->shaderStages[1].module = shaderModuleFra;
+	material->shaderStages[1].pName = "main"; // todo : make param
+	material->shaderModules.push_back(material->shaderStages[1].module);
+
+	material->createPipelineLayout();
 
     return material;
 }
 
-unsigned int Material::getTechniqueCount() const
-{
-    return (unsigned int)_techniques.size();
-}
 
-Technique* Material::getTechniqueByIndex(unsigned int index) const
-{
-    GP_ASSERT(index < _techniques.size());
-    return _techniques[index];
-}
 
-Technique* Material::getTechnique(const char* id) const
-{
-    GP_ASSERT(id);
-    for (size_t i = 0, count = _techniques.size(); i < count; ++i)
-    {
-        Technique* t = _techniques[i];
-        GP_ASSERT(t);
-        if (strcmp(t->getId(), id) == 0)
-        {
-            return t;
-        }
-    }
 
-    return NULL;
-}
 
-Technique* Material::getTechnique() const
-{
-    return _currentTechnique;
-}
 
-void Material::setTechnique(const char* id)
-{
-    Technique* t = getTechnique(id);
-    if (t)
-    {
-        _currentTechnique = t;
-    }
-}
 
 void Material::setNodeBinding(Node* node)
 {
     RenderState::setNodeBinding(node);
+}
 
-    for (size_t i = 0, count = _techniques.size(); i < count; ++i)
-    {
-        _techniques[i]->setNodeBinding(node);
-    }
+void Material::createPipelineLayout()
+{
+	//////////////////////////////
+	// Binding 0: Uniform buffer (Vertex shader)
+	VkDescriptorSetLayoutBinding layoutBinding = {};
+	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	layoutBinding.descriptorCount = 1;
+	layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	layoutBinding.pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+	descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorLayout.pNext = nullptr;
+	descriptorLayout.bindingCount = 1;
+	descriptorLayout.pBindings = &layoutBinding;
+
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
+
+	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
+	// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
+	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
+	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pPipelineLayoutCreateInfo.pNext = nullptr;
+	pPipelineLayoutCreateInfo.setLayoutCount = 1;
+	pPipelineLayoutCreateInfo.pSetLayouts = &mDescriptorSetLayout;
+
+	VK_CHECK_RESULT(vkCreatePipelineLayout(gVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &mPipelineLayout));
+	return;
 }
 
 Material* Material::clone(NodeCloneContext &context) const
@@ -194,53 +339,9 @@ Material* Material::clone(NodeCloneContext &context) const
     Material* material = new Material();
     RenderState::cloneInto(material, context);
 
-    for (std::vector<Technique*>::const_iterator it = _techniques.begin(); it != _techniques.end(); ++it)
-    {
-        const Technique* technique = *it;
-        GP_ASSERT(technique);
-        Technique* techniqueClone = technique->clone(material, context);
-        material->_techniques.push_back(techniqueClone);
-        if (_currentTechnique == technique)
-        {
-            material->_currentTechnique = techniqueClone;
-        }
-    }
     return material;
 }
 
-bool Material::loadTechnique(Material* material, Properties* techniqueProperties, PassCallback callback, void* cookie)
-{
-    GP_ASSERT(material);
-    GP_ASSERT(techniqueProperties);
-
-    // Create a new technique.
-    Technique* technique = new Technique(techniqueProperties->getId(), material);
-
-    // Load uniform value parameters for this technique.
-    loadRenderState(technique, techniqueProperties);
-
-    // Go through all the properties and create passes under this technique.
-    techniqueProperties->rewind();
-    Properties* passProperties = NULL;
-    while ((passProperties = techniqueProperties->getNextNamespace()))
-    {
-        if (strcmp(passProperties->getNamespace(), "pass") == 0)
-        {
-            // Create and load passes.
-            if (!loadPass(technique, passProperties, callback, cookie))
-            {
-                GP_ERROR("Failed to create pass for technique.");
-                SAFE_RELEASE(technique);
-                return false;
-            }
-        }
-    }
-
-    // Add the new technique to the material.
-    material->_techniques.push_back(technique);
-
-    return true;
-}
 
 bool Material::loadPass(Technique* technique, Properties* passProperties, PassCallback callback, void* cookie)
 {

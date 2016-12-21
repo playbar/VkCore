@@ -103,14 +103,6 @@ Model::Model(Mesh* mesh) : Drawable(),
 
 Model::~Model()
 {
-
-	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mVertices.buffer, nullptr);
-	vkFreeMemory(gVulkanDevice->mLogicalDevice, mVertices.memory, nullptr);
-
-	vkDestroyBuffer(gVulkanDevice->mLogicalDevice, mIndices.buffer, nullptr);
-	vkFreeMemory(gVulkanDevice->mLogicalDevice, mIndices.memory, nullptr);
-
-
     SAFE_RELEASE(_material);
     if (_partMaterials)
     {
@@ -126,9 +118,9 @@ Model::~Model()
 
 void Model::UninitVulkan()
 {
-	if (descriptorPool != VK_NULL_HANDLE)
+	if (mDescriptorPool != VK_NULL_HANDLE)
 	{
-		vkDestroyDescriptorPool(gVulkanDevice->mLogicalDevice, descriptorPool, nullptr);
+		vkDestroyDescriptorPool(gVulkanDevice->mLogicalDevice, mDescriptorPool, nullptr);
 	}
 
 	destroyCommandBuffers();
@@ -145,7 +137,7 @@ void Model::UninitVulkan()
 	vkDestroyImageView(gVulkanDevice->mLogicalDevice, depthStencil.view, nullptr);
 	vkDestroyImage(gVulkanDevice->mLogicalDevice, depthStencil.image, nullptr);
 	vkFreeMemory(gVulkanDevice->mLogicalDevice, depthStencil.mem, nullptr);
-	vkDestroyPipelineCache(gVulkanDevice->mLogicalDevice, pipelineCache, nullptr);
+	vkDestroyPipelineCache(gVulkanDevice->mLogicalDevice, mPipelineCache, nullptr);
 	vkDestroyCommandPool(gVulkanDevice->mLogicalDevice, mCmdPool, nullptr);
 	vkDestroyPipeline(gVulkanDevice->mLogicalDevice, mPipeline, nullptr);
 	vkDestroyPipelineLayout(gVulkanDevice->mLogicalDevice, mPipelineLayout, nullptr);
@@ -244,38 +236,8 @@ void Model::setMaterial(Material* material, int partIndex)
         }
     }
 
-    // Release existing material and binding.
-    if (oldMaterial)
-    {
-        for (unsigned int i = 0, tCount = oldMaterial->getTechniqueCount(); i < tCount; ++i)
-        {
-            Technique* t = oldMaterial->getTechniqueByIndex(i);
-            GP_ASSERT(t);
-            for (unsigned int j = 0, pCount = t->getPassCount(); j < pCount; ++j)
-            {
-                GP_ASSERT(t->getPassByIndex(j));
-                t->getPassByIndex(j)->setVertexAttributeBinding(NULL);
-            }
-        }
-        SAFE_RELEASE(oldMaterial);
-    }
-
     if (material)
     {
-        // Hookup vertex attribute bindings for all passes in the new material.
-        for (unsigned int i = 0, tCount = material->getTechniqueCount(); i < tCount; ++i)
-        {
-            Technique* t = material->getTechniqueByIndex(i);
-            GP_ASSERT(t);
-            for (unsigned int j = 0, pCount = t->getPassCount(); j < pCount; ++j)
-            {
-                Pass* p = t->getPassByIndex(j);
-                GP_ASSERT(p);
-                VertexAttributeBinding* b = VertexAttributeBinding::create(_mesh, p->getEffect());
-                p->setVertexAttributeBinding(b);
-                SAFE_RELEASE(b);
-            }
-        }
         // Apply node binding for the new material.
         if (_node)
         {
@@ -409,113 +371,6 @@ unsigned int Model::draw(bool wireframe)
 }
 
 
-// Prepare vertex and index buffers for an indexed triangle
-// Also uploads them to device local memory using staging and initializes vertex input and attribute binding to match the vertex shader
-void Model::prepareVertices()
-{
-	// A note on memory management in Vulkan in general:
-	//	This is a very complex topic and while it's fine for an example application to to small individual memory allocations that is not
-	//	what should be done a real-world application, where you should allocate large chunkgs of memory at once isntead.
-
-	// Setup vertices
-	std::vector<Vertex> vertexBuffer =
-	{
-		{ { 0.9f,  1.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
-		{ { -1.0f,  1.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
-		{ { -1.0f, -1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } }
-		//{ { 0.9f, -1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
-	};
-	//std::vector<Vertex> vertexBuffer =
-	//{
-	//	{ { -200.0f, -200.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
-	//	{ { -100.0f, -200.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
-	//	{ { -100.0f, -100.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
-	//	{ { -200.0f, -100.0f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
-	//};
-
-	uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(Vertex);
-
-	// Setup indices
-	std::vector<uint32_t> indexBuffer = { 1, 0, 2 };
-	mIndices.count = static_cast<uint32_t>(indexBuffer.size());
-	uint32_t indexBufferSize = mIndices.count * sizeof(uint32_t);
-
-	VkMemoryAllocateInfo memAlloc = {};
-	memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	VkMemoryRequirements memReqs;
-
-	void *data;
-
-	
-	// Don't use staging
-	// Create host-visible buffers only and use these for rendering. This is not advised and will usually result in lower rendering performance
-
-	// Vertex buffer
-	VkBufferCreateInfo vertexBufferInfo = {};
-	vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	vertexBufferInfo.size = vertexBufferSize;
-	vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-
-	// Copy vertex data to a buffer visible to the host
-	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &vertexBufferInfo, nullptr, &mVertices.buffer));
-	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mVertices.buffer, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = gVulkanDevice->getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mVertices.memory));
-	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mVertices.memory, 0, memAlloc.allocationSize, 0, &data));
-	memcpy(data, vertexBuffer.data(), vertexBufferSize);
-	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mVertices.memory);
-	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mVertices.buffer, mVertices.memory, 0));
-
-	// Index buffer
-	VkBufferCreateInfo indexbufferInfo = {};
-	indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	indexbufferInfo.size = indexBufferSize;
-	indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-
-	// Copy index data to a buffer visible to the host
-	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &indexbufferInfo, nullptr, &mIndices.buffer));
-	vkGetBufferMemoryRequirements(gVulkanDevice->mLogicalDevice, mIndices.buffer, &memReqs);
-	memAlloc.allocationSize = memReqs.size;
-	memAlloc.memoryTypeIndex = gVulkanDevice->getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &mIndices.memory));
-	VK_CHECK_RESULT(vkMapMemory(gVulkanDevice->mLogicalDevice, mIndices.memory, 0, indexBufferSize, 0, &data));
-	memcpy(data, indexBuffer.data(), indexBufferSize);
-	vkUnmapMemory(gVulkanDevice->mLogicalDevice, mIndices.memory);
-	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mIndices.buffer, mIndices.memory, 0));
-
-
-	// Vertex input binding
-	mVertices.inputBinding.binding = VERTEX_BUFFER_BIND_ID;
-	mVertices.inputBinding.stride = sizeof(Vertex);
-	mVertices.inputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-	// Inpute attribute binding describe shader attribute locations and memory layouts
-	// These match the following shader layout (see triangle.vert):
-	//	layout (location = 0) in vec3 inPos;
-	//	layout (location = 1) in vec3 inColor;
-	mVertices.inputAttributes.resize(2);
-	// Attribute location 0: Position
-	mVertices.inputAttributes[0].binding = VERTEX_BUFFER_BIND_ID;
-	mVertices.inputAttributes[0].location = 0;
-	mVertices.inputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-	mVertices.inputAttributes[0].offset = offsetof(Vertex, position);
-	// Attribute location 1: Color
-	mVertices.inputAttributes[1].binding = VERTEX_BUFFER_BIND_ID;
-	mVertices.inputAttributes[1].location = 1;
-	mVertices.inputAttributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-	mVertices.inputAttributes[1].offset = offsetof(Vertex, color);
-
-	// Assign to the vertex input state used for pipeline creation
-	mVertices.inputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	mVertices.inputState.pNext = nullptr;
-	mVertices.inputState.flags = VK_FLAGS_NONE;
-	mVertices.inputState.vertexBindingDescriptionCount = 1;
-	mVertices.inputState.pVertexBindingDescriptions = &mVertices.inputBinding;
-	mVertices.inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(mVertices.inputAttributes.size());
-	mVertices.inputState.pVertexAttributeDescriptions = mVertices.inputAttributes.data();
-}
-
 void Model::prepare()
 {
 	vkTools::getSupportedDepthFormat(gVulkanDevice->mPhysicalDevice, &mDepthFormat);
@@ -526,7 +381,6 @@ void Model::prepare()
 	createPipelineCache();
 	setupFrameBuffer();
 
-	prepareVertices();
 	prepareUniformBuffers();
 	setupDescriptorSetLayout();
 	preparePipelines();
@@ -585,7 +439,7 @@ void Model::createPipelineCache()
 {
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	VK_CHECK_RESULT(vkCreatePipelineCache(gVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+	VK_CHECK_RESULT(vkCreatePipelineCache(gVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &mPipelineCache));
 }
 
 
@@ -611,7 +465,7 @@ void Model::setupDescriptorPool()
 	// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
 	descriptorPoolInfo.maxSets = 1;
 
-	VK_CHECK_RESULT(vkCreateDescriptorPool(gVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &descriptorPool));
+	VK_CHECK_RESULT(vkCreateDescriptorPool(gVulkanDevice->mLogicalDevice, &descriptorPoolInfo, nullptr, &mDescriptorPool));
 
 }
 
@@ -621,7 +475,7 @@ void Model::setupDescriptorSet()
 	// Allocate a new descriptor set from the global descriptor pool
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = descriptorPool;
+	allocInfo.descriptorPool = mDescriptorPool;
 	allocInfo.descriptorSetCount = 1;
 	allocInfo.pSetLayouts = &mDescriptorSetLayout;
 
@@ -773,9 +627,6 @@ void Model::buildCommandBuffers()
 		vkCmdDrawIndexed(mDrawCmdBuffers[i], _mesh->getPart(0)->getIndexCount(), 1, 0, 0, 1);
 
 		vkCmdEndRenderPass(mDrawCmdBuffers[i]);
-
-		// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to 
-		// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(mDrawCmdBuffers[i]));
 	}
@@ -994,7 +845,7 @@ void Model::preparePipelines()
 	pipelineCreateInfo.pDynamicState = &dynamicState;
 
 	// Create rendering pipeline using the specified states
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(gVulkanDevice->mLogicalDevice, pipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(gVulkanDevice->mLogicalDevice, mPipelineCache, 1, &pipelineCreateInfo, nullptr, &mPipeline));
 
 }
 
@@ -1029,9 +880,7 @@ void Model::prepareUniformBuffers()
 	// We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
 	// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
 	allocInfo.memoryTypeIndex = gVulkanDevice->getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	// Allocate memory for the uniform buffer
 	VK_CHECK_RESULT(vkAllocateMemory(gVulkanDevice->mLogicalDevice, &allocInfo, nullptr, &(mUniformDataVS.memory)));
-	// Bind memory to buffer
 	VK_CHECK_RESULT(vkBindBufferMemory(gVulkanDevice->mLogicalDevice, mUniformDataVS.buffer, mUniformDataVS.memory, 0));
 
 	// Store information in the uniform's descriptor that is used by the descriptor set

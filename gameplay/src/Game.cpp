@@ -1429,7 +1429,7 @@ void Game::frame()
         //Gamepad::updateInternal(elapsedTime);
 
         //// Application Update.
-        //update(elapsedTime);
+        update(elapsedTime);
 
         //// Update forms.
         //Form::updateInternal(elapsedTime);

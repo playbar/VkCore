@@ -67,7 +67,6 @@ void PostProcessSample::Compositor::blit(const VRectangle& dst)
         _compositorMaterial = _material;
         _quadModel->setMaterial(_compositorMaterial);
     }
-    _compositorMaterial->setTechnique(_techniqueId);
 
     _quadModel->draw();
 }

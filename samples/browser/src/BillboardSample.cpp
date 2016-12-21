@@ -285,7 +285,8 @@ void BillboardSample::loadGround()
     _scene->addNode(node);
 	node->rotateX(MATH_DEG_TO_RAD(90));
 	Effect* effect = Effect::createFromFile("res/shaders/textured.vert", "res/shaders/textured.frag", "TEXTURE_REPEAT");    
-	Material* material = Material::create(effect); 
+	GP_ASSERT(false);
+	Material* material = Material::create(""); 
 	material->getStateBlock()->setDepthTest(true);
 	material->getStateBlock()->setBlend(false);
 	Texture::Sampler* sampler = material->getParameter("u_diffuseTexture")->setValue("res/png/dirt.png", true);
@@ -312,8 +313,8 @@ void BillboardSample::loadBillboards()
 		Model* model = Model::create(mesh);
 		node->setDrawable(model);
 		_scene->addNode(node);
-        
-		Material* material = Material::create(effect); 
+		GP_ASSERT(false);
+		Material* material = Material::create(""); 
 		material->getStateBlock()->setDepthTest(true);
 		material->getStateBlock()->setBlend(false);
 		material->getParameter("u_diffuseTexture")->setValue("res/png/grass.png" , true);

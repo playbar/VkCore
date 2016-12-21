@@ -125,7 +125,6 @@
     <ClCompile Include="src\Vector2.cpp" />
     <ClCompile Include="src\Vector3.cpp" />
     <ClCompile Include="src\Vector4.cpp" />
-    <ClCompile Include="src\VertexAttributeBinding.cpp" />
     <ClCompile Include="src\VertexFormat.cpp" />
     <ClCompile Include="src\VerticalLayout.cpp" />
     <ClCompile Include="vkcore\VkCoreDevice.cpp" />
@@ -248,7 +247,6 @@
     <ClInclude Include="src\Vector2.h" />
     <ClInclude Include="src\Vector3.h" />
     <ClInclude Include="src\Vector4.h" />
-    <ClInclude Include="src\VertexAttributeBinding.h" />
     <ClInclude Include="src\VertexFormat.h" />
     <ClInclude Include="src\VerticalLayout.h" />
     <ClInclude Include="vkcore\define.h" />

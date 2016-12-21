@@ -316,10 +316,14 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
 	effect->shaderModules.push_back(effect->shaderStages[1].module);
 
 	effect->createPipelineLayout();
-  
+
+	//effect->preparePipelines();
 
     return effect;
 }
+
+
+
 
 void Effect::createPipelineLayout()
 {

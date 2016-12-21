@@ -65,7 +65,13 @@ public:
 
     static Effect* getCurrentEffect();
 
+	void preparePipelines();
 	void createPipelineLayout();
+
+	VkPipelineLayout mPipelineLayout;
+	VkDescriptorSetLayout mDescriptorSetLayout;
+	std::vector<VkShaderModule> shaderModules;
+	std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 
 private:
     Effect();
@@ -80,10 +86,6 @@ private:
     mutable std::map<std::string, Uniform*> _uniforms;
     static Uniform _emptyUniform;
 
-	VkPipelineLayout mPipelineLayout;
-	VkDescriptorSetLayout mDescriptorSetLayout;
-	std::vector<VkShaderModule> shaderModules;
-	std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
 };
 
 /**
@@ -95,19 +97,8 @@ class Uniform
 
 public:
 
-    /**
-     * Returns the name of this uniform.
-     */
     const char* getName() const;
-
-    /**
-     * Returns the OpenGL uniform type.
-     */
     const GLenum getType() const;
-
-    /**
-     * Returns the effect for this uniform.
-     */
     Effect* getEffect() const;
 
 private:

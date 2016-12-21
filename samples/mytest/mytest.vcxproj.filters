@@ -30,7 +30,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="hello_triangle.cpp">
+    <ClCompile Include="vertex_input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -160,8 +160,6 @@ private:
 
     void add(const void* vertices, size_t size, unsigned int vertexCount, const unsigned short* indices, unsigned int indexCount);
 
-    void updateVertexAttributeBinding();
-
     bool resize(unsigned int capacity);
 
     const VertexFormat _vertexFormat;

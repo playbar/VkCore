@@ -103,26 +103,6 @@ void MeshBatch::add(const void* vertices, size_t size, unsigned int vertexCount,
     _vertexCount = newVertexCount;
 }
 
-void MeshBatch::updateVertexAttributeBinding()
-{
-    GP_ASSERT(_material);
-
-    // Update our vertex attribute bindings.
-    for (unsigned int i = 0, techniqueCount = _material->getTechniqueCount(); i < techniqueCount; ++i)
-    {
-        Technique* t = _material->getTechniqueByIndex(i);
-        GP_ASSERT(t);
-        for (unsigned int j = 0, passCount = t->getPassCount(); j < passCount; ++j)
-        {
-            Pass* p = t->getPassByIndex(j);
-            GP_ASSERT(p);
-            VertexAttributeBinding* b = VertexAttributeBinding::create(_vertexFormat, _vertices, p->getEffect());
-            p->setVertexAttributeBinding(b);
-            SAFE_RELEASE(b);
-        }
-    }
-}
-
 unsigned int MeshBatch::getCapacity() const
 {
     return _capacity;
@@ -211,9 +191,6 @@ bool MeshBatch::resize(unsigned int capacity)
     _vertexCapacity = vertexCapacity;
     _indexCapacity = indexCapacity;
 
-    // Update our vertex attribute bindings now that our client array pointers have changed
-    updateVertexAttributeBinding();
-
     return true;
 }
 
@@ -243,38 +220,11 @@ void MeshBatch::finish()
 
 void MeshBatch::draw()
 {
+	GP_ASSERT(false);
     if (_vertexCount == 0 || (_indexed && _indexCount == 0))
         return; // nothing to draw
 
-    // Not using VBOs, so unbind the element array buffer.
-    // ARRAY_BUFFER will be unbound automatically during pass->bind().
-    GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0 ) );
 
-    GP_ASSERT(_material);
-    if (_indexed)
-        GP_ASSERT(_indices);
-
-    // Bind the material.
-    Technique* technique = _material->getTechnique();
-    GP_ASSERT(technique);
-    unsigned int passCount = technique->getPassCount();
-    for (unsigned int i = 0; i < passCount; ++i)
-    {
-        Pass* pass = technique->getPassByIndex(i);
-        GP_ASSERT(pass);
-        pass->bind();
-
-        if (_indexed)
-        {
-            GL_ASSERT( glDrawElements(_primitiveType, _indexCount, GL_UNSIGNED_SHORT, (GLvoid*)_indices) );
-        }
-        else
-        {
-            GL_ASSERT( glDrawArrays(_primitiveType, 0, _vertexCount) );
-        }
-
-        pass->unbind();
-    }
 }
     
 

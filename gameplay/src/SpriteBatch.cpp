@@ -99,8 +99,9 @@ SpriteBatch* SpriteBatch::create(Texture* texture,  Effect* effect, unsigned int
         return NULL;
     }
 
+	GP_ASSERT(false);
     // Wrap the effect in a material
-    Material* material = Material::create(effect);
+    Material* material = Material::create("");
 
     // Set initial material state
     material->getStateBlock()->setBlend(true);

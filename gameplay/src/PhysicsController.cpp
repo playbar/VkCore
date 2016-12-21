@@ -1361,7 +1361,8 @@ PhysicsController::DebugDrawer::DebugDrawer()
     };
 
     Effect* effect = Effect::createFromSource(vs_str, fs_str);
-    Material* material = Material::create(effect);
+	GP_ASSERT(false);
+    Material* material = Material::create("");
     GP_ASSERT(material && material->getStateBlock());
     material->getStateBlock()->setDepthTest(true);
     material->getStateBlock()->setDepthFunction(RenderState::DEPTH_LEQUAL);

@@ -60,9 +60,6 @@
     <ClCompile Include="src\Vector4.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\VertexAttributeBinding.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\VertexFormat.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -417,9 +414,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Vector4.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VertexAttributeBinding.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\VertexFormat.h">
