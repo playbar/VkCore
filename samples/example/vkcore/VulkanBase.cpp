@@ -249,6 +249,22 @@ VkPipelineShaderStageCreateInfo VulkanBase::loadShader(std::string fileName, VkS
 	return shaderStage;
 }
 
+VkPipelineShaderStageCreateInfo VulkanBase::loadShaderGLSL(std::string fileName, VkShaderStageFlagBits stage)
+{
+	VkPipelineShaderStageCreateInfo shaderStage = {};
+	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStage.stage = stage;
+#if defined(__ANDROID__)
+	shaderStage.module = vkTools::loadShader(androidApp->activity->assetManager, fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+#else
+	shaderStage.module = vkTools::loadShaderGLSL(fileName.c_str(), mVulkanDevice->mLogicalDevice, stage);
+#endif
+	shaderStage.pName = "main"; // todo : make param
+	assert(shaderStage.module != NULL);
+	shaderModules.push_back(shaderStage.module);
+	return shaderStage;
+}
+
 VkBool32 VulkanBase::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory)
 {
 	VkMemoryRequirements memReqs;

@@ -163,11 +163,11 @@ void Matrix::createPerspectiveVK(float fieldOfView, float aspectRatio,
 	GP_ASSERT(zFarPlane != zNearPlane);
 
 	float theta = fieldOfView;
-	if (fabs(fmod(theta, MATH_PIOVER2)) < MATH_EPSILON)
-	{
-		GP_ERROR("Invalid field of view value (%d) causes attempted calculation tan(%d), which is undefined.", fieldOfView, theta);
-		return;
-	}
+	//if (fabs(fmod(theta, MATH_PIOVER2)) < MATH_EPSILON)
+	//{
+	//	GP_ERROR("Invalid field of view value (%d) causes attempted calculation tan(%d), which is undefined.", fieldOfView, theta);
+	//	return;
+	//}
 	float divisor = tan(theta / 2.0f);
 	GP_ASSERT(divisor);
 	float factor = 1.0f / divisor;

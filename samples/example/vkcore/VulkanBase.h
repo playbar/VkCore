@@ -264,7 +264,7 @@ public:
 
 	// Load a SPIR-V shader
 	VkPipelineShaderStageCreateInfo loadShader(std::string fileName, VkShaderStageFlagBits stage);
-	
+	VkPipelineShaderStageCreateInfo loadShaderGLSL(std::string fileName, VkShaderStageFlagBits stage);
 	// Create a buffer, fill it with data (if != NULL) and bind buffer memory
 	VkBool32 createBuffer(
 		VkBufferUsageFlags usageFlags,

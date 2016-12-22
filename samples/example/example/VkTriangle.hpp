@@ -109,7 +109,7 @@ public:
 	{
 		width = 800;
 		height = 600;
-		mZoom = -10.0f;
+		mZoom = -2.0f;
 		title = "VkCore";	
 	}
 
@@ -351,7 +351,8 @@ public:
 	{
 		// Update matrices
 		float aspect = (float)width / (float)height;
-		vkcore::Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(60.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
+		vkcore::Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(90.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
+		//vkcore::Matrix::createOrthographic( aspect * 2.0f, 2.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
 		Matrix::createTranslation(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
 		//mUboVS.viewMatrix.translate(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
 		char szTmp[256] = {};
@@ -359,8 +360,8 @@ public:
 		OutputDebugString(szTmp);
 
 		Matrix::createRotationX(MATH_DEG_TO_RAD(mRotation.x), &mUboVS.modelMatrix);
-		mUboVS.modelMatrix.rotateY(MATH_DEG_TO_RAD(mRotation.y));
-		mUboVS.modelMatrix.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
+		//mUboVS.modelMatrix.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		//mUboVS.modelMatrix.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
 		uint8_t *pData;
 		VK_CHECK_RESULT(vkMapMemory(mVulkanDevice->mLogicalDevice, mUniformDataVS.memory, 0, sizeof(mUboVS), 0, (void **)&pData));
@@ -379,10 +380,10 @@ public:
 		// Setup vertices
 		std::vector<Vertex> vertexBuffer =
 		{
-			{ { 0.9f,  1.0f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
-			{ { -1.0f,  1.0f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
-			{ { -1.0f, -1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
-			{ { 0.9f, -1.0f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
+			{ { 0.9f,  0.9f, 0.0f },{ 1.0f, 0.0f, 0.0f } },
+			{ { -0.9f, 0.9f, 0.0f },{ 0.0f, 1.0f, 0.0f } },
+			{ { -0.9f, -0.9f, 0.0f },{ 0.0f, 0.0f, 1.0f } },
+			{ { 0.9f, -0.9f, 0.0f },{ 1.0f, 1.0f, 1.0f } }
 		};
 		//std::vector<Vertex> vertexBuffer =
 		//{
@@ -911,8 +912,8 @@ public:
 		// Vulkan loads it's shaders from an immediate binary representation called SPIR-V
 		// Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
 		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
-		shaderStages[0] = loadShader(getAssetPath() + "shaders/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-		shaderStages[1] = loadShader(getAssetPath() + "shaders/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+		shaderStages[0] = loadShaderGLSL(getAssetPath() + "shaders/triangle.vert", VK_SHADER_STAGE_VERTEX_BIT);
+		shaderStages[1] = loadShaderGLSL(getAssetPath() + "shaders/triangle.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		// Assign the pipeline states to the pipeline creation info structure
 		pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
