@@ -24,6 +24,7 @@
     <ClCompile Include="Example.cpp" />
     <ClCompile Include="example\vulkangear.cpp" />
     <ClCompile Include="texture\VkTexture.cpp" />
+    <ClCompile Include="texture\VkTexturecubemap.cpp" />
     <ClCompile Include="vkcore\VkCoreDevice.cpp" />
     <ClCompile Include="vkcore\vulkanandroid.cpp" />
     <ClCompile Include="vkcore\VulkanBase.cpp" />
@@ -84,7 +85,7 @@
     <ClInclude Include="texture\VkTexture.h" />
     <ClInclude Include="texture\VkTexture3d.hpp" />
     <ClInclude Include="texture\VkTextureArray.hpp" />
-    <ClInclude Include="texture\VkTexturecubemap.hpp" />
+    <ClInclude Include="texture\VkTexturecubemap.h" />
     <ClInclude Include="texture\VkTexturemipmapgen.hpp" />
     <ClInclude Include="texture\VkTexturesparseresidency.hpp" />
     <ClInclude Include="vkcore\define.h" />

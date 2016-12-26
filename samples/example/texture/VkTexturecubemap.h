@@ -1,50 +1,114 @@
 #pragma once
 
-#ifdef _WIN32
-#pragma comment(linker, "/subsystem:windows")
-#include <windows.h>
-#include <fcntl.h>
-#include <io.h>
-#elif defined(__ANDROID__)
-#include <android/native_activity.h>
-#include <android/asset_manager.h>
-#include <android_native_app_glue.h>
-#include "vulkanandroid.h"
-#elif defined(__linux__)
-#include <xcb/xcb.h>
-#endif
-
-#include <iostream>
-#include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <vector>
 #include "define.h"
-#include <glm/glm.hpp>
-#include <string>
-#include <array>
 
-#include "vulkan/vulkan.h"
+#include <gli/gli.hpp>
 
-#include "Keyboard.h"
-#include "vulkantools.h"
-#include "vulkandebug.h"
-#include "VkCoreDevice.hpp"
-#include "vulkanswapchain.hpp"
-#include "vulkanTextureLoader.hpp"
-#include "vulkanMeshLoader.hpp"
-#include "vulkantextoverlay.hpp"
-#include "VkCamera.hpp"
-#include "Vector2.h"
+#include <vulkan/vulkan.h>
+#include "VulkanBase.h"
 
-// Function pointer for getting physical device fetures to be enabled
-typedef VkPhysicalDeviceFeatures (*PFN_GetEnabledFeatures)();
+#define ENABLE_VALIDATION false
 
-class VulkanBase
+class VkTexturecubemap
 {
+	// Vertex layout for this example
+	std::vector<vkMeshLoader::VertexLayout> vertexLayout =
+	{
+		vkMeshLoader::VERTEX_LAYOUT_POSITION,
+		vkMeshLoader::VERTEX_LAYOUT_NORMAL,
+		vkMeshLoader::VERTEX_LAYOUT_UV
+	};
+public:
+	bool displaySkybox = true;
 
-private:	
+	vkTools::VulkanTexture cubeMap;
+
+	struct {
+		VkPipelineVertexInputStateCreateInfo inputState;
+		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+	} vertices;
+
+	struct {
+		vkMeshLoader::MeshBuffer skybox;
+		std::vector<vkMeshLoader::MeshBuffer> objects;
+		uint32_t objectIndex = 0;
+	} meshes;
+
+	struct {
+		vkTools::UniformData objectVS;
+		vkTools::UniformData skyboxVS;
+	} uniformData;
+
+	struct {
+		Matrix projection;
+		Matrix model;
+		float lodBias = 0.0f;
+	} uboVS;
+
+	struct {
+		VkPipeline skybox;
+		VkPipeline reflect;
+	} pipelines;
+
+	struct {
+		VkDescriptorSet object;
+		VkDescriptorSet skybox;
+	} descriptorSets;
+
+	VkPipelineLayout pipelineLayout;
+	VkDescriptorSetLayout descriptorSetLayout;
+
+	void loadCubemap(std::string filename, VkFormat format, bool forceLinearTiling);
+
+	void reBuildCommandBuffers();
+
+	void loadMeshes();
+
+	void setupVertexDescriptions();
+
+	void setupDescriptorPool();
+
+	void setupDescriptorSetLayout();
+
+	void setupDescriptorSets();
+
+	void preparePipelines();
+
+	// Prepare and initialize uniform buffer containing shader uniforms
+	void prepareUniformBuffers();
+
+	void updateUniformBuffers();
+
+	void draw();
+
+	virtual void render();
+
+	virtual void viewChanged();
+
+	void toggleSkyBox();
+
+	void toggleObject();
+
+	void changeLodBias(float delta);
+
+	virtual void keyPressed(uint32_t keyCode);
+
+	virtual void getOverlayText(VulkanTextOverlay *textOverlay);
+
+	//////////////////////////////////////////////
+
+
+private:
 	// Set to true when example is created with enabled validation layers
 	bool mEnableValidation = false;
 	// Set to true if v-sync will be forced for the swapchain
-	bool enableVSync = false;	
+	bool enableVSync = false;
 	// fps timer (one second interval)
 	float fpsTimer = 0.0f;
 
@@ -113,8 +177,8 @@ protected:
 	// Simple texture loader
 	vkTools::VulkanTextureLoader *textureLoader = nullptr;
 	// Returns the base asset path (for shaders, models, textures) depending on the os
-	
-public: 
+
+public:
 	bool prepared = false;
 	uint32_t width = 1280;
 	uint32_t height = 720;
@@ -130,7 +194,7 @@ public:
 	float timer = 0.0f;
 	// Multiplier for speeding up (or slowing down) the global timer
 	float timerSpeed = 0.25f;
-	
+
 	bool paused = false;
 
 	bool mEnableTextOverlay = true;
@@ -150,7 +214,7 @@ public:
 	std::string title = "VkCore";
 	std::string name = "VkCore";
 
-	struct 
+	struct
 	{
 		VkImage image;
 		VkDeviceMemory mem;
@@ -185,9 +249,9 @@ public:
 	xcb_intern_atom_reply_t *atom_wm_delete_window;
 #endif
 
-	VulkanBase(bool enableValidation, PFN_GetEnabledFeatures enabledFeaturesFn = nullptr);
+	VkTexturecubemap(bool enableValidation = false, PFN_GetEnabledFeatures enabledFeaturesFn = nullptr);
 
-	~VulkanBase();
+	~VkTexturecubemap();
 
 	// Setup the vulkan instance, enable required extensions and connect to the physical device (GPU)
 	void initVulkan(bool enableValidation);
@@ -210,11 +274,6 @@ public:
 	void initxcbConnection();
 	void handleEvent(const xcb_generic_event_t *event);
 #endif
-	virtual void render() = 0;
-
-	virtual void viewChanged();
-
-	virtual void keyPressed(uint32_t keyCode);
 
 	virtual void windowResized();
 	// Pure virtual function to be overriden by the dervice class
@@ -301,25 +360,21 @@ public:
 
 	// Load a mesh (using ASSIMP) and create vulkan vertex and index buffers with given vertex layout
 	void loadMesh(
-		std::string fiename, 
-		vkMeshLoader::MeshBuffer *meshBuffer, 
-		std::vector<vkMeshLoader::VertexLayout> vertexLayout, 
+		std::string fiename,
+		vkMeshLoader::MeshBuffer *meshBuffer,
+		std::vector<vkMeshLoader::VertexLayout> vertexLayout,
 		float scale);
 	void loadMesh(
-		std::string filename, 
-		vkMeshLoader::MeshBuffer *meshBuffer, 
-		std::vector<vkMeshLoader::VertexLayout> 
-		vertexLayout, 
+		std::string filename,
+		vkMeshLoader::MeshBuffer *meshBuffer,
+		std::vector<vkMeshLoader::VertexLayout>
+		vertexLayout,
 		vkMeshLoader::MeshCreateInfo *meshCreateInfo);
 
 	// Start the main render loop
 	void renderLoop();
 
 	void updateTextOverlay();
-
-	// Called when the text overlay is updating
-	// Can be overriden in derived class to add custom text to the overlay
-	virtual void getOverlayText(VulkanTextOverlay * textOverlay);
 
 	// Prepare the frame for workload submission
 	// - Acquires the next image from the swap chain 

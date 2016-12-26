@@ -59,6 +59,9 @@
     <ClCompile Include="example\vulkangear.cpp">
       <Filter>example</Filter>
     </ClCompile>
+    <ClCompile Include="texture\VkTexturecubemap.cpp">
+      <Filter>texture</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vkcore">
@@ -160,9 +163,6 @@
       <Filter>texture</Filter>
     </ClInclude>
     <ClInclude Include="texture\VkTextureArray.hpp">
-      <Filter>texture</Filter>
-    </ClInclude>
-    <ClInclude Include="texture\VkTexturecubemap.hpp">
       <Filter>texture</Filter>
     </ClInclude>
     <ClInclude Include="texture\VkTexturemipmapgen.hpp">
@@ -287,6 +287,9 @@
     </ClInclude>
     <ClInclude Include="example\VkSceneRendering.hpp">
       <Filter>example</Filter>
+    </ClInclude>
+    <ClInclude Include="texture\VkTexturecubemap.h">
+      <Filter>texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -351,7 +351,7 @@ public:
 	{
 		// Update matrices
 		float aspect = (float)width / (float)height;
-		vkcore::Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(90.0f), 1.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
+		vkcore::Matrix::createPerspectiveVK(MATH_DEG_TO_RAD(90.0f), aspect, 1.0f, 256.0f, &mUboVS.projectionMatrix);
 		//vkcore::Matrix::createOrthographic( aspect * 2.0f, 2.0f, 0.1f, 256.0f, &mUboVS.projectionMatrix);
 		Matrix::createTranslation(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
 		//mUboVS.viewMatrix.translate(0.0f, 0.0f, mZoom, &mUboVS.viewMatrix);
@@ -360,7 +360,7 @@ public:
 		OutputDebugString(szTmp);
 
 		Matrix::createRotationX(MATH_DEG_TO_RAD(mRotation.x), &mUboVS.modelMatrix);
-		//mUboVS.modelMatrix.rotateY(MATH_DEG_TO_RAD(mRotation.y));
+		mUboVS.modelMatrix.rotateY(MATH_DEG_TO_RAD(mRotation.y));
 		//mUboVS.modelMatrix.rotateZ(MATH_DEG_TO_RAD(mRotation.z));
 
 		uint8_t *pData;
