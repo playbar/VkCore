@@ -222,7 +222,7 @@ public:
 		dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 		dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-		VkRenderPassCreateInfo renderPassCreateInfo = vkTools::initializers::renderPassCreateInfo();
+		VkRenderPassCreateInfo renderPassCreateInfo = vkTools::renderPassCreateInfo();
 		renderPassCreateInfo.attachmentCount = 1;
 		renderPassCreateInfo.pAttachments = &attchmentDescription;
 		renderPassCreateInfo.subpassCount = 1;
@@ -243,7 +243,7 @@ public:
 		VkFormat fbColorFormat = FB_COLOR_FORMAT;
 
 		// For shadow mapping we only need a depth attachment
-		VkImageCreateInfo image = vkTools::initializers::imageCreateInfo();
+		VkImageCreateInfo image = vkTools::imageCreateInfo();
 		image.imageType = VK_IMAGE_TYPE_2D;
 		image.extent.width = offscreenPass.width;
 		image.extent.height = offscreenPass.height;
@@ -256,7 +256,7 @@ public:
 		image.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;		// We will sample directly from the depth attachment for the shadow mapping
 		VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &image, nullptr, &offscreenPass.depth.image));
 
-		VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
+		VkMemoryAllocateInfo memAlloc = vkTools::memoryAllocateInfo();
 		VkMemoryRequirements memReqs;
 		vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, offscreenPass.depth.image, &memReqs);
 		memAlloc.allocationSize = memReqs.size;
@@ -264,7 +264,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateMemory(mVulkanDevice->mLogicalDevice, &memAlloc, nullptr, &offscreenPass.depth.mem));
 		VK_CHECK_RESULT(vkBindImageMemory(mVulkanDevice->mLogicalDevice, offscreenPass.depth.image, offscreenPass.depth.mem, 0));
 
-		VkImageViewCreateInfo depthStencilView = vkTools::initializers::imageViewCreateInfo();
+		VkImageViewCreateInfo depthStencilView = vkTools::imageViewCreateInfo();
 		depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		depthStencilView.format = DEPTH_FORMAT;
 		depthStencilView.subresourceRange = {};
@@ -278,7 +278,7 @@ public:
 
 		// Create sampler to sample from to depth attachment 
 		// Used to sample in the fragment shader for shadowed rendering
-		VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
+		VkSamplerCreateInfo sampler = vkTools::samplerCreateInfo();
 		sampler.magFilter = SHADOWMAP_FILTER;
 		sampler.minFilter = SHADOWMAP_FILTER;
 		sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -295,7 +295,7 @@ public:
 		prepareOffscreenRenderpass();
 
 		// Create frame buffer
-		VkFramebufferCreateInfo fbufCreateInfo = vkTools::initializers::framebufferCreateInfo();
+		VkFramebufferCreateInfo fbufCreateInfo = vkTools::framebufferCreateInfo();
 		fbufCreateInfo.renderPass = offscreenPass.renderPass;
 		fbufCreateInfo.attachmentCount = 1;
 		fbufCreateInfo.pAttachments = &offscreenPass.depth.view;
@@ -315,16 +315,16 @@ public:
 		if (offscreenPass.semaphore == VK_NULL_HANDLE)
 		{
 			// Create a semaphore used to synchronize offscreen rendering and usage
-			VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
+			VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::semaphoreCreateInfo();
 			VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &offscreenPass.semaphore));
 		}
 
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VkClearValue clearValues[1];
 		clearValues[0].depthStencil = { 1.0f, 0 };
 
-		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 		renderPassBeginInfo.renderPass = offscreenPass.renderPass;
 		renderPassBeginInfo.framebuffer = offscreenPass.frameBuffer;
 		renderPassBeginInfo.renderArea.offset.x = 0;
@@ -336,10 +336,10 @@ public:
 
 		VK_CHECK_RESULT(vkBeginCommandBuffer(offscreenPass.commandBuffer, &cmdBufInfo));
 
-		VkViewport viewport = vkTools::initializers::viewport((float)offscreenPass.width, (float)offscreenPass.height, 0.0f, 1.0f);
+		VkViewport viewport = vkTools::viewport((float)offscreenPass.width, (float)offscreenPass.height, 0.0f, 1.0f);
 		vkCmdSetViewport(offscreenPass.commandBuffer, 0, 1, &viewport);
 
-		VkRect2D scissor = vkTools::initializers::rect2D(offscreenPass.width, offscreenPass.height, 0, 0);
+		VkRect2D scissor = vkTools::rect2D(offscreenPass.width, offscreenPass.height, 0, 0);
 		vkCmdSetScissor(offscreenPass.commandBuffer, 0, 1, &scissor);
 
 		// Set depth bias (aka "Polygon offset")
@@ -367,13 +367,13 @@ public:
 
 	void buildCommandBuffers()
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
-		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 		renderPassBeginInfo.renderPass = mRenderPass;
 		renderPassBeginInfo.renderArea.offset.x = 0;
 		renderPassBeginInfo.renderArea.offset.y = 0;
@@ -391,10 +391,10 @@ public:
 
 			vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			VkViewport viewport = vkTools::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-			VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
+			VkRect2D scissor = vkTools::rect2D(width, height, 0, 0);
 			vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 			VkDeviceSize offsets[1] = { 0 };
@@ -473,7 +473,7 @@ public:
 		// Binding description
 		vertices.bindingDescriptions.resize(1);
 		vertices.bindingDescriptions[0] =
-			vkTools::initializers::vertexInputBindingDescription(
+			vkTools::vertexInputBindingDescription(
 				VERTEX_BUFFER_BIND_ID,
 				vkMeshLoader::vertexSize(vertexLayout),
 				VK_VERTEX_INPUT_RATE_VERTEX);
@@ -482,34 +482,34 @@ public:
 		vertices.attributeDescriptions.resize(4);
 		// Location 0 : Position
 		vertices.attributeDescriptions[0] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				0);
 		// Location 1 : Texture coordinates
 		vertices.attributeDescriptions[1] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				1,
 				VK_FORMAT_R32G32_SFLOAT,
 				sizeof(float) * 3);
 		// Location 2 : Color
 		vertices.attributeDescriptions[2] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				2,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				sizeof(float) * 5);
 		// Location 3 : Normal
 		vertices.attributeDescriptions[3] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				3,
 				VK_FORMAT_R32G32B32_SFLOAT,
 				sizeof(float) * 8);
 
-		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+		vertices.inputState = vkTools::pipelineVertexInputStateCreateInfo();
 		vertices.inputState.vertexBindingDescriptionCount = vertices.bindingDescriptions.size();
 		vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
 		vertices.inputState.vertexAttributeDescriptionCount = vertices.attributeDescriptions.size();
@@ -521,12 +521,12 @@ public:
 		// Example uses three ubos and two image samplers
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 6),
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4)
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 6),
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4)
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
-			vkTools::initializers::descriptorPoolCreateInfo(
+			vkTools::descriptorPoolCreateInfo(
 				poolSizes.size(),
 				poolSizes.data(),
 				3);
@@ -540,26 +540,26 @@ public:
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
 			// Binding 0 : Vertex shader uniform buffer
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Fragment shader image sampler
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				VK_SHADER_STAGE_FRAGMENT_BIT,
 				1)
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
-			vkTools::initializers::descriptorSetLayoutCreateInfo(
+			vkTools::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-			vkTools::initializers::pipelineLayoutCreateInfo(
+			vkTools::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
@@ -573,7 +573,7 @@ public:
 	{
 		// Textured quad descriptor set
 		VkDescriptorSetAllocateInfo allocInfo =
-			vkTools::initializers::descriptorSetAllocateInfo(
+			vkTools::descriptorSetAllocateInfo(
 				descriptorPool,
 				&descriptorSetLayout,
 				1);
@@ -582,7 +582,7 @@ public:
 
 		// Image descriptor for the shadow map attachment
 		VkDescriptorImageInfo texDescriptor =
-			vkTools::initializers::descriptorImageInfo(
+			vkTools::descriptorImageInfo(
 				offscreenPass.depthSampler,
 				offscreenPass.depth.view,
 				VK_IMAGE_LAYOUT_GENERAL);
@@ -590,13 +590,13 @@ public:
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
 			// Binding 0 : Vertex shader uniform buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformDataVS.descriptor),
 			// Binding 1 : Fragment shader texture sampler
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				1,
@@ -611,7 +611,7 @@ public:
 		std::vector<VkWriteDescriptorSet> offScreenWriteDescriptorSets =
 		{
 			// Binding 0 : Vertex shader uniform buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSets.offscreen,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
@@ -629,13 +629,13 @@ public:
 		std::vector<VkWriteDescriptorSet> sceneDescriptorSets =
 		{
 			// Binding 0 : Vertex shader uniform buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSets.scene,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.scene.descriptor),
 			// Binding 1 : Fragment shader shadow sampler
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSets.scene,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				1,
@@ -648,39 +648,39 @@ public:
 	void preparePipelines()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-			vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+			vkTools::pipelineInputAssemblyStateCreateInfo(
 				VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
 				0,
 				VK_FALSE);
 
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
-			vkTools::initializers::pipelineRasterizationStateCreateInfo(
+			vkTools::pipelineRasterizationStateCreateInfo(
 				VK_POLYGON_MODE_FILL,
 				VK_CULL_MODE_NONE,
 				VK_FRONT_FACE_CLOCKWISE,
 				0);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
-			vkTools::initializers::pipelineColorBlendAttachmentState(
+			vkTools::pipelineColorBlendAttachmentState(
 				0xf,
 				VK_FALSE);
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
-			vkTools::initializers::pipelineColorBlendStateCreateInfo(
+			vkTools::pipelineColorBlendStateCreateInfo(
 				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
-			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+			vkTools::pipelineDepthStencilStateCreateInfo(
 				VK_TRUE,
 				VK_TRUE,
 				VK_COMPARE_OP_LESS_OR_EQUAL);
 
 		VkPipelineViewportStateCreateInfo viewportState =
-			vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+			vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 		VkPipelineMultisampleStateCreateInfo multisampleState =
-			vkTools::initializers::pipelineMultisampleStateCreateInfo(
+			vkTools::pipelineMultisampleStateCreateInfo(
 				VK_SAMPLE_COUNT_1_BIT,
 				0);
 
@@ -689,7 +689,7 @@ public:
 			VK_DYNAMIC_STATE_SCISSOR
 		};
 		VkPipelineDynamicStateCreateInfo dynamicState =
-			vkTools::initializers::pipelineDynamicStateCreateInfo(
+			vkTools::pipelineDynamicStateCreateInfo(
 				dynamicStateEnables.data(),
 				dynamicStateEnables.size(),
 				0);
@@ -702,7 +702,7 @@ public:
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/shadowmapping/quad.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-			vkTools::initializers::pipelineCreateInfo(
+			vkTools::pipelineCreateInfo(
 				pipelineLayouts.quad,
 				mRenderPass,
 				0);
@@ -738,7 +738,7 @@ public:
 		// Add depth bias to dynamic state, so we can change it at runtime
 		dynamicStateEnables.push_back(VK_DYNAMIC_STATE_DEPTH_BIAS);
 		dynamicState =
-			vkTools::initializers::pipelineDynamicStateCreateInfo(
+			vkTools::pipelineDynamicStateCreateInfo(
 				dynamicStateEnables.data(),
 				dynamicStateEnables.size(),
 				0);

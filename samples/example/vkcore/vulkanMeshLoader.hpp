@@ -163,7 +163,7 @@ namespace vkMeshLoader
 
 		void setupVertexInputState(std::vector<vkMeshLoader::VertexLayout> layout)
 		{
-			bindingDescription = vkTools::initializers::vertexInputBindingDescription(
+			bindingDescription = vkTools::vertexInputBindingDescription(
 				vertexBufferBinding,
 				vertexSize(layout),
 				VK_VERTEX_INPUT_RATE_VERTEX);
@@ -177,7 +177,7 @@ namespace vkMeshLoader
 				VkFormat format = (layoutDetail == VERTEX_LAYOUT_UV) ? VK_FORMAT_R32G32_SFLOAT : VK_FORMAT_R32G32B32_SFLOAT;
 
 				attributeDescriptions.push_back(
-					vkTools::initializers::vertexInputAttributeDescription(
+					vkTools::vertexInputAttributeDescription(
 						vertexBufferBinding,
 						binding,
 						format,
@@ -188,7 +188,7 @@ namespace vkMeshLoader
 				binding++;
 			}
 
-			vertexInputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+			vertexInputState = vkTools::pipelineVertexInputStateCreateInfo();
 			vertexInputState.vertexBindingDescriptionCount = 1;
 			vertexInputState.pVertexBindingDescriptions = &bindingDescription;
 			vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -583,7 +583,7 @@ public:
 				&meshBuffer->indices.mem);
 
 			// Copy from staging buffers
-			VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+			VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 			VK_CHECK_RESULT(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
 
 			VkBufferCopy copyRegion = {};

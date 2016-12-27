@@ -122,13 +122,13 @@ public:
 
 	void buildCommandBuffers()
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
-		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 		renderPassBeginInfo.renderPass = mRenderPass;
 		renderPassBeginInfo.renderArea.offset.x = 0;
 		renderPassBeginInfo.renderArea.offset.y = 0;
@@ -146,10 +146,10 @@ public:
 
 			vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			VkViewport viewport = vkTools::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-			VkRect2D scissor = vkTools::initializers::rect2D(splitScreen ? width / 2 : width, height, 0, 0);
+			VkRect2D scissor = vkTools::rect2D(splitScreen ? width / 2 : width, height, 0, 0);
 			vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 			vkCmdSetLineWidth(mDrawCmdBuffers[i], 1.0f);
@@ -187,7 +187,7 @@ public:
 		// Binding description
 		vertices.bindingDescriptions.resize(1);
 		vertices.bindingDescriptions[0] =
-			vkTools::initializers::vertexInputBindingDescription(
+			vkTools::vertexInputBindingDescription(
 				VERTEX_BUFFER_BIND_ID,
 				vkMeshLoader::vertexSize(vertexLayout),
 				VK_VERTEX_INPUT_RATE_VERTEX);
@@ -198,7 +198,7 @@ public:
 
 		// Location 0 : Position
 		vertices.attributeDescriptions[0] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
@@ -206,7 +206,7 @@ public:
 
 		// Location 1 : Normals
 		vertices.attributeDescriptions[1] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				1,
 				VK_FORMAT_R32G32B32_SFLOAT,
@@ -214,13 +214,13 @@ public:
 
 		// Location 2 : Texture coordinates
 		vertices.attributeDescriptions[2] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				2,
 				VK_FORMAT_R32G32_SFLOAT,
 				sizeof(float) * 6);
 
-		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+		vertices.inputState = vkTools::pipelineVertexInputStateCreateInfo();
 		vertices.inputState.vertexBindingDescriptionCount = vertices.bindingDescriptions.size();
 		vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
 		vertices.inputState.vertexAttributeDescriptionCount = vertices.attributeDescriptions.size();
@@ -232,12 +232,12 @@ public:
 		// Example uses two ubos and two image samplers
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
-			vkTools::initializers::descriptorPoolCreateInfo(
+			vkTools::descriptorPoolCreateInfo(
 				poolSizes.size(),
 				poolSizes.data(),
 				2);
@@ -250,31 +250,31 @@ public:
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
 			// Binding 0 : Tessellation control shader ubo
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
 				0),
 			// Binding 1 : Tessellation evaluation shader ubo
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
 				1),
 			// Binding 2 : Combined color (rgb) and height (alpha) map
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 				2),
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
-			vkTools::initializers::descriptorSetLayoutCreateInfo(
+			vkTools::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-			vkTools::initializers::pipelineLayoutCreateInfo(
+			vkTools::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
@@ -284,7 +284,7 @@ public:
 	void setupDescriptorSet()
 	{
 		VkDescriptorSetAllocateInfo allocInfo =
-			vkTools::initializers::descriptorSetAllocateInfo(
+			vkTools::descriptorSetAllocateInfo(
 				descriptorPool,
 				&descriptorSetLayout,
 				1);
@@ -293,7 +293,7 @@ public:
 
 		// Color and height map image descriptor
 		VkDescriptorImageInfo texDescriptor =
-			vkTools::initializers::descriptorImageInfo(
+			vkTools::descriptorImageInfo(
 				textures.colorHeightMap.sampler,
 				textures.colorHeightMap.view,
 				VK_IMAGE_LAYOUT_GENERAL);
@@ -301,19 +301,19 @@ public:
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
 			// Binding 0 : Tessellation control shader ubo
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformDataTC.descriptor),
 			// Binding 1 : Tessellation evaluation shader ubo
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				1,
 				&uniformDataTE.descriptor),
 			// Binding 2 : Color and displacement map (alpha channel)
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				2,
@@ -326,39 +326,39 @@ public:
 	void preparePipelines()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-			vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+			vkTools::pipelineInputAssemblyStateCreateInfo(
 				VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
 				0,
 				VK_FALSE);
 
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
-			vkTools::initializers::pipelineRasterizationStateCreateInfo(
+			vkTools::pipelineRasterizationStateCreateInfo(
 				VK_POLYGON_MODE_FILL,
 				VK_CULL_MODE_NONE,
 				VK_FRONT_FACE_COUNTER_CLOCKWISE,
 				0);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
-			vkTools::initializers::pipelineColorBlendAttachmentState(
+			vkTools::pipelineColorBlendAttachmentState(
 				0xf,
 				VK_FALSE);
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
-			vkTools::initializers::pipelineColorBlendStateCreateInfo(
+			vkTools::pipelineColorBlendStateCreateInfo(
 				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
-			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+			vkTools::pipelineDepthStencilStateCreateInfo(
 				VK_TRUE,
 				VK_TRUE,
 				VK_COMPARE_OP_LESS_OR_EQUAL);
 
 		VkPipelineViewportStateCreateInfo viewportState =
-			vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+			vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 		VkPipelineMultisampleStateCreateInfo multisampleState =
-			vkTools::initializers::pipelineMultisampleStateCreateInfo(
+			vkTools::pipelineMultisampleStateCreateInfo(
 				VK_SAMPLE_COUNT_1_BIT,
 				0);
 
@@ -368,13 +368,13 @@ public:
 			VK_DYNAMIC_STATE_LINE_WIDTH
 		};
 		VkPipelineDynamicStateCreateInfo dynamicState =
-			vkTools::initializers::pipelineDynamicStateCreateInfo(
+			vkTools::pipelineDynamicStateCreateInfo(
 				dynamicStateEnables.data(),
 				dynamicStateEnables.size(),
 				0);
 
 		VkPipelineTessellationStateCreateInfo tessellationState =
-			vkTools::initializers::pipelineTessellationStateCreateInfo(3);
+			vkTools::pipelineTessellationStateCreateInfo(3);
 
 		// Tessellation pipeline
 		// Load shaders
@@ -385,7 +385,7 @@ public:
 		shaderStages[3] = loadShader(getAssetPath() + "shaders/displacement/displacement.tese.spv", VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-			vkTools::initializers::pipelineCreateInfo(
+			vkTools::pipelineCreateInfo(
 				pipelineLayout,
 				mRenderPass,
 				0);

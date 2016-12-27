@@ -158,9 +158,9 @@ public:
 		uint32_t bufSize = 2 * sizeof(uint64_t);
 
 		VkMemoryRequirements memReqs;
-		VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
+		VkMemoryAllocateInfo memAlloc = vkTools::memoryAllocateInfo();
 		VkBufferCreateInfo bufferCreateInfo =
-			vkTools::initializers::bufferCreateInfo(
+			vkTools::bufferCreateInfo(
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				bufSize);
 
@@ -207,7 +207,7 @@ public:
 		// Terrain textures are stored in a texture array with layers corresponding to terrain height
 		textureLoader->loadTextureArray(getAssetPath() + "textures/terrain_texturearray_bc3.ktx", VK_FORMAT_BC3_UNORM_BLOCK, &textures.terrainArray);
 
-		VkSamplerCreateInfo samplerInfo = vkTools::initializers::samplerCreateInfo();
+		VkSamplerCreateInfo samplerInfo = vkTools::samplerCreateInfo();
 
 		// Setup a mirroring sampler for the height map
 		vkDestroySampler(mVulkanDevice->mLogicalDevice, textures.heightMap.sampler, nullptr);
@@ -226,7 +226,7 @@ public:
 
 		// Setup a repeating sampler for the terrain texture layers
 		vkDestroySampler(mVulkanDevice->mLogicalDevice, textures.terrainArray.sampler, nullptr);
-		samplerInfo = vkTools::initializers::samplerCreateInfo();
+		samplerInfo = vkTools::samplerCreateInfo();
 		samplerInfo.magFilter = VK_FILTER_LINEAR;
 		samplerInfo.minFilter = VK_FILTER_LINEAR;
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -258,14 +258,14 @@ public:
 
 	void buildCommandBuffers()
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
 		clearValues[0].color = { { 0.2f, 0.2f, 0.2f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
-		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 		renderPassBeginInfo.renderPass = mRenderPass;
 		renderPassBeginInfo.renderArea.offset.x = 0;
 		renderPassBeginInfo.renderArea.offset.y = 0;
@@ -284,10 +284,10 @@ public:
 
 			vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			VkViewport viewport = vkTools::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-			VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
+			VkRect2D scissor = vkTools::rect2D(width, height, 0, 0);
 			vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 			vkCmdSetLineWidth(mDrawCmdBuffers[i], 1.0f);
@@ -530,7 +530,7 @@ public:
 		// Binding description
 		vertices.bindingDescriptions.resize(1);
 		vertices.bindingDescriptions[0] =
-			vkTools::initializers::vertexInputBindingDescription(
+			vkTools::vertexInputBindingDescription(
 				VERTEX_BUFFER_BIND_ID,
 				vkMeshLoader::vertexSize(vertexLayout),
 				VK_VERTEX_INPUT_RATE_VERTEX);
@@ -541,7 +541,7 @@ public:
 
 		// Location 0 : Position
 		vertices.attributeDescriptions[0] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
@@ -549,7 +549,7 @@ public:
 
 		// Location 1 : Normals
 		vertices.attributeDescriptions[1] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				1,
 				VK_FORMAT_R32G32B32_SFLOAT,
@@ -557,13 +557,13 @@ public:
 
 		// Location 2 : Texture coordinates
 		vertices.attributeDescriptions[2] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				2,
 				VK_FORMAT_R32G32_SFLOAT,
 				sizeof(float) * 6);
 
-		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+		vertices.inputState = vkTools::pipelineVertexInputStateCreateInfo();
 		vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
 		vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
 		vertices.inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attributeDescriptions.size());
@@ -574,12 +574,12 @@ public:
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3),
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3)
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3),
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3)
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
-			vkTools::initializers::descriptorPoolCreateInfo(
+			vkTools::descriptorPoolCreateInfo(
 				static_cast<uint32_t>(poolSizes.size()),
 				poolSizes.data(),
 				2);
@@ -597,45 +597,45 @@ public:
 		setLayoutBindings =
 		{
 			// Binding 0 : Shared Tessellation shader ubo
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
 				0),
 			// Binding 1 : Height map
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 				1),
 			// Binding 3 : Terrain texture array layers
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				VK_SHADER_STAGE_FRAGMENT_BIT,
 				2),
 		};
 
-		descriptorLayout = vkTools::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings.data(), static_cast<uint32_t>(setLayoutBindings.size()));
+		descriptorLayout = vkTools::descriptorSetLayoutCreateInfo(setLayoutBindings.data(), static_cast<uint32_t>(setLayoutBindings.size()));
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayouts.terrain));
-		pipelineLayoutCreateInfo = vkTools::initializers::pipelineLayoutCreateInfo(&descriptorSetLayouts.terrain, 1);
+		pipelineLayoutCreateInfo = vkTools::pipelineLayoutCreateInfo(&descriptorSetLayouts.terrain, 1);
 		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayouts.terrain));
 
 		// Skysphere
 		setLayoutBindings =
 		{
 			// Binding 0 : Vertex shader ubo
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Color map
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				VK_SHADER_STAGE_FRAGMENT_BIT,
 				1),
 		};
 
-		descriptorLayout = vkTools::initializers::descriptorSetLayoutCreateInfo(setLayoutBindings.data(), static_cast<uint32_t>(setLayoutBindings.size()));
+		descriptorLayout = vkTools::descriptorSetLayoutCreateInfo(setLayoutBindings.data(), static_cast<uint32_t>(setLayoutBindings.size()));
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayouts.skysphere));
-		pipelineLayoutCreateInfo = vkTools::initializers::pipelineLayoutCreateInfo(&descriptorSetLayouts.skysphere, 1);
+		pipelineLayoutCreateInfo = vkTools::pipelineLayoutCreateInfo(&descriptorSetLayouts.skysphere, 1);
 		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pipelineLayoutCreateInfo, nullptr, &pipelineLayouts.skysphere));
 	}
 
@@ -645,25 +645,25 @@ public:
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 
 		// Terrain
-		allocInfo = vkTools::initializers::descriptorSetAllocateInfo(descriptorPool, &descriptorSetLayouts.terrain, 1);
+		allocInfo = vkTools::descriptorSetAllocateInfo(descriptorPool, &descriptorSetLayouts.terrain, 1);
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.terrain));
 
 		writeDescriptorSets =
 		{
 			// Binding 0 : Shared tessellation shader ubo
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSets.terrain,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.terrainTessellation.descriptor),
 			// Binding 1 : Displacement map
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSets.terrain,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				1,
 				&textures.heightMap.descriptor),
 			// Binding 2 : Color map (alpha channel)
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSets.terrain,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				2,
@@ -672,19 +672,19 @@ public:
 		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 
 		// Skysphere
-		allocInfo = vkTools::initializers::descriptorSetAllocateInfo(descriptorPool, &descriptorSetLayouts.skysphere, 1);
+		allocInfo = vkTools::descriptorSetAllocateInfo(descriptorPool, &descriptorSetLayouts.skysphere, 1);
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &descriptorSets.skysphere));
 
 		writeDescriptorSets =
 		{
 			// Binding 0 : Vertex shader ubo
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSets.skysphere,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.skysphereVertex.descriptor),
 			// Binding 1 : Fragment shader color map
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSets.skysphere,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				1,
@@ -696,39 +696,39 @@ public:
 	void preparePipelines()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-			vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+			vkTools::pipelineInputAssemblyStateCreateInfo(
 				VK_PRIMITIVE_TOPOLOGY_PATCH_LIST,
 				0,
 				VK_FALSE);
 
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
-			vkTools::initializers::pipelineRasterizationStateCreateInfo(
+			vkTools::pipelineRasterizationStateCreateInfo(
 				VK_POLYGON_MODE_FILL,
 				VK_CULL_MODE_BACK_BIT,
 				VK_FRONT_FACE_COUNTER_CLOCKWISE,
 				0);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
-			vkTools::initializers::pipelineColorBlendAttachmentState(
+			vkTools::pipelineColorBlendAttachmentState(
 				0xf,
 				VK_FALSE);
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
-			vkTools::initializers::pipelineColorBlendStateCreateInfo(
+			vkTools::pipelineColorBlendStateCreateInfo(
 				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
-			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+			vkTools::pipelineDepthStencilStateCreateInfo(
 				VK_TRUE,
 				VK_TRUE,
 				VK_COMPARE_OP_LESS_OR_EQUAL);
 
 		VkPipelineViewportStateCreateInfo viewportState =
-			vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+			vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 		VkPipelineMultisampleStateCreateInfo multisampleState =
-			vkTools::initializers::pipelineMultisampleStateCreateInfo(
+			vkTools::pipelineMultisampleStateCreateInfo(
 				VK_SAMPLE_COUNT_1_BIT,
 				0);
 
@@ -738,14 +738,14 @@ public:
 			VK_DYNAMIC_STATE_LINE_WIDTH
 		};
 		VkPipelineDynamicStateCreateInfo dynamicState =
-			vkTools::initializers::pipelineDynamicStateCreateInfo(
+			vkTools::pipelineDynamicStateCreateInfo(
 				dynamicStateEnables.data(),
 				static_cast<uint32_t>(dynamicStateEnables.size()),
 				0);
 
 		// We render the terrain as a grid of quad patches
 		VkPipelineTessellationStateCreateInfo tessellationState =
-			vkTools::initializers::pipelineTessellationStateCreateInfo(4);
+			vkTools::pipelineTessellationStateCreateInfo(4);
 
 		std::array<VkPipelineShaderStageCreateInfo, 4> shaderStages;
 
@@ -756,7 +756,7 @@ public:
 		shaderStages[3] = loadShader(getAssetPath() + "shaders/terraintessellation/terrain.tese.spv", VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-			vkTools::initializers::pipelineCreateInfo(
+			vkTools::pipelineCreateInfo(
 				pipelineLayouts.terrain,
 				mRenderPass,
 				0);

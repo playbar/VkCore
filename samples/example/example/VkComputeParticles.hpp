@@ -114,13 +114,13 @@ public:
 			createCommandBuffers();
 		}
 
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
-		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 		renderPassBeginInfo.renderPass = mRenderPass;
 		renderPassBeginInfo.renderArea.offset.x = 0;
 		renderPassBeginInfo.renderArea.offset.y = 0;
@@ -140,10 +140,10 @@ public:
 
 			vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			VkViewport viewport = vkTools::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-			VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
+			VkRect2D scissor = vkTools::rect2D(width, height, 0, 0);
 			vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 			vkCmdBindPipeline(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics.pipeline);
@@ -162,14 +162,14 @@ public:
 
 	void buildComputeCommandBuffer()
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VK_CHECK_RESULT(vkBeginCommandBuffer(compute.commandBuffer, &cmdBufInfo));
 
 		// Compute particle movement
 
 		// Add memory barrier to ensure that the (graphics) vertex shader has fetched attributes before compute starts to write to the buffer
-		VkBufferMemoryBarrier bufferBarrier = vkTools::initializers::bufferMemoryBarrier();
+		VkBufferMemoryBarrier bufferBarrier = vkTools::bufferMemoryBarrier();
 		bufferBarrier.buffer = compute.storageBuffer.buffer;
 		bufferBarrier.size = compute.storageBuffer.descriptor.range;
 		bufferBarrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;						// Vertex shader invocations have finished reading from the buffer
@@ -265,7 +265,7 @@ public:
 		// Binding description
 		vertices.bindingDescriptions.resize(1);
 		vertices.bindingDescriptions[0] =
-			vkTools::initializers::vertexInputBindingDescription(
+			vkTools::vertexInputBindingDescription(
 				VERTEX_BUFFER_BIND_ID,
 				sizeof(Particle),
 				VK_VERTEX_INPUT_RATE_VERTEX);
@@ -275,21 +275,21 @@ public:
 		vertices.attributeDescriptions.resize(2);
 		// Location 0 : Position
 		vertices.attributeDescriptions[0] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32_SFLOAT,
 				offsetof(Particle, pos));
 		// Location 1 : Gradient position
 		vertices.attributeDescriptions[1] =
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				1,
 				VK_FORMAT_R32G32B32A32_SFLOAT,
 				offsetof(Particle, gradientPos));
 
 		// Assign to vertex buffer
-		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+		vertices.inputState = vkTools::pipelineVertexInputStateCreateInfo();
 		vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
 		vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
 		vertices.inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attributeDescriptions.size());
@@ -300,13 +300,13 @@ public:
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1),
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1),
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2)
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1),
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1),
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2)
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
-			vkTools::initializers::descriptorPoolCreateInfo(
+			vkTools::descriptorPoolCreateInfo(
 				static_cast<uint32_t>(poolSizes.size()),
 				poolSizes.data(),
 				2);
@@ -318,25 +318,25 @@ public:
 	{
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
 		// Binding 0 : Particle color map
-		setLayoutBindings.push_back(vkTools::initializers::descriptorSetLayoutBinding(
+		setLayoutBindings.push_back(vkTools::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			0));
 		// Binding 1 : Particle gradient ramp
-		setLayoutBindings.push_back(vkTools::initializers::descriptorSetLayoutBinding(
+		setLayoutBindings.push_back(vkTools::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			1));
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
-			vkTools::initializers::descriptorSetLayoutCreateInfo(
+			vkTools::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &graphics.descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo =
-			vkTools::initializers::pipelineLayoutCreateInfo(
+			vkTools::pipelineLayoutCreateInfo(
 				&graphics.descriptorSetLayout,
 				1);
 
@@ -346,7 +346,7 @@ public:
 	void setupDescriptorSet()
 	{
 		VkDescriptorSetAllocateInfo allocInfo =
-			vkTools::initializers::descriptorSetAllocateInfo(
+			vkTools::descriptorSetAllocateInfo(
 				descriptorPool,
 				&graphics.descriptorSetLayout,
 				1);
@@ -355,13 +355,13 @@ public:
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 		// Binding 0 : Particle color map
-		writeDescriptorSets.push_back(vkTools::initializers::writeDescriptorSet(
+		writeDescriptorSets.push_back(vkTools::writeDescriptorSet(
 			graphics.descriptorSet,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			0,
 			&textures.particle.descriptor));
 		// Binding 1 : Particle gradient ramp
-		writeDescriptorSets.push_back(vkTools::initializers::writeDescriptorSet(
+		writeDescriptorSets.push_back(vkTools::writeDescriptorSet(
 			graphics.descriptorSet,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			1,
@@ -373,39 +373,39 @@ public:
 	void preparePipelines()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-			vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+			vkTools::pipelineInputAssemblyStateCreateInfo(
 				VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
 				0,
 				VK_FALSE);
 
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
-			vkTools::initializers::pipelineRasterizationStateCreateInfo(
+			vkTools::pipelineRasterizationStateCreateInfo(
 				VK_POLYGON_MODE_FILL,
 				VK_CULL_MODE_NONE,
 				VK_FRONT_FACE_COUNTER_CLOCKWISE,
 				0);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
-			vkTools::initializers::pipelineColorBlendAttachmentState(
+			vkTools::pipelineColorBlendAttachmentState(
 				0xf,
 				VK_FALSE);
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
-			vkTools::initializers::pipelineColorBlendStateCreateInfo(
+			vkTools::pipelineColorBlendStateCreateInfo(
 				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
-			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+			vkTools::pipelineDepthStencilStateCreateInfo(
 				VK_FALSE,
 				VK_FALSE,
 				VK_COMPARE_OP_ALWAYS);
 
 		VkPipelineViewportStateCreateInfo viewportState =
-			vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+			vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 		VkPipelineMultisampleStateCreateInfo multisampleState =
-			vkTools::initializers::pipelineMultisampleStateCreateInfo(
+			vkTools::pipelineMultisampleStateCreateInfo(
 				VK_SAMPLE_COUNT_1_BIT,
 				0);
 
@@ -414,7 +414,7 @@ public:
 			VK_DYNAMIC_STATE_SCISSOR
 		};
 		VkPipelineDynamicStateCreateInfo dynamicState =
-			vkTools::initializers::pipelineDynamicStateCreateInfo(
+			vkTools::pipelineDynamicStateCreateInfo(
 				dynamicStateEnables.data(),
 				static_cast<uint32_t>(dynamicStateEnables.size()),
 				0);
@@ -427,7 +427,7 @@ public:
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/computeparticles/particle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-			vkTools::initializers::pipelineCreateInfo(
+			vkTools::pipelineCreateInfo(
 				graphics.pipelineLayout,
 				mRenderPass,
 				0);
@@ -475,33 +475,33 @@ public:
 
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
 			// Binding 0 : Particle position storage buffer
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				VK_SHADER_STAGE_COMPUTE_BIT,
 				0),
 			// Binding 1 : Uniform buffer
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_COMPUTE_BIT,
 				1),
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
-			vkTools::initializers::descriptorSetLayoutCreateInfo(
+			vkTools::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &compute.descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-			vkTools::initializers::pipelineLayoutCreateInfo(
+			vkTools::pipelineLayoutCreateInfo(
 				&compute.descriptorSetLayout,
 				1);
 
 		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &compute.pipelineLayout));
 
 		VkDescriptorSetAllocateInfo allocInfo =
-			vkTools::initializers::descriptorSetAllocateInfo(
+			vkTools::descriptorSetAllocateInfo(
 				descriptorPool,
 				&compute.descriptorSetLayout,
 				1);
@@ -511,13 +511,13 @@ public:
 		std::vector<VkWriteDescriptorSet> computeWriteDescriptorSets =
 		{
 			// Binding 0 : Particle position storage buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				compute.descriptorSet,
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				0,
 				&compute.storageBuffer.descriptor),
 			// Binding 1 : Uniform buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				compute.descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				1,
@@ -527,7 +527,7 @@ public:
 		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(computeWriteDescriptorSets.size()), computeWriteDescriptorSets.data(), 0, NULL);
 
 		// Create pipeline		
-		VkComputePipelineCreateInfo computePipelineCreateInfo = vkTools::initializers::computePipelineCreateInfo(compute.pipelineLayout, 0);
+		VkComputePipelineCreateInfo computePipelineCreateInfo = vkTools::computePipelineCreateInfo(compute.pipelineLayout, 0);
 		computePipelineCreateInfo.stage = loadShader(getAssetPath() + "shaders/computeparticles/particle.comp.spv", VK_SHADER_STAGE_COMPUTE_BIT);
 		VK_CHECK_RESULT(vkCreateComputePipelines(mVulkanDevice->mLogicalDevice, pipelineCache, 1, &computePipelineCreateInfo, nullptr, &compute.pipeline));
 
@@ -540,7 +540,7 @@ public:
 
 		// Create a command buffer for compute operations
 		VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-			vkTools::initializers::commandBufferAllocateInfo(
+			vkTools::commandBufferAllocateInfo(
 				compute.commandPool,
 				VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 				1);
@@ -548,7 +548,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &compute.commandBuffer));
 
 		// Fence for compute CB sync
-		VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
+		VkFenceCreateInfo fenceCreateInfo = vkTools::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 		VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &compute.fence));
 
 		// Build a single command buffer containing the compute dispatch commands
@@ -605,7 +605,7 @@ public:
 		vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &compute.fence, VK_TRUE, UINT64_MAX);
 		vkResetFences(mVulkanDevice->mLogicalDevice, 1, &compute.fence);
 
-		VkSubmitInfo computeSubmitInfo = vkTools::initializers::submitInfo();
+		VkSubmitInfo computeSubmitInfo = vkTools::submitInfo();
 		computeSubmitInfo.commandBufferCount = 1;
 		computeSubmitInfo.pCommandBuffers = &compute.commandBuffer;
 

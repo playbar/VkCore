@@ -236,13 +236,13 @@ VkResult VkCoreDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPrope
 	VkDeviceSize size, VkBuffer *buffer, VkDeviceMemory *memory, void *data)
 {
 	// Create the buffer handle
-	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+	VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo(usageFlags, size);
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	VK_CHECK_RESULT(vkCreateBuffer(mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
 
 	// Create the memory backing up the buffer handle
 	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
+	VkMemoryAllocateInfo memAlloc = vkTools::memoryAllocateInfo();
 	vkGetBufferMemoryRequirements(mLogicalDevice, *buffer, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	// Find a memory type index that fits the properties of the buffer
@@ -271,12 +271,12 @@ VkResult VkCoreDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPrope
 	buffer->device = mLogicalDevice;
 
 	// Create the buffer handle
-	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+	VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo(usageFlags, size);
 	VK_CHECK_RESULT(vkCreateBuffer(mLogicalDevice, &bufferCreateInfo, nullptr, &buffer->buffer));
 
 	// Create the memory backing up the buffer handle
 	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
+	VkMemoryAllocateInfo memAlloc = vkTools::memoryAllocateInfo();
 	vkGetBufferMemoryRequirements(mLogicalDevice, buffer->buffer, &memReqs);
 	memAlloc.allocationSize = memReqs.size;
 	// Find a memory type index that fits the properties of the buffer
@@ -336,7 +336,7 @@ VkCommandPool VkCoreDevice::createCommandPool(uint32_t queueFamilyIndex, VkComma
 
 VkCommandBuffer VkCoreDevice::createCommandBuffer(VkCommandBufferLevel level, bool begin)
 {
-	VkCommandBufferAllocateInfo cmdBufAllocateInfo = vkTools::initializers::commandBufferAllocateInfo(mCommandPool, level, 1);
+	VkCommandBufferAllocateInfo cmdBufAllocateInfo = vkTools::commandBufferAllocateInfo(mCommandPool, level, 1);
 
 	VkCommandBuffer cmdBuffer;
 	VK_CHECK_RESULT(vkAllocateCommandBuffers(mLogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
@@ -344,7 +344,7 @@ VkCommandBuffer VkCoreDevice::createCommandBuffer(VkCommandBufferLevel level, bo
 	// If requested, also start recording for the new command buffer
 	if (begin)
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 	}
 
@@ -360,12 +360,12 @@ void VkCoreDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue que
 
 	VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
-	VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+	VkSubmitInfo submitInfo = vkTools::submitInfo();
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
 	// Create fence to ensure that the command buffer has finished executing
-	VkFenceCreateInfo fenceInfo = vkTools::initializers::fenceCreateInfo(VK_FLAGS_NONE);
+	VkFenceCreateInfo fenceInfo = vkTools::fenceCreateInfo(VK_FLAGS_NONE);
 	VkFence fence;
 	VK_CHECK_RESULT(vkCreateFence(mLogicalDevice, &fenceInfo, nullptr, &fence));
 

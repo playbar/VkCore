@@ -305,7 +305,7 @@ void VulkanGear::updateUniformBuffer(Matrix perspective, Vector3 rotation, float
 void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout descriptorSetLayout)
 {
 	VkDescriptorSetAllocateInfo allocInfo =
-		vkTools::initializers::descriptorSetAllocateInfo(
+		vkTools::descriptorSetAllocateInfo(
 			pool,
 			&descriptorSetLayout,
 			1);
@@ -314,7 +314,7 @@ void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout
 
 	// Binding 0 : Vertex shader uniform buffer
 	VkWriteDescriptorSet writeDescriptorSet =
-		vkTools::initializers::writeDescriptorSet(
+		vkTools::writeDescriptorSet(
 			descriptorSet,
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			0,
@@ -326,10 +326,10 @@ void VulkanGear::setupDescriptorSet(VkDescriptorPool pool, VkDescriptorSetLayout
 void VulkanGear::prepareUniformBuffer()
 {
 	// Vertex shader uniform buffer block
-	VkMemoryAllocateInfo allocInfo = vkTools::initializers::memoryAllocateInfo();
+	VkMemoryAllocateInfo allocInfo = vkTools::memoryAllocateInfo();
 	VkMemoryRequirements memReqs;
 
-	VkBufferCreateInfo bufferInfo = vkTools::initializers::bufferCreateInfo(
+	VkBufferCreateInfo bufferInfo = vkTools::bufferCreateInfo(
 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		sizeof(ubo));
 

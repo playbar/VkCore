@@ -124,11 +124,11 @@ namespace vkTools
 			// limited amount of formats and features (mip maps, cubemaps, arrays, etc.)
 			VkBool32 useStaging = !forceLinear;
 
-			VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
+			VkMemoryAllocateInfo memAllocInfo = vkTools::memoryAllocateInfo();
 			VkMemoryRequirements memReqs;
 
 			// Use a separate command buffer for texture loading
-			VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+			VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 			VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
 			if (useStaging)
@@ -137,7 +137,7 @@ namespace vkTools
 				VkBuffer stagingBuffer;
 				VkDeviceMemory stagingMemory;
 
-				VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
+				VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo();
 				bufferCreateInfo.size = tex2D.size();
 				// This buffer is used as a transfer source for the buffer copy
 				bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -183,7 +183,7 @@ namespace vkTools
 				}
 
 				// Create optimal tiled target image
-				VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
+				VkImageCreateInfo imageCreateInfo = vkTools::imageCreateInfo();
 				imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 				imageCreateInfo.format = format;
 				imageCreateInfo.mipLevels = texture->mipLevels;
@@ -250,10 +250,10 @@ namespace vkTools
 
 				// Create a fence to make sure that the copies have finished before continuing
 				VkFence copyFence;
-				VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FLAGS_NONE);
+				VkFenceCreateInfo fenceCreateInfo = vkTools::fenceCreateInfo(VK_FLAGS_NONE);
 				VK_CHECK_RESULT(vkCreateFence(vulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &copyFence));
 
-				VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+				VkSubmitInfo submitInfo = vkTools::submitInfo();
 				submitInfo.commandBufferCount = 1;
 				submitInfo.pCommandBuffers = &cmdBuffer;
 
@@ -279,7 +279,7 @@ namespace vkTools
 				VkImage mappableImage;
 				VkDeviceMemory mappableMemory;
 
-				VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
+				VkImageCreateInfo imageCreateInfo = vkTools::imageCreateInfo();
 				imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 				imageCreateInfo.format = format;
 				imageCreateInfo.extent = { texture->width, texture->height, 1 };
@@ -349,7 +349,7 @@ namespace vkTools
 
 				VkFence nullFence = { VK_NULL_HANDLE };
 
-				VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+				VkSubmitInfo submitInfo = vkTools::submitInfo();
 				submitInfo.waitSemaphoreCount = 0;
 				submitInfo.commandBufferCount = 1;
 				submitInfo.pCommandBuffers = &cmdBuffer;
@@ -439,14 +439,14 @@ namespace vkTools
 			texture->height = static_cast<uint32_t>(texCube.dimensions().y);
 			texture->mipLevels = static_cast<uint32_t>(texCube.levels());
 
-			VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
+			VkMemoryAllocateInfo memAllocInfo = vkTools::memoryAllocateInfo();
 			VkMemoryRequirements memReqs;
 
 			// Create a host-visible staging buffer that contains the raw image data
 			VkBuffer stagingBuffer;
 			VkDeviceMemory stagingMemory;
 
-			VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
+			VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo();
 			bufferCreateInfo.size = texCube.size();
 			// This buffer is used as a transfer source for the buffer copy
 			bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -496,7 +496,7 @@ namespace vkTools
 			}
 
 			// Create optimal tiled target image
-			VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
+			VkImageCreateInfo imageCreateInfo = vkTools::imageCreateInfo();
 			imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 			imageCreateInfo.format = format;
 			imageCreateInfo.mipLevels = texture->mipLevels;
@@ -527,7 +527,7 @@ namespace vkTools
 			VK_CHECK_RESULT(vkAllocateMemory(vulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &texture->deviceMemory));
 			VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice->mLogicalDevice, texture->image, texture->deviceMemory, 0));
 
-			VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+			VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 			VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
 			// Image barrier for optimal image (target)
@@ -569,10 +569,10 @@ namespace vkTools
 
 			// Create a fence to make sure that the copies have finished before continuing
 			VkFence copyFence;
-			VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FLAGS_NONE);
+			VkFenceCreateInfo fenceCreateInfo = vkTools::fenceCreateInfo(VK_FLAGS_NONE);
 			VK_CHECK_RESULT(vkCreateFence(vulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &copyFence));
 
-			VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+			VkSubmitInfo submitInfo = vkTools::submitInfo();
 			submitInfo.commandBufferCount = 1;
 			submitInfo.pCommandBuffers = &cmdBuffer;
 
@@ -583,7 +583,7 @@ namespace vkTools
 			vkDestroyFence(vulkanDevice->mLogicalDevice, copyFence, nullptr);
 
 			// Create sampler
-			VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
+			VkSamplerCreateInfo sampler = vkTools::samplerCreateInfo();
 			sampler.magFilter = VK_FILTER_LINEAR;
 			sampler.minFilter = VK_FILTER_LINEAR;
 			sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -599,7 +599,7 @@ namespace vkTools
 			VK_CHECK_RESULT(vkCreateSampler(vulkanDevice->mLogicalDevice, &sampler, nullptr, &texture->sampler));
 
 			// Create image view
-			VkImageViewCreateInfo view = vkTools::initializers::imageViewCreateInfo();
+			VkImageViewCreateInfo view = vkTools::imageViewCreateInfo();
 			view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 			view.format = format;
 			view.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
@@ -658,14 +658,14 @@ namespace vkTools
 			texture->layerCount = static_cast<uint32_t>(tex2DArray.layers());
 			texture->mipLevels = static_cast<uint32_t>(tex2DArray.levels());
 
-			VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
+			VkMemoryAllocateInfo memAllocInfo = vkTools::memoryAllocateInfo();
 			VkMemoryRequirements memReqs;
 
 			// Create a host-visible staging buffer that contains the raw image data
 			VkBuffer stagingBuffer;
 			VkDeviceMemory stagingMemory;
 
-			VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
+			VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo();
 			bufferCreateInfo.size = tex2DArray.size();
 			// This buffer is used as a transfer source for the buffer copy
 			bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -715,7 +715,7 @@ namespace vkTools
 			}
 
 			// Create optimal tiled target image
-			VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
+			VkImageCreateInfo imageCreateInfo = vkTools::imageCreateInfo();
 			imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 			imageCreateInfo.format = format;
 			imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -742,7 +742,7 @@ namespace vkTools
 			VK_CHECK_RESULT(vkAllocateMemory(vulkanDevice->mLogicalDevice, &memAllocInfo, nullptr, &texture->deviceMemory));
 			VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice->mLogicalDevice, texture->image, texture->deviceMemory, 0));
 
-			VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+			VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 			VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
 			// Image barrier for optimal image (target)
@@ -784,10 +784,10 @@ namespace vkTools
 
 			// Create a fence to make sure that the copies have finished before continuing
 			VkFence copyFence;
-			VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FLAGS_NONE);
+			VkFenceCreateInfo fenceCreateInfo = vkTools::fenceCreateInfo(VK_FLAGS_NONE);
 			VK_CHECK_RESULT(vkCreateFence(vulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &copyFence));
 
-			VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+			VkSubmitInfo submitInfo = vkTools::submitInfo();
 			submitInfo.commandBufferCount = 1;
 			submitInfo.pCommandBuffers = &cmdBuffer;
 
@@ -798,7 +798,7 @@ namespace vkTools
 			vkDestroyFence(vulkanDevice->mLogicalDevice, copyFence, nullptr);
 
 			// Create sampler
-			VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
+			VkSamplerCreateInfo sampler = vkTools::samplerCreateInfo();
 			sampler.magFilter = VK_FILTER_LINEAR;
 			sampler.minFilter = VK_FILTER_LINEAR;
 			sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -814,7 +814,7 @@ namespace vkTools
 			VK_CHECK_RESULT(vkCreateSampler(vulkanDevice->mLogicalDevice, &sampler, nullptr, &texture->sampler));
 
 			// Create image view
-			VkImageViewCreateInfo view = vkTools::initializers::imageViewCreateInfo();
+			VkImageViewCreateInfo view = vkTools::imageViewCreateInfo();
 			view.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 			view.format = format;
 			view.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
@@ -854,18 +854,18 @@ namespace vkTools
 			texture->height = height;
 			texture->mipLevels = 1;
 
-			VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
+			VkMemoryAllocateInfo memAllocInfo = vkTools::memoryAllocateInfo();
 			VkMemoryRequirements memReqs;
 
 			// Use a separate command buffer for texture loading
-			VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+			VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 			VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 
 			// Create a host-visible staging buffer that contains the raw image data
 			VkBuffer stagingBuffer;
 			VkDeviceMemory stagingMemory;
 
-			VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
+			VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo();
 			bufferCreateInfo.size = bufferSize;
 			// This buffer is used as a transfer source for the buffer copy
 			bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -900,7 +900,7 @@ namespace vkTools
 			bufferCopyRegion.bufferOffset = 0;
 
 			// Create optimal tiled target image
-			VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
+			VkImageCreateInfo imageCreateInfo = vkTools::imageCreateInfo();
 			imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 			imageCreateInfo.format = format;
 			imageCreateInfo.mipLevels = texture->mipLevels;
@@ -967,10 +967,10 @@ namespace vkTools
 
 			// Create a fence to make sure that the copies have finished before continuing
 			VkFence copyFence;
-			VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FLAGS_NONE);
+			VkFenceCreateInfo fenceCreateInfo = vkTools::fenceCreateInfo(VK_FLAGS_NONE);
 			VK_CHECK_RESULT(vkCreateFence(vulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &copyFence));
 
-			VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+			VkSubmitInfo submitInfo = vkTools::submitInfo();
 			submitInfo.commandBufferCount = 1;
 			submitInfo.pCommandBuffers = &cmdBuffer;
 

@@ -149,13 +149,13 @@ public:
 
 	void buildCommandBuffers()
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = { { 0.18f, 0.27f, 0.5f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
-		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 		renderPassBeginInfo.renderPass = mRenderPass;
 		renderPassBeginInfo.renderArea.extent.width = width;
 		renderPassBeginInfo.renderArea.extent.height = height;
@@ -171,10 +171,10 @@ public:
 
 			vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			VkViewport viewport = vkTools::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-			VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
+			VkRect2D scissor = vkTools::rect2D(width, height, 0, 0);
 			vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 			VkDeviceSize offsets[1] = { 0 };
@@ -217,11 +217,11 @@ public:
 
 		// Binding 0: Per vertex
 		vertices.bindingDescriptions[0] =
-			vkTools::initializers::vertexInputBindingDescription(VERTEX_BUFFER_BIND_ID, vkMeshLoader::vertexSize(vertexLayout), VK_VERTEX_INPUT_RATE_VERTEX);
+			vkTools::vertexInputBindingDescription(VERTEX_BUFFER_BIND_ID, vkMeshLoader::vertexSize(vertexLayout), VK_VERTEX_INPUT_RATE_VERTEX);
 
 		// Binding 1: Per instance
 		vertices.bindingDescriptions[1] =
-			vkTools::initializers::vertexInputBindingDescription(INSTANCE_BUFFER_BIND_ID, sizeof(InstanceData), VK_VERTEX_INPUT_RATE_INSTANCE);
+			vkTools::vertexInputBindingDescription(INSTANCE_BUFFER_BIND_ID, sizeof(InstanceData), VK_VERTEX_INPUT_RATE_INSTANCE);
 
 		// Attribute descriptions
 		// Describes memory layout and shader positions
@@ -230,7 +230,7 @@ public:
 		// Per-Vertex attributes
 		// Location 0 : Position
 		vertices.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32_SFLOAT,
@@ -238,7 +238,7 @@ public:
 		);
 		// Location 1 : Normal
 		vertices.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				1,
 				VK_FORMAT_R32G32B32_SFLOAT,
@@ -246,7 +246,7 @@ public:
 		);
 		// Location 2 : Color
 		vertices.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				2,
 				VK_FORMAT_R32G32B32_SFLOAT,
@@ -256,16 +256,16 @@ public:
 		// Instanced attributes
 		// Location 4: Position
 		vertices.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				INSTANCE_BUFFER_BIND_ID, 4, VK_FORMAT_R32G32B32_SFLOAT, offsetof(InstanceData, pos))
 		);
 		// Location 5: Scale
 		vertices.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				INSTANCE_BUFFER_BIND_ID, 5, VK_FORMAT_R32_SFLOAT, offsetof(InstanceData, scale))
 		);
 
-		vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+		vertices.inputState = vkTools::pipelineVertexInputStateCreateInfo();
 		vertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertices.bindingDescriptions.size());
 		vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
 		vertices.inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertices.attributeDescriptions.size());
@@ -274,12 +274,12 @@ public:
 
 	void buildComputeCommandBuffer()
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VK_CHECK_RESULT(vkBeginCommandBuffer(compute.commandBuffer, &cmdBufInfo));
 
 		// Add memory barrier to ensure that the indirect commands have been consumed before the compute shader updates them
-		VkBufferMemoryBarrier bufferBarrier = vkTools::initializers::bufferMemoryBarrier();
+		VkBufferMemoryBarrier bufferBarrier = vkTools::bufferMemoryBarrier();
 		bufferBarrier.buffer = indirectCommandsBuffer.buffer;
 		bufferBarrier.size = indirectCommandsBuffer.descriptor.range;
 		bufferBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
@@ -331,12 +331,12 @@ public:
 		// Example uses one ubo 
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 4)
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 4)
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
-			vkTools::initializers::descriptorPoolCreateInfo(
+			vkTools::descriptorPoolCreateInfo(
 				static_cast<uint32_t>(poolSizes.size()),
 				poolSizes.data(),
 				2);
@@ -349,21 +349,21 @@ public:
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
 			// Binding 0: Vertex shader uniform buffer
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
-			vkTools::initializers::descriptorSetLayoutCreateInfo(
+			vkTools::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-			vkTools::initializers::pipelineLayoutCreateInfo(
+			vkTools::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
@@ -373,7 +373,7 @@ public:
 	void setupDescriptorSet()
 	{
 		VkDescriptorSetAllocateInfo allocInfo =
-			vkTools::initializers::descriptorSetAllocateInfo(
+			vkTools::descriptorSetAllocateInfo(
 				descriptorPool,
 				&descriptorSetLayout,
 				1);
@@ -383,7 +383,7 @@ public:
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
 			// Binding 0: Vertex shader uniform buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
@@ -396,39 +396,39 @@ public:
 	void preparePipelines()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-			vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+			vkTools::pipelineInputAssemblyStateCreateInfo(
 				VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
 				0,
 				VK_FALSE);
 
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
-			vkTools::initializers::pipelineRasterizationStateCreateInfo(
+			vkTools::pipelineRasterizationStateCreateInfo(
 				VK_POLYGON_MODE_FILL,
 				VK_CULL_MODE_BACK_BIT,
 				VK_FRONT_FACE_CLOCKWISE,
 				0);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
-			vkTools::initializers::pipelineColorBlendAttachmentState(
+			vkTools::pipelineColorBlendAttachmentState(
 				0xf,
 				VK_FALSE);
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
-			vkTools::initializers::pipelineColorBlendStateCreateInfo(
+			vkTools::pipelineColorBlendStateCreateInfo(
 				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
-			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+			vkTools::pipelineDepthStencilStateCreateInfo(
 				VK_TRUE,
 				VK_TRUE,
 				VK_COMPARE_OP_LESS_OR_EQUAL);
 
 		VkPipelineViewportStateCreateInfo viewportState =
-			vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+			vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 		VkPipelineMultisampleStateCreateInfo multisampleState =
-			vkTools::initializers::pipelineMultisampleStateCreateInfo(
+			vkTools::pipelineMultisampleStateCreateInfo(
 				VK_SAMPLE_COUNT_1_BIT,
 				0);
 
@@ -437,13 +437,13 @@ public:
 			VK_DYNAMIC_STATE_SCISSOR
 		};
 		VkPipelineDynamicStateCreateInfo dynamicState =
-			vkTools::initializers::pipelineDynamicStateCreateInfo(
+			vkTools::pipelineDynamicStateCreateInfo(
 				dynamicStateEnables.data(),
 				static_cast<uint32_t>(dynamicStateEnables.size()),
 				0);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-			vkTools::initializers::pipelineCreateInfo(
+			vkTools::pipelineCreateInfo(
 				pipelineLayout,
 				mRenderPass,
 				0);
@@ -614,48 +614,48 @@ public:
 
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
 			// Binding 0: Instance input data buffer
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				VK_SHADER_STAGE_COMPUTE_BIT,
 				0),
 			// Binding 1: Indirect draw command output buffer (input)
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				VK_SHADER_STAGE_COMPUTE_BIT,
 				1),
 			// Binding 2: Uniform buffer with global matrices (input)
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_COMPUTE_BIT,
 				2),
 			// Binding 3: Indirect draw stats (output)
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				VK_SHADER_STAGE_COMPUTE_BIT,
 				3),
 			// Binding 4: LOD info (input)
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				VK_SHADER_STAGE_COMPUTE_BIT,
 				4),
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
-			vkTools::initializers::descriptorSetLayoutCreateInfo(
+			vkTools::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				static_cast<uint32_t>(setLayoutBindings.size()));
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &compute.descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-			vkTools::initializers::pipelineLayoutCreateInfo(
+			vkTools::pipelineLayoutCreateInfo(
 				&compute.descriptorSetLayout,
 				1);
 
 		VK_CHECK_RESULT(vkCreatePipelineLayout(mVulkanDevice->mLogicalDevice, &pPipelineLayoutCreateInfo, nullptr, &compute.pipelineLayout));
 
 		VkDescriptorSetAllocateInfo allocInfo =
-			vkTools::initializers::descriptorSetAllocateInfo(
+			vkTools::descriptorSetAllocateInfo(
 				descriptorPool,
 				&compute.descriptorSetLayout,
 				1);
@@ -665,31 +665,31 @@ public:
 		std::vector<VkWriteDescriptorSet> computeWriteDescriptorSets =
 		{
 			// Binding 0: Instance input data buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				compute.descriptorSet,
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				0,
 				&instanceBuffer.descriptor),
 			// Binding 1: Indirect draw command output buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				compute.descriptorSet,
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				1,
 				&indirectCommandsBuffer.descriptor),
 			// Binding 2: Uniform buffer with global matrices
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				compute.descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				2,
 				&uniformData.scene.descriptor),
 			// Binding 3: Atomic counter (written in shader)
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				compute.descriptorSet,
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				3,
 				&indirectDrawCountBuffer.descriptor),
 			// Binding 4: LOD info
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				compute.descriptorSet,
 				VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 				4,
@@ -699,7 +699,7 @@ public:
 		vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(computeWriteDescriptorSets.size()), computeWriteDescriptorSets.data(), 0, NULL);
 
 		// Create pipeline		
-		VkComputePipelineCreateInfo computePipelineCreateInfo = vkTools::initializers::computePipelineCreateInfo(compute.pipelineLayout, 0);
+		VkComputePipelineCreateInfo computePipelineCreateInfo = vkTools::computePipelineCreateInfo(compute.pipelineLayout, 0);
 		computePipelineCreateInfo.stage = loadShader(getAssetPath() + "shaders/computecullandlod/cull.comp.spv", VK_SHADER_STAGE_COMPUTE_BIT);
 
 		// Use specialization constants to pass max. level of detail (determined by no. of meshes)
@@ -729,7 +729,7 @@ public:
 
 		// Create a command buffer for compute operations
 		VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-			vkTools::initializers::commandBufferAllocateInfo(
+			vkTools::commandBufferAllocateInfo(
 				compute.commandPool,
 				VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 				1);
@@ -737,7 +737,7 @@ public:
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &compute.commandBuffer));
 
 		// Fence for compute CB sync
-		VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
+		VkFenceCreateInfo fenceCreateInfo = vkTools::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 		VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &compute.fence));
 
 		// Build a single command buffer containing the compute dispatch commands
@@ -780,7 +780,7 @@ public:
 		vkWaitForFences(mVulkanDevice->mLogicalDevice, 1, &compute.fence, VK_TRUE, UINT64_MAX);
 		vkResetFences(mVulkanDevice->mLogicalDevice, 1, &compute.fence);
 
-		VkSubmitInfo computeSubmitInfo = vkTools::initializers::submitInfo();
+		VkSubmitInfo computeSubmitInfo = vkTools::submitInfo();
 		computeSubmitInfo.commandBufferCount = 1;
 		computeSubmitInfo.pCommandBuffers = &compute.commandBuffer;
 

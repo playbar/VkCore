@@ -85,7 +85,7 @@ void VkTexture::createCommandBuffers()
 	mDrawCmdBuffers.resize(gSwapChain.mImageCount);
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mDrawCmdBuffers.size()));
@@ -107,7 +107,7 @@ void VkTexture::createSetupCommandBuffer()
 	}
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			1);
@@ -144,7 +144,7 @@ VkCommandBuffer VkTexture::createCommandBuffer(VkCommandBufferLevel level, bool 
 	VkCommandBuffer cmdBuffer;
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			level,
 			1);
@@ -154,7 +154,7 @@ VkCommandBuffer VkTexture::createCommandBuffer(VkCommandBufferLevel level, bool 
 	// If requested, also start the new command buffer
 	if (begin)
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 	}
 
@@ -267,8 +267,8 @@ VkPipelineShaderStageCreateInfo VkTexture::loadShader(std::string fileName, VkSh
 VkBool32 VkTexture::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory)
 {
 	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
-	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+	VkMemoryAllocateInfo memAlloc = vkTools::memoryAllocateInfo();
+	VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo(usageFlags, size);
 
 	VK_CHECK_RESULT(vkCreateBuffer(gVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
 
@@ -615,7 +615,7 @@ VkTexture::~VkTexture()
 void VkTexture::setImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkImageSubresourceRange subresourceRange)
 {
 	// Create an image barrier object
-	VkImageMemoryBarrier imageMemoryBarrier = vkTools::initializers::imageMemoryBarrier();;
+	VkImageMemoryBarrier imageMemoryBarrier = vkTools::imageMemoryBarrier();;
 	imageMemoryBarrier.oldLayout = oldImageLayout;
 	imageMemoryBarrier.newLayout = newImageLayout;
 	imageMemoryBarrier.image = image;
@@ -722,7 +722,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		useStaging = !(formatProperties.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 	}
 
-	VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
+	VkMemoryAllocateInfo memAllocInfo = vkTools::memoryAllocateInfo();
 	VkMemoryRequirements memReqs = {};
 
 	if (useStaging)
@@ -731,7 +731,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingMemory;
 
-		VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
+		VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo();
 		bufferCreateInfo.size = tex2D.size();
 		// This buffer is used as a transfer source for the buffer copy
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -777,7 +777,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		}
 
 		// Create optimal tiled target image
-		VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
+		VkImageCreateInfo imageCreateInfo = vkTools::imageCreateInfo();
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 		imageCreateInfo.format = format;
 		imageCreateInfo.mipLevels = mTexture.mipLevels;
@@ -861,7 +861,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 		VkDeviceMemory mappableMemory;
 
 		// Load mip map level 0 to linear tiling image
-		VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
+		VkImageCreateInfo imageCreateInfo = vkTools::imageCreateInfo();
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 		imageCreateInfo.format = format;
 		imageCreateInfo.mipLevels = 1;
@@ -948,7 +948,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 	// This means you could have multiple sampler objects
 	// for the same texture with different settings
 	// Similar to the samplers available with OpenGL 3.3
-	VkSamplerCreateInfo samplerCreateInfo = vkTools::initializers::samplerCreateInfo();
+	VkSamplerCreateInfo samplerCreateInfo = vkTools::samplerCreateInfo();
 	samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
 	samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
 	samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -981,7 +981,7 @@ void VkTexture::loadTexture(std::string fileName, VkFormat format, bool forceLin
 	// Textures are not directly accessed by the shaders and
 	// are abstracted by image views containing additional
 	// information and sub resource ranges
-	VkImageViewCreateInfo viewCreateInfo = vkTools::initializers::imageViewCreateInfo();
+	VkImageViewCreateInfo viewCreateInfo = vkTools::imageViewCreateInfo();
 	viewCreateInfo.image = VK_NULL_HANDLE;
 	viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	viewCreateInfo.format = format;
@@ -1015,13 +1015,13 @@ void VkTexture::destroyTextureImage(Texture texture)
 
 void VkTexture::buildCommandBuffers()
 {
-	VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+	VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 	VkClearValue clearValues[2];
 	clearValues[0].color = defaultClearColor;
 	clearValues[1].depthStencil = { 1.0f, 0 };
 
-	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 	renderPassBeginInfo.renderPass = mRenderPass;
 	renderPassBeginInfo.renderArea.offset.x = 0;
 	renderPassBeginInfo.renderArea.offset.y = 0;
@@ -1039,10 +1039,10 @@ void VkTexture::buildCommandBuffers()
 
 		vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+		VkViewport viewport = vkTools::viewport((float)width, (float)height, 0.0f, 1.0f);
 		vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-		VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
+		VkRect2D scissor = vkTools::rect2D(width, height, 0, 0);
 		vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 		vkCmdBindDescriptorSets(mDrawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1, &mDescriptorSet, 0, NULL);
@@ -1112,7 +1112,7 @@ void VkTexture::setupVertexDescriptions()
 	// Binding description
 	mVertices.bindingDescriptions.resize(1);
 	mVertices.bindingDescriptions[0] =
-		vkTools::initializers::vertexInputBindingDescription(
+		vkTools::vertexInputBindingDescription(
 			VERTEX_BUFFER_BIND_ID,
 			sizeof(Vertex),
 			VK_VERTEX_INPUT_RATE_VERTEX);
@@ -1122,27 +1122,27 @@ void VkTexture::setupVertexDescriptions()
 	mVertices.attributeDescriptions.resize(3);
 	// Location 0 : Position
 	mVertices.attributeDescriptions[0] =
-		vkTools::initializers::vertexInputAttributeDescription(
+		vkTools::vertexInputAttributeDescription(
 			VERTEX_BUFFER_BIND_ID,
 			0,
 			VK_FORMAT_R32G32B32_SFLOAT,
 			offsetof(Vertex, pos));
 	// Location 1 : Texture coordinates
 	mVertices.attributeDescriptions[1] =
-		vkTools::initializers::vertexInputAttributeDescription(
+		vkTools::vertexInputAttributeDescription(
 			VERTEX_BUFFER_BIND_ID,
 			1,
 			VK_FORMAT_R32G32_SFLOAT,
 			offsetof(Vertex, uv));
 	// Location 1 : Vertex normal
 	mVertices.attributeDescriptions[2] =
-		vkTools::initializers::vertexInputAttributeDescription(
+		vkTools::vertexInputAttributeDescription(
 			VERTEX_BUFFER_BIND_ID,
 			2,
 			VK_FORMAT_R32G32B32_SFLOAT,
 			offsetof(Vertex, normal));
 
-	mVertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+	mVertices.inputState = vkTools::pipelineVertexInputStateCreateInfo();
 	mVertices.inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(mVertices.bindingDescriptions.size());
 	mVertices.inputState.pVertexBindingDescriptions = mVertices.bindingDescriptions.data();
 	mVertices.inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(mVertices.attributeDescriptions.size());
@@ -1154,12 +1154,12 @@ void VkTexture::setupDescriptorPool()
 	// Example uses one ubo and one image sampler
 	std::vector<VkDescriptorPoolSize> poolSizes =
 	{
-		vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1),
-		vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
+		vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1),
+		vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
 	};
 
 	VkDescriptorPoolCreateInfo descriptorPoolInfo =
-		vkTools::initializers::descriptorPoolCreateInfo(
+		vkTools::descriptorPoolCreateInfo(
 			static_cast<uint32_t>(poolSizes.size()),
 			poolSizes.data(),
 			2);
@@ -1172,26 +1172,26 @@ void VkTexture::setupDescriptorSetLayout()
 	std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 	{
 		// Binding 0 : Vertex shader uniform buffer
-		vkTools::initializers::descriptorSetLayoutBinding(
+		vkTools::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_VERTEX_BIT,
 			0),
 		// Binding 1 : Fragment shader image sampler
-		vkTools::initializers::descriptorSetLayoutBinding(
+		vkTools::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			1)
 	};
 
 	VkDescriptorSetLayoutCreateInfo descriptorLayout =
-		vkTools::initializers::descriptorSetLayoutCreateInfo(
+		vkTools::descriptorSetLayoutCreateInfo(
 			setLayoutBindings.data(),
 			static_cast<uint32_t>(setLayoutBindings.size()));
 
 	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &mDescriptorSetLayout));
 
 	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-		vkTools::initializers::pipelineLayoutCreateInfo(
+		vkTools::pipelineLayoutCreateInfo(
 			&mDescriptorSetLayout,
 			1);
 
@@ -1201,7 +1201,7 @@ void VkTexture::setupDescriptorSetLayout()
 void VkTexture::setupDescriptorSet()
 {
 	VkDescriptorSetAllocateInfo allocInfo =
-		vkTools::initializers::descriptorSetAllocateInfo(
+		vkTools::descriptorSetAllocateInfo(
 			descriptorPool,
 			&mDescriptorSetLayout,
 			1);
@@ -1211,13 +1211,13 @@ void VkTexture::setupDescriptorSet()
 	std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 	{
 		// Binding 0 : Vertex shader uniform buffer
-		vkTools::initializers::writeDescriptorSet(
+		vkTools::writeDescriptorSet(
 			mDescriptorSet,
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			0,
 			&mUniformBufferVS.descriptor),
 		// Binding 1 : Fragment shader texture sampler
-		vkTools::initializers::writeDescriptorSet(
+		vkTools::writeDescriptorSet(
 			mDescriptorSet,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			1,
@@ -1230,39 +1230,39 @@ void VkTexture::setupDescriptorSet()
 void VkTexture::preparePipelines()
 {
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-		vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+		vkTools::pipelineInputAssemblyStateCreateInfo(
 			VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
 			0,
 			VK_FALSE);
 
 	VkPipelineRasterizationStateCreateInfo rasterizationState =
-		vkTools::initializers::pipelineRasterizationStateCreateInfo(
+		vkTools::pipelineRasterizationStateCreateInfo(
 			VK_POLYGON_MODE_FILL,
 			VK_CULL_MODE_NONE,
 			VK_FRONT_FACE_COUNTER_CLOCKWISE,
 			0);
 
 	VkPipelineColorBlendAttachmentState blendAttachmentState =
-		vkTools::initializers::pipelineColorBlendAttachmentState(
+		vkTools::pipelineColorBlendAttachmentState(
 			0xf,
 			VK_FALSE);
 
 	VkPipelineColorBlendStateCreateInfo colorBlendState =
-		vkTools::initializers::pipelineColorBlendStateCreateInfo(
+		vkTools::pipelineColorBlendStateCreateInfo(
 			1,
 			&blendAttachmentState);
 
 	VkPipelineDepthStencilStateCreateInfo depthStencilState =
-		vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+		vkTools::pipelineDepthStencilStateCreateInfo(
 			VK_TRUE,
 			VK_TRUE,
 			VK_COMPARE_OP_LESS_OR_EQUAL);
 
 	VkPipelineViewportStateCreateInfo viewportState =
-		vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+		vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 	VkPipelineMultisampleStateCreateInfo multisampleState =
-		vkTools::initializers::pipelineMultisampleStateCreateInfo(
+		vkTools::pipelineMultisampleStateCreateInfo(
 			VK_SAMPLE_COUNT_1_BIT,
 			0);
 
@@ -1271,7 +1271,7 @@ void VkTexture::preparePipelines()
 		VK_DYNAMIC_STATE_SCISSOR
 	};
 	VkPipelineDynamicStateCreateInfo dynamicState =
-		vkTools::initializers::pipelineDynamicStateCreateInfo(
+		vkTools::pipelineDynamicStateCreateInfo(
 			dynamicStateEnables.data(),
 			static_cast<uint32_t>(dynamicStateEnables.size()),
 			0);
@@ -1283,7 +1283,7 @@ void VkTexture::preparePipelines()
 	shaderStages[1] = loadShader(getAssetPath() + "shaders/texture/texture.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-		vkTools::initializers::pipelineCreateInfo(
+		vkTools::pipelineCreateInfo(
 			mPipelineLayout,
 			mRenderPass,
 			0);
@@ -1457,7 +1457,7 @@ void VkTexture::initVulkan(bool enableValidation)
 	gSwapChain.connect(mInstance, gVulkanDevice->mPhysicalDevice, gVulkanDevice->mLogicalDevice);
 
 	// Create synchronization objects
-	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
+	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::semaphoreCreateInfo();
 	// Create a semaphore used to synchronize image presentation
 	// Ensures that the image is displayed before we start submitting new commands to the queu
 	VK_CHECK_RESULT(vkCreateSemaphore(gVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
@@ -1472,7 +1472,7 @@ void VkTexture::initVulkan(bool enableValidation)
 	// Set up submit info structure
 	// Semaphores will stay the same during application lifetime
 	// Command buffer submission info is set by each example
-	mSubmitInfo = vkTools::initializers::submitInfo();
+	mSubmitInfo = vkTools::submitInfo();
 	mSubmitInfo.pWaitDstStageMask = &submitPipelineStages;
 	mSubmitInfo.waitSemaphoreCount = 1;
 	mSubmitInfo.pWaitSemaphores = &semaphores.presentComplete;

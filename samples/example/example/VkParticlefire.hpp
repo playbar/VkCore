@@ -155,14 +155,14 @@ public:
 
 	void buildCommandBuffers()
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = defaultClearColor;
 		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
-		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+		VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 		renderPassBeginInfo.renderPass = mRenderPass;
 		renderPassBeginInfo.renderArea.offset.x = 0;
 		renderPassBeginInfo.renderArea.offset.y = 0;
@@ -180,10 +180,10 @@ public:
 
 			vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			VkViewport viewport = vkTools::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-			VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
+			VkRect2D scissor = vkTools::rect2D(width, height, 0, 0);
 			vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 			// Environment
@@ -334,7 +334,7 @@ public:
 
 		// Create a custom sampler to be used with the particle textures
 		// Create sampler
-		VkSamplerCreateInfo samplerCreateInfo = vkTools::initializers::samplerCreateInfo();
+		VkSamplerCreateInfo samplerCreateInfo = vkTools::samplerCreateInfo();
 		samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
 		samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
 		samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -366,7 +366,7 @@ public:
 		// Binding description
 		particles.bindingDescriptions.resize(1);
 		particles.bindingDescriptions[0] =
-			vkTools::initializers::vertexInputBindingDescription(
+			vkTools::vertexInputBindingDescription(
 				VERTEX_BUFFER_BIND_ID,
 				sizeof(Particle),
 				VK_VERTEX_INPUT_RATE_VERTEX);
@@ -375,48 +375,48 @@ public:
 		// Describes memory layout and shader positions
 		// Location 0 : Position
 		particles.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				0,
 				VK_FORMAT_R32G32B32A32_SFLOAT,
 				0));
 		// Location 1 : Color
 		particles.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				1,
 				VK_FORMAT_R32G32B32A32_SFLOAT,
 				sizeof(float) * 4));
 		// Location 2 : Alpha
 		particles.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				2,
 				VK_FORMAT_R32_SFLOAT,
 				sizeof(float) * 8));
 		// Location 3 : Size
 		particles.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				3,
 				VK_FORMAT_R32_SFLOAT,
 				sizeof(float) * 9));
 		// Location 4 : Rotation
 		particles.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				4,
 				VK_FORMAT_R32_SFLOAT,
 				sizeof(float) * 10));
 		// Location 5 : Type
 		particles.attributeDescriptions.push_back(
-			vkTools::initializers::vertexInputAttributeDescription(
+			vkTools::vertexInputAttributeDescription(
 				VERTEX_BUFFER_BIND_ID,
 				5,
 				VK_FORMAT_R32_SINT,
 				sizeof(float) * 11));
 
-		particles.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+		particles.inputState = vkTools::pipelineVertexInputStateCreateInfo();
 		particles.inputState.vertexBindingDescriptionCount = particles.bindingDescriptions.size();
 		particles.inputState.pVertexBindingDescriptions = particles.bindingDescriptions.data();
 		particles.inputState.vertexAttributeDescriptionCount = particles.attributeDescriptions.size();
@@ -428,12 +428,12 @@ public:
 		// Example uses one ubo and one image sampler
 		std::vector<VkDescriptorPoolSize> poolSizes =
 		{
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
-			vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4)
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
+			vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4)
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo =
-			vkTools::initializers::descriptorPoolCreateInfo(
+			vkTools::descriptorPoolCreateInfo(
 				poolSizes.size(),
 				poolSizes.data(),
 				2);
@@ -446,31 +446,31 @@ public:
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 		{
 			// Binding 0 : Vertex shader uniform buffer
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				VK_SHADER_STAGE_VERTEX_BIT,
 				0),
 			// Binding 1 : Fragment shader image sampler
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				VK_SHADER_STAGE_FRAGMENT_BIT,
 				1),
 			// Binding 1 : Fragment shader image sampler
-			vkTools::initializers::descriptorSetLayoutBinding(
+			vkTools::descriptorSetLayoutBinding(
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				VK_SHADER_STAGE_FRAGMENT_BIT,
 				2)
 		};
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout =
-			vkTools::initializers::descriptorSetLayoutCreateInfo(
+			vkTools::descriptorSetLayoutCreateInfo(
 				setLayoutBindings.data(),
 				setLayoutBindings.size());
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 		VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-			vkTools::initializers::pipelineLayoutCreateInfo(
+			vkTools::pipelineLayoutCreateInfo(
 				&descriptorSetLayout,
 				1);
 
@@ -480,7 +480,7 @@ public:
 	void setupDescriptorSets()
 	{
 		VkDescriptorSetAllocateInfo allocInfo =
-			vkTools::initializers::descriptorSetAllocateInfo(
+			vkTools::descriptorSetAllocateInfo(
 				descriptorPool,
 				&descriptorSetLayout,
 				1);
@@ -489,12 +489,12 @@ public:
 
 		// Image descriptor for the color map texture
 		VkDescriptorImageInfo texDescriptorSmoke =
-			vkTools::initializers::descriptorImageInfo(
+			vkTools::descriptorImageInfo(
 				textures.particles.sampler,
 				textures.particles.smoke.view,
 				VK_IMAGE_LAYOUT_GENERAL);
 		VkDescriptorImageInfo texDescriptorFire =
-			vkTools::initializers::descriptorImageInfo(
+			vkTools::descriptorImageInfo(
 				textures.particles.sampler,
 				textures.particles.fire.view,
 				VK_IMAGE_LAYOUT_GENERAL);
@@ -502,19 +502,19 @@ public:
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 		{
 			// Binding 0 : Vertex shader uniform buffer
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.fire.descriptor),
 			// Binding 1 : Smoke texture
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				1,
 				&texDescriptorSmoke),
 			// Binding 1 : Fire texture array
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				descriptorSet,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				2,
@@ -527,12 +527,12 @@ public:
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &allocInfo, &meshes.environment.descriptorSet));
 
 		VkDescriptorImageInfo texDescriptorColorMap =
-			vkTools::initializers::descriptorImageInfo(
+			vkTools::descriptorImageInfo(
 				textures.floor.colorMap.sampler,
 				textures.floor.colorMap.view,
 				VK_IMAGE_LAYOUT_GENERAL);
 		VkDescriptorImageInfo texDescriptorNormalMap =
-			vkTools::initializers::descriptorImageInfo(
+			vkTools::descriptorImageInfo(
 				textures.floor.normalMap.sampler,
 				textures.floor.normalMap.view,
 				VK_IMAGE_LAYOUT_GENERAL);
@@ -541,21 +541,21 @@ public:
 
 		// Binding 0 : Vertex shader uniform buffer
 		writeDescriptorSets.push_back(
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				meshes.environment.descriptorSet,
 				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				0,
 				&uniformData.environment.descriptor));
 		// Binding 1 : Color map
 		writeDescriptorSets.push_back(
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				meshes.environment.descriptorSet,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				1,
 				&texDescriptorColorMap));
 		// Binding 2 : Normal map
 		writeDescriptorSets.push_back(
-			vkTools::initializers::writeDescriptorSet(
+			vkTools::writeDescriptorSet(
 				meshes.environment.descriptorSet,
 				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 				2,
@@ -567,39 +567,39 @@ public:
 	void preparePipelines()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-			vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+			vkTools::pipelineInputAssemblyStateCreateInfo(
 				VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
 				0,
 				VK_FALSE);
 
 		VkPipelineRasterizationStateCreateInfo rasterizationState =
-			vkTools::initializers::pipelineRasterizationStateCreateInfo(
+			vkTools::pipelineRasterizationStateCreateInfo(
 				VK_POLYGON_MODE_FILL,
 				VK_CULL_MODE_BACK_BIT,
 				VK_FRONT_FACE_CLOCKWISE,
 				0);
 
 		VkPipelineColorBlendAttachmentState blendAttachmentState =
-			vkTools::initializers::pipelineColorBlendAttachmentState(
+			vkTools::pipelineColorBlendAttachmentState(
 				0xf,
 				VK_FALSE);
 
 		VkPipelineColorBlendStateCreateInfo colorBlendState =
-			vkTools::initializers::pipelineColorBlendStateCreateInfo(
+			vkTools::pipelineColorBlendStateCreateInfo(
 				1,
 				&blendAttachmentState);
 
 		VkPipelineDepthStencilStateCreateInfo depthStencilState =
-			vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+			vkTools::pipelineDepthStencilStateCreateInfo(
 				VK_TRUE,
 				VK_TRUE,
 				VK_COMPARE_OP_LESS_OR_EQUAL);
 
 		VkPipelineViewportStateCreateInfo viewportState =
-			vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+			vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 		VkPipelineMultisampleStateCreateInfo multisampleState =
-			vkTools::initializers::pipelineMultisampleStateCreateInfo(
+			vkTools::pipelineMultisampleStateCreateInfo(
 				VK_SAMPLE_COUNT_1_BIT,
 				0);
 
@@ -608,7 +608,7 @@ public:
 			VK_DYNAMIC_STATE_SCISSOR
 		};
 		VkPipelineDynamicStateCreateInfo dynamicState =
-			vkTools::initializers::pipelineDynamicStateCreateInfo(
+			vkTools::pipelineDynamicStateCreateInfo(
 				dynamicStateEnables.data(),
 				dynamicStateEnables.size(),
 				0);
@@ -620,7 +620,7 @@ public:
 		shaderStages[1] = loadShader(getAssetPath() + "shaders/particlefire/particle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-			vkTools::initializers::pipelineCreateInfo(
+			vkTools::pipelineCreateInfo(
 				pipelineLayout,
 				mRenderPass,
 				0);

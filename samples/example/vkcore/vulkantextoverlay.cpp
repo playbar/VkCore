@@ -68,7 +68,7 @@ void VulkanTextOverlay::prepareResources()
 	VK_CHECK_RESULT(vkCreateCommandPool(mVulkanDevice->mLogicalDevice, &cmdPoolInfo, nullptr, &mCommandPool));
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCommandPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			(uint32_t)mCmdBuffers.size());
@@ -86,7 +86,7 @@ void VulkanTextOverlay::prepareResources()
 	mVertexBuffer.map();
 
 	// Font texture
-	VkImageCreateInfo imageInfo = vkTools::initializers::imageCreateInfo();
+	VkImageCreateInfo imageInfo = vkTools::imageCreateInfo();
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
 	imageInfo.format = VK_FORMAT_R8_UNORM;
 	imageInfo.extent.width = STB_FONT_WIDTH;
@@ -102,7 +102,7 @@ void VulkanTextOverlay::prepareResources()
 	VK_CHECK_RESULT(vkCreateImage(mVulkanDevice->mLogicalDevice, &imageInfo, nullptr, &mImage));
 
 	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo allocInfo = vkTools::initializers::memoryAllocateInfo();
+	VkMemoryAllocateInfo allocInfo = vkTools::memoryAllocateInfo();
 	vkGetImageMemoryRequirements(mVulkanDevice->mLogicalDevice, mImage, &memReqs);
 	allocInfo.allocationSize = memReqs.size;
 	allocInfo.memoryTypeIndex = mVulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -127,7 +127,7 @@ void VulkanTextOverlay::prepareResources()
 	cmdBufAllocateInfo.commandBufferCount = 1;
 	VK_CHECK_RESULT(vkAllocateCommandBuffers(mVulkanDevice->mLogicalDevice, &cmdBufAllocateInfo, &copyCmd));
 
-	VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+	VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 	VK_CHECK_RESULT(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
 
 	// Prepare for transfer
@@ -165,7 +165,7 @@ void VulkanTextOverlay::prepareResources()
 
 	VK_CHECK_RESULT(vkEndCommandBuffer(copyCmd));
 
-	VkSubmitInfo submitInfo = vkTools::initializers::submitInfo();
+	VkSubmitInfo submitInfo = vkTools::submitInfo();
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &copyCmd;
 
@@ -176,7 +176,7 @@ void VulkanTextOverlay::prepareResources()
 
 	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCommandPool, 1, &copyCmd);
 
-	VkImageViewCreateInfo imageViewInfo = vkTools::initializers::imageViewCreateInfo();
+	VkImageViewCreateInfo imageViewInfo = vkTools::imageViewCreateInfo();
 	imageViewInfo.image = mImage;
 	imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	imageViewInfo.format = imageInfo.format;
@@ -185,7 +185,7 @@ void VulkanTextOverlay::prepareResources()
 	VK_CHECK_RESULT(vkCreateImageView(mVulkanDevice->mLogicalDevice, &imageViewInfo, nullptr, &mImageView));
 
 	// Sampler
-	VkSamplerCreateInfo samplerInfo = vkTools::initializers::samplerCreateInfo();
+	VkSamplerCreateInfo samplerInfo = vkTools::samplerCreateInfo();
 	samplerInfo.magFilter = VK_FILTER_LINEAR;
 	samplerInfo.minFilter = VK_FILTER_LINEAR;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -202,10 +202,10 @@ void VulkanTextOverlay::prepareResources()
 	// Descriptor
 	// Font uses a separate descriptor pool
 	std::array<VkDescriptorPoolSize, 1> poolSizes;
-	poolSizes[0] = vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+	poolSizes[0] = vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
 
 	VkDescriptorPoolCreateInfo descriptorPoolInfo =
-		vkTools::initializers::descriptorPoolCreateInfo(
+		vkTools::descriptorPoolCreateInfo(
 			static_cast<uint32_t>(poolSizes.size()),
 			poolSizes.data(),
 			1);
@@ -214,10 +214,10 @@ void VulkanTextOverlay::prepareResources()
 
 	// Descriptor set layout
 	std::array<VkDescriptorSetLayoutBinding, 1> setLayoutBindings;
-	setLayoutBindings[0] = vkTools::initializers::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+	setLayoutBindings[0] = vkTools::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo =
-		vkTools::initializers::descriptorSetLayoutCreateInfo(
+		vkTools::descriptorSetLayoutCreateInfo(
 			setLayoutBindings.data(),
 			static_cast<uint32_t>(setLayoutBindings.size()));
 
@@ -225,7 +225,7 @@ void VulkanTextOverlay::prepareResources()
 
 	// Pipeline layout
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo =
-		vkTools::initializers::pipelineLayoutCreateInfo(
+		vkTools::pipelineLayoutCreateInfo(
 			&mDescriptorSetLayout,
 			1);
 
@@ -233,7 +233,7 @@ void VulkanTextOverlay::prepareResources()
 
 	// Descriptor set
 	VkDescriptorSetAllocateInfo descriptorSetAllocInfo =
-		vkTools::initializers::descriptorSetAllocateInfo(
+		vkTools::descriptorSetAllocateInfo(
 			mDescriptorPool,
 			&mDescriptorSetLayout,
 			1);
@@ -241,13 +241,13 @@ void VulkanTextOverlay::prepareResources()
 	VK_CHECK_RESULT(vkAllocateDescriptorSets(mVulkanDevice->mLogicalDevice, &descriptorSetAllocInfo, &mDescriptorSet));
 
 	VkDescriptorImageInfo texDescriptor =
-		vkTools::initializers::descriptorImageInfo(
+		vkTools::descriptorImageInfo(
 			mSampler,
 			mImageView,
 			VK_IMAGE_LAYOUT_GENERAL);
 
 	std::array<VkWriteDescriptorSet, 1> writeDescriptorSets;
-	writeDescriptorSets[0] = vkTools::initializers::writeDescriptorSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &texDescriptor);
+	writeDescriptorSets[0] = vkTools::writeDescriptorSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0, &texDescriptor);
 	vkUpdateDescriptorSets(mVulkanDevice->mLogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, NULL);
 
 	// Pipeline cache
@@ -256,20 +256,20 @@ void VulkanTextOverlay::prepareResources()
 	VK_CHECK_RESULT(vkCreatePipelineCache(mVulkanDevice->mLogicalDevice, &pipelineCacheCreateInfo, nullptr, &mPipelineCache));
 
 	// Command buffer execution fence
-	VkFenceCreateInfo fenceCreateInfo = vkTools::initializers::fenceCreateInfo();
+	VkFenceCreateInfo fenceCreateInfo = vkTools::fenceCreateInfo();
 	VK_CHECK_RESULT(vkCreateFence(mVulkanDevice->mLogicalDevice, &fenceCreateInfo, nullptr, &mFence));
 }
 
 void VulkanTextOverlay::preparePipeline()
 {
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-		vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+		vkTools::pipelineInputAssemblyStateCreateInfo(
 			VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
 			0,
 			VK_FALSE);
 
 	VkPipelineRasterizationStateCreateInfo rasterizationState =
-		vkTools::initializers::pipelineRasterizationStateCreateInfo(
+		vkTools::pipelineRasterizationStateCreateInfo(
 			VK_POLYGON_MODE_FILL,
 			VK_CULL_MODE_BACK_BIT,
 			VK_FRONT_FACE_CLOCKWISE,
@@ -277,7 +277,7 @@ void VulkanTextOverlay::preparePipeline()
 
 	// Enable blending
 	VkPipelineColorBlendAttachmentState blendAttachmentState =
-		vkTools::initializers::pipelineColorBlendAttachmentState(0xf, VK_TRUE);
+		vkTools::pipelineColorBlendAttachmentState(0xf, VK_TRUE);
 
 	blendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
 	blendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -288,21 +288,21 @@ void VulkanTextOverlay::preparePipeline()
 	blendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
 	VkPipelineColorBlendStateCreateInfo colorBlendState =
-		vkTools::initializers::pipelineColorBlendStateCreateInfo(
+		vkTools::pipelineColorBlendStateCreateInfo(
 			1,
 			&blendAttachmentState);
 
 	VkPipelineDepthStencilStateCreateInfo depthStencilState =
-		vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+		vkTools::pipelineDepthStencilStateCreateInfo(
 			VK_FALSE,
 			VK_FALSE,
 			VK_COMPARE_OP_LESS_OR_EQUAL);
 
 	VkPipelineViewportStateCreateInfo viewportState =
-		vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+		vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 	VkPipelineMultisampleStateCreateInfo multisampleState =
-		vkTools::initializers::pipelineMultisampleStateCreateInfo(
+		vkTools::pipelineMultisampleStateCreateInfo(
 			VK_SAMPLE_COUNT_1_BIT,
 			0);
 
@@ -312,29 +312,29 @@ void VulkanTextOverlay::preparePipeline()
 	};
 
 	VkPipelineDynamicStateCreateInfo dynamicState =
-		vkTools::initializers::pipelineDynamicStateCreateInfo(
+		vkTools::pipelineDynamicStateCreateInfo(
 			dynamicStateEnables.data(),
 			static_cast<uint32_t>(dynamicStateEnables.size()),
 			0);
 
 	std::array<VkVertexInputBindingDescription, 2> vertexBindings = {};
-	vertexBindings[0] = vkTools::initializers::vertexInputBindingDescription(0, sizeof(glm::vec4), VK_VERTEX_INPUT_RATE_VERTEX);
-	vertexBindings[1] = vkTools::initializers::vertexInputBindingDescription(1, sizeof(glm::vec4), VK_VERTEX_INPUT_RATE_VERTEX);
+	vertexBindings[0] = vkTools::vertexInputBindingDescription(0, sizeof(glm::vec4), VK_VERTEX_INPUT_RATE_VERTEX);
+	vertexBindings[1] = vkTools::vertexInputBindingDescription(1, sizeof(glm::vec4), VK_VERTEX_INPUT_RATE_VERTEX);
 
 	std::array<VkVertexInputAttributeDescription, 2> vertexAttribs = {};
 	// Position
-	vertexAttribs[0] = vkTools::initializers::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32_SFLOAT, 0);
+	vertexAttribs[0] = vkTools::vertexInputAttributeDescription(0, 0, VK_FORMAT_R32G32_SFLOAT, 0);
 	// UV
-	vertexAttribs[1] = vkTools::initializers::vertexInputAttributeDescription(1, 1, VK_FORMAT_R32G32_SFLOAT, sizeof(glm::vec2));
+	vertexAttribs[1] = vkTools::vertexInputAttributeDescription(1, 1, VK_FORMAT_R32G32_SFLOAT, sizeof(glm::vec2));
 
-	VkPipelineVertexInputStateCreateInfo inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+	VkPipelineVertexInputStateCreateInfo inputState = vkTools::pipelineVertexInputStateCreateInfo();
 	inputState.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindings.size());
 	inputState.pVertexBindingDescriptions = vertexBindings.data();
 	inputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttribs.size());
 	inputState.pVertexAttributeDescriptions = vertexAttribs.data();
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-		vkTools::initializers::pipelineCreateInfo(
+		vkTools::pipelineCreateInfo(
 			mPipelineLayout,
 			mRenderPass,
 			0);
@@ -512,12 +512,12 @@ void VulkanTextOverlay::endTextUpdate()
 
 void VulkanTextOverlay::updateCommandBuffers()
 {
-	VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+	VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 	VkClearValue clearValues[1];
 	clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
 
-	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 	renderPassBeginInfo.renderPass = mRenderPass;
 	renderPassBeginInfo.renderArea.extent.width = *mFrameBufferWidth;
 	renderPassBeginInfo.renderArea.extent.height = *mFrameBufferHeight;
@@ -537,10 +537,10 @@ void VulkanTextOverlay::updateCommandBuffers()
 
 		vkCmdBeginRenderPass(mCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		VkViewport viewport = vkTools::initializers::viewport((float)*mFrameBufferWidth, (float)*mFrameBufferHeight, 0.0f, 1.0f);
+		VkViewport viewport = vkTools::viewport((float)*mFrameBufferWidth, (float)*mFrameBufferHeight, 0.0f, 1.0f);
 		vkCmdSetViewport(mCmdBuffers[i], 0, 1, &viewport);
 
-		VkRect2D scissor = vkTools::initializers::rect2D(*mFrameBufferWidth, *mFrameBufferHeight, 0, 0);
+		VkRect2D scissor = vkTools::rect2D(*mFrameBufferWidth, *mFrameBufferHeight, 0, 0);
 		vkCmdSetScissor(mCmdBuffers[i], 0, 1, &scissor);
 
 		vkCmdBindPipeline(mCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, mPipeline);
@@ -587,7 +587,7 @@ void VulkanTextOverlay::reallocateCommandBuffers()
 	vkFreeCommandBuffers(mVulkanDevice->mLogicalDevice, mCommandPool, static_cast<uint32_t>(mCmdBuffers.size()), mCmdBuffers.data());
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCommandPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mCmdBuffers.size()));

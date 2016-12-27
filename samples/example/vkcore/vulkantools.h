@@ -118,8 +118,7 @@ namespace vkTools
 	// Contains often used vulkan object initializers
 	// Save lot of VK_STRUCTURE_TYPE assignments
 	// Some initializers are parameterized for convenience
-	namespace initializers
-	{
+
 		VkMemoryAllocateInfo memoryAllocateInfo();
 
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo(
@@ -290,6 +289,6 @@ namespace vkTools
 
 		/** @biref Initialize a specialization constant info structure to pass to a shader stage */
 		VkSpecializationInfo specializationInfo(uint32_t mapEntryCount, const VkSpecializationMapEntry* mapEntries, size_t dataSize, const void* data);
-	}
+	
 
 }

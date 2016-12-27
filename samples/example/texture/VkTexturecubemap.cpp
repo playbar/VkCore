@@ -166,14 +166,14 @@ void VkTexturecubemap::loadCubemap(std::string filename, VkFormat format, bool f
 	cubeMap.height = texCube.dimensions().y;
 	cubeMap.mipLevels = texCube.levels();
 
-	VkMemoryAllocateInfo memAllocInfo = vkTools::initializers::memoryAllocateInfo();
+	VkMemoryAllocateInfo memAllocInfo = vkTools::memoryAllocateInfo();
 	VkMemoryRequirements memReqs;
 
 	// Create a host-visible staging buffer that contains the raw image data
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingMemory;
 
-	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo();
+	VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo();
 	bufferCreateInfo.size = texCube.size();
 	// This buffer is used as a transfer source for the buffer copy
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
@@ -196,7 +196,7 @@ void VkTexturecubemap::loadCubemap(std::string filename, VkFormat format, bool f
 	vkUnmapMemory(mVulkanDevice->mLogicalDevice, stagingMemory);
 
 	// Create optimal tiled target image
-	VkImageCreateInfo imageCreateInfo = vkTools::initializers::imageCreateInfo();
+	VkImageCreateInfo imageCreateInfo = vkTools::imageCreateInfo();
 	imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 	imageCreateInfo.format = format;
 	imageCreateInfo.mipLevels = cubeMap.mipLevels;
@@ -288,7 +288,7 @@ void VkTexturecubemap::loadCubemap(std::string filename, VkFormat format, bool f
 	flushCommandBuffer(copyCmd, mQueue, true);
 
 	// Create sampler
-	VkSamplerCreateInfo sampler = vkTools::initializers::samplerCreateInfo();
+	VkSamplerCreateInfo sampler = vkTools::samplerCreateInfo();
 	sampler.magFilter = VK_FILTER_LINEAR;
 	sampler.minFilter = VK_FILTER_LINEAR;
 	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -309,7 +309,7 @@ void VkTexturecubemap::loadCubemap(std::string filename, VkFormat format, bool f
 	VK_CHECK_RESULT(vkCreateSampler(mVulkanDevice->mLogicalDevice, &sampler, nullptr, &cubeMap.sampler));
 
 	// Create image view
-	VkImageViewCreateInfo view = vkTools::initializers::imageViewCreateInfo();
+	VkImageViewCreateInfo view = vkTools::imageViewCreateInfo();
 	// Cube map view type
 	view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 	view.format = format;
@@ -339,13 +339,13 @@ void VkTexturecubemap::reBuildCommandBuffers()
 
 void VkTexturecubemap::buildCommandBuffers()
 {
-	VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+	VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 
 	VkClearValue clearValues[2];
 	clearValues[0].color = defaultClearColor;
 	clearValues[1].depthStencil = { 1.0f, 0 };
 
-	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::initializers::renderPassBeginInfo();
+	VkRenderPassBeginInfo renderPassBeginInfo = vkTools::renderPassBeginInfo();
 	renderPassBeginInfo.renderPass = mRenderPass;
 	renderPassBeginInfo.renderArea.offset.x = 0;
 	renderPassBeginInfo.renderArea.offset.y = 0;
@@ -363,10 +363,10 @@ void VkTexturecubemap::buildCommandBuffers()
 
 		vkCmdBeginRenderPass(mDrawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		VkViewport viewport = vkTools::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+		VkViewport viewport = vkTools::viewport((float)width, (float)height, 0.0f, 1.0f);
 		vkCmdSetViewport(mDrawCmdBuffers[i], 0, 1, &viewport);
 
-		VkRect2D scissor = vkTools::initializers::rect2D(width, height, 0, 0);
+		VkRect2D scissor = vkTools::rect2D(width, height, 0, 0);
 		vkCmdSetScissor(mDrawCmdBuffers[i], 0, 1, &scissor);
 
 		VkDeviceSize offsets[1] = { 0 };
@@ -410,7 +410,7 @@ void VkTexturecubemap::setupVertexDescriptions()
 	// Binding description
 	vertices.bindingDescriptions.resize(1);
 	vertices.bindingDescriptions[0] =
-		vkTools::initializers::vertexInputBindingDescription(
+		vkTools::vertexInputBindingDescription(
 			VERTEX_BUFFER_BIND_ID,
 			vkMeshLoader::vertexSize(vertexLayout),
 			VK_VERTEX_INPUT_RATE_VERTEX);
@@ -420,27 +420,27 @@ void VkTexturecubemap::setupVertexDescriptions()
 	vertices.attributeDescriptions.resize(3);
 	// Location 0 : Position
 	vertices.attributeDescriptions[0] =
-		vkTools::initializers::vertexInputAttributeDescription(
+		vkTools::vertexInputAttributeDescription(
 			VERTEX_BUFFER_BIND_ID,
 			0,
 			VK_FORMAT_R32G32B32_SFLOAT,
 			0);
 	// Location 1 : Normal
 	vertices.attributeDescriptions[1] =
-		vkTools::initializers::vertexInputAttributeDescription(
+		vkTools::vertexInputAttributeDescription(
 			VERTEX_BUFFER_BIND_ID,
 			1,
 			VK_FORMAT_R32G32B32_SFLOAT,
 			sizeof(float) * 3);
 	// Location 2 : Texture coordinates
 	vertices.attributeDescriptions[2] =
-		vkTools::initializers::vertexInputAttributeDescription(
+		vkTools::vertexInputAttributeDescription(
 			VERTEX_BUFFER_BIND_ID,
 			2,
 			VK_FORMAT_R32G32_SFLOAT,
 			sizeof(float) * 5);
 
-	vertices.inputState = vkTools::initializers::pipelineVertexInputStateCreateInfo();
+	vertices.inputState = vkTools::pipelineVertexInputStateCreateInfo();
 	vertices.inputState.vertexBindingDescriptionCount = vertices.bindingDescriptions.size();
 	vertices.inputState.pVertexBindingDescriptions = vertices.bindingDescriptions.data();
 	vertices.inputState.vertexAttributeDescriptionCount = vertices.attributeDescriptions.size();
@@ -451,12 +451,12 @@ void VkTexturecubemap::setupDescriptorPool()
 {
 	std::vector<VkDescriptorPoolSize> poolSizes =
 	{
-		vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
-		vkTools::initializers::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2)
+		vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2),
+		vkTools::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2)
 	};
 
 	VkDescriptorPoolCreateInfo descriptorPoolInfo =
-		vkTools::initializers::descriptorPoolCreateInfo(
+		vkTools::descriptorPoolCreateInfo(
 			poolSizes.size(),
 			poolSizes.data(),
 			2);
@@ -469,26 +469,26 @@ void VkTexturecubemap::setupDescriptorSetLayout()
 	std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings =
 	{
 		// Binding 0 : Vertex shader uniform buffer
-		vkTools::initializers::descriptorSetLayoutBinding(
+		vkTools::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_VERTEX_BIT,
 			0),
 		// Binding 1 : Fragment shader image sampler
-		vkTools::initializers::descriptorSetLayoutBinding(
+		vkTools::descriptorSetLayoutBinding(
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 			1)
 	};
 
 	VkDescriptorSetLayoutCreateInfo descriptorLayout =
-		vkTools::initializers::descriptorSetLayoutCreateInfo(
+		vkTools::descriptorSetLayoutCreateInfo(
 			setLayoutBindings.data(),
 			setLayoutBindings.size());
 
 	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(mVulkanDevice->mLogicalDevice, &descriptorLayout, nullptr, &descriptorSetLayout));
 
 	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo =
-		vkTools::initializers::pipelineLayoutCreateInfo(
+		vkTools::pipelineLayoutCreateInfo(
 			&descriptorSetLayout,
 			1);
 
@@ -499,13 +499,13 @@ void VkTexturecubemap::setupDescriptorSets()
 {
 	// Image descriptor for the cube map texture
 	VkDescriptorImageInfo cubeMapDescriptor =
-		vkTools::initializers::descriptorImageInfo(
+		vkTools::descriptorImageInfo(
 			cubeMap.sampler,
 			cubeMap.view,
 			VK_IMAGE_LAYOUT_GENERAL);
 
 	VkDescriptorSetAllocateInfo allocInfo =
-		vkTools::initializers::descriptorSetAllocateInfo(
+		vkTools::descriptorSetAllocateInfo(
 			descriptorPool,
 			&descriptorSetLayout,
 			1);
@@ -516,13 +516,13 @@ void VkTexturecubemap::setupDescriptorSets()
 	std::vector<VkWriteDescriptorSet> writeDescriptorSets =
 	{
 		// Binding 0 : Vertex shader uniform buffer
-		vkTools::initializers::writeDescriptorSet(
+		vkTools::writeDescriptorSet(
 			descriptorSets.object,
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			0,
 			&uniformData.objectVS.descriptor),
 		// Binding 1 : Fragment shader cubemap sampler
-		vkTools::initializers::writeDescriptorSet(
+		vkTools::writeDescriptorSet(
 			descriptorSets.object,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			1,
@@ -536,13 +536,13 @@ void VkTexturecubemap::setupDescriptorSets()
 	writeDescriptorSets =
 	{
 		// Binding 0 : Vertex shader uniform buffer
-		vkTools::initializers::writeDescriptorSet(
+		vkTools::writeDescriptorSet(
 			descriptorSets.skybox,
 			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			0,
 			&uniformData.skyboxVS.descriptor),
 		// Binding 1 : Fragment shader cubemap sampler
-		vkTools::initializers::writeDescriptorSet(
+		vkTools::writeDescriptorSet(
 			descriptorSets.skybox,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			1,
@@ -554,39 +554,39 @@ void VkTexturecubemap::setupDescriptorSets()
 void VkTexturecubemap::preparePipelines()
 {
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState =
-		vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+		vkTools::pipelineInputAssemblyStateCreateInfo(
 			VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
 			0,
 			VK_FALSE);
 
 	VkPipelineRasterizationStateCreateInfo rasterizationState =
-		vkTools::initializers::pipelineRasterizationStateCreateInfo(
+		vkTools::pipelineRasterizationStateCreateInfo(
 			VK_POLYGON_MODE_FILL,
 			VK_CULL_MODE_BACK_BIT,
 			VK_FRONT_FACE_COUNTER_CLOCKWISE,
 			0);
 
 	VkPipelineColorBlendAttachmentState blendAttachmentState =
-		vkTools::initializers::pipelineColorBlendAttachmentState(
+		vkTools::pipelineColorBlendAttachmentState(
 			0xf,
 			VK_FALSE);
 
 	VkPipelineColorBlendStateCreateInfo colorBlendState =
-		vkTools::initializers::pipelineColorBlendStateCreateInfo(
+		vkTools::pipelineColorBlendStateCreateInfo(
 			1,
 			&blendAttachmentState);
 
 	VkPipelineDepthStencilStateCreateInfo depthStencilState =
-		vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+		vkTools::pipelineDepthStencilStateCreateInfo(
 			VK_FALSE,
 			VK_FALSE,
 			VK_COMPARE_OP_LESS_OR_EQUAL);
 
 	VkPipelineViewportStateCreateInfo viewportState =
-		vkTools::initializers::pipelineViewportStateCreateInfo(1, 1, 0);
+		vkTools::pipelineViewportStateCreateInfo(1, 1, 0);
 
 	VkPipelineMultisampleStateCreateInfo multisampleState =
-		vkTools::initializers::pipelineMultisampleStateCreateInfo(
+		vkTools::pipelineMultisampleStateCreateInfo(
 			VK_SAMPLE_COUNT_1_BIT,
 			0);
 
@@ -595,7 +595,7 @@ void VkTexturecubemap::preparePipelines()
 		VK_DYNAMIC_STATE_SCISSOR
 	};
 	VkPipelineDynamicStateCreateInfo dynamicState =
-		vkTools::initializers::pipelineDynamicStateCreateInfo(
+		vkTools::pipelineDynamicStateCreateInfo(
 			dynamicStateEnables.data(),
 			dynamicStateEnables.size(),
 			0);
@@ -607,7 +607,7 @@ void VkTexturecubemap::preparePipelines()
 	shaderStages[1] = loadShader(getAssetPath() + "shaders/cubemap/skybox.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo =
-		vkTools::initializers::pipelineCreateInfo(
+		vkTools::pipelineCreateInfo(
 			pipelineLayout,
 			mRenderPass,
 			0);
@@ -879,7 +879,7 @@ void VkTexturecubemap::createCommandBuffers()
 	mDrawCmdBuffers.resize(gSwapChain.mImageCount);
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mDrawCmdBuffers.size()));
@@ -901,7 +901,7 @@ void VkTexturecubemap::createSetupCommandBuffer()
 	}
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			1);
@@ -938,7 +938,7 @@ VkCommandBuffer VkTexturecubemap::createCommandBuffer(VkCommandBufferLevel level
 	VkCommandBuffer cmdBuffer;
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			level,
 			1);
@@ -948,7 +948,7 @@ VkCommandBuffer VkTexturecubemap::createCommandBuffer(VkCommandBufferLevel level
 	// If requested, also start the new command buffer
 	if (begin)
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 	}
 
@@ -1076,8 +1076,8 @@ VkPipelineShaderStageCreateInfo VkTexturecubemap::loadShaderGLSL(std::string fil
 VkBool32 VkTexturecubemap::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory)
 {
 	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
-	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+	VkMemoryAllocateInfo memAlloc = vkTools::memoryAllocateInfo();
+	VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo(usageFlags, size);
 
 	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
 
@@ -1360,7 +1360,7 @@ void VkTexturecubemap::initVulkan(bool enableValidation)
 	gSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
 
 	// Create synchronization objects
-	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
+	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::semaphoreCreateInfo();
 	// Create a semaphore used to synchronize image presentation
 	// Ensures that the image is displayed before we start submitting new commands to the queu
 	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
@@ -1375,7 +1375,7 @@ void VkTexturecubemap::initVulkan(bool enableValidation)
 	// Set up submit info structure
 	// Semaphores will stay the same during application lifetime
 	// Command buffer submission info is set by each example
-	mSubmitInfo = vkTools::initializers::submitInfo();
+	mSubmitInfo = vkTools::submitInfo();
 	mSubmitInfo.pWaitDstStageMask = &submitPipelineStages;
 	mSubmitInfo.waitSemaphoreCount = 1;
 	mSubmitInfo.pWaitSemaphores = &semaphores.presentComplete;

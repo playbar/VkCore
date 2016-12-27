@@ -85,7 +85,7 @@ void VulkanBase::createCommandBuffers()
 	mDrawCmdBuffers.resize(gSwapChain.mImageCount);
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			static_cast<uint32_t>(mDrawCmdBuffers.size()));
@@ -107,7 +107,7 @@ void VulkanBase::createSetupCommandBuffer()
 	}
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			1);
@@ -144,7 +144,7 @@ VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool
 	VkCommandBuffer cmdBuffer;
 
 	VkCommandBufferAllocateInfo cmdBufAllocateInfo =
-		vkTools::initializers::commandBufferAllocateInfo(
+		vkTools::commandBufferAllocateInfo(
 			mCmdPool,
 			level,
 			1);
@@ -154,7 +154,7 @@ VkCommandBuffer VulkanBase::createCommandBuffer(VkCommandBufferLevel level, bool
 	// If requested, also start the new command buffer
 	if (begin)
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = vkTools::initializers::commandBufferBeginInfo();
+		VkCommandBufferBeginInfo cmdBufInfo = vkTools::commandBufferBeginInfo();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
 	}
 
@@ -268,8 +268,8 @@ VkPipelineShaderStageCreateInfo VulkanBase::loadShaderGLSL(std::string fileName,
 VkBool32 VulkanBase::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, void * data, VkBuffer * buffer, VkDeviceMemory * memory)
 {
 	VkMemoryRequirements memReqs;
-	VkMemoryAllocateInfo memAlloc = vkTools::initializers::memoryAllocateInfo();
-	VkBufferCreateInfo bufferCreateInfo = vkTools::initializers::bufferCreateInfo(usageFlags, size);
+	VkMemoryAllocateInfo memAlloc = vkTools::memoryAllocateInfo();
+	VkBufferCreateInfo bufferCreateInfo = vkTools::bufferCreateInfo(usageFlags, size);
 
 	VK_CHECK_RESULT(vkCreateBuffer(mVulkanDevice->mLogicalDevice, &bufferCreateInfo, nullptr, buffer));
 
@@ -855,7 +855,7 @@ void VulkanBase::initVulkan(bool enableValidation)
 	gSwapChain.connect(mInstance, mVulkanDevice->mPhysicalDevice, mVulkanDevice->mLogicalDevice);
 
 	// Create synchronization objects
-	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::initializers::semaphoreCreateInfo();
+	VkSemaphoreCreateInfo semaphoreCreateInfo = vkTools::semaphoreCreateInfo();
 	// Create a semaphore used to synchronize image presentation
 	// Ensures that the image is displayed before we start submitting new commands to the queu
 	VK_CHECK_RESULT(vkCreateSemaphore(mVulkanDevice->mLogicalDevice, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
@@ -870,7 +870,7 @@ void VulkanBase::initVulkan(bool enableValidation)
 	// Set up submit info structure
 	// Semaphores will stay the same during application lifetime
 	// Command buffer submission info is set by each example
-	mSubmitInfo = vkTools::initializers::submitInfo();
+	mSubmitInfo = vkTools::submitInfo();
 	mSubmitInfo.pWaitDstStageMask = &submitPipelineStages;
 	mSubmitInfo.waitSemaphoreCount = 1;
 	mSubmitInfo.pWaitSemaphores = &semaphores.presentComplete;

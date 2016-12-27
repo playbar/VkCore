@@ -119,7 +119,7 @@ namespace vkTools
 		VkImageSubresourceRange subresourceRange)
 	{
 		// Create an image barrier object
-		VkImageMemoryBarrier imageMemoryBarrier = vkTools::initializers::imageMemoryBarrier();
+		VkImageMemoryBarrier imageMemoryBarrier = vkTools::imageMemoryBarrier();
 		imageMemoryBarrier.oldLayout = oldImageLayout;
 		imageMemoryBarrier.newLayout = newImageLayout;
 		imageMemoryBarrier.image = image;
@@ -369,7 +369,7 @@ namespace vkTools
 
 	VkImageMemoryBarrier prePresentBarrier(VkImage presentImage)
 	{
-		VkImageMemoryBarrier imageMemoryBarrier = vkTools::initializers::imageMemoryBarrier();
+		VkImageMemoryBarrier imageMemoryBarrier = vkTools::imageMemoryBarrier();
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		imageMemoryBarrier.dstAccessMask = 0;
 		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -383,7 +383,7 @@ namespace vkTools
 
 	VkImageMemoryBarrier postPresentBarrier(VkImage presentImage)
 	{
-		VkImageMemoryBarrier imageMemoryBarrier = vkTools::initializers::imageMemoryBarrier();
+		VkImageMemoryBarrier imageMemoryBarrier = vkTools::imageMemoryBarrier();
 		imageMemoryBarrier.srcAccessMask = 0;
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -406,7 +406,7 @@ namespace vkTools
 	}
 }
 
-VkMemoryAllocateInfo vkTools::initializers::memoryAllocateInfo()
+VkMemoryAllocateInfo vkTools::memoryAllocateInfo()
 {
 	VkMemoryAllocateInfo memAllocInfo = {};
 	memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -416,7 +416,7 @@ VkMemoryAllocateInfo vkTools::initializers::memoryAllocateInfo()
 	return memAllocInfo;
 }
 
-VkCommandBufferAllocateInfo vkTools::initializers::commandBufferAllocateInfo(VkCommandPool commandPool, VkCommandBufferLevel level, uint32_t bufferCount)
+VkCommandBufferAllocateInfo vkTools::commandBufferAllocateInfo(VkCommandPool commandPool, VkCommandBufferLevel level, uint32_t bufferCount)
 {
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -426,14 +426,14 @@ VkCommandBufferAllocateInfo vkTools::initializers::commandBufferAllocateInfo(VkC
 	return commandBufferAllocateInfo;
 }
 
-VkCommandPoolCreateInfo vkTools::initializers::commandPoolCreateInfo()
+VkCommandPoolCreateInfo vkTools::commandPoolCreateInfo()
 {
 	VkCommandPoolCreateInfo cmdPoolCreateInfo = {};
 	cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	return cmdPoolCreateInfo;
 }
 
-VkCommandBufferBeginInfo vkTools::initializers::commandBufferBeginInfo()
+VkCommandBufferBeginInfo vkTools::commandBufferBeginInfo()
 {
 	VkCommandBufferBeginInfo cmdBufferBeginInfo = {};
 	cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -441,14 +441,14 @@ VkCommandBufferBeginInfo vkTools::initializers::commandBufferBeginInfo()
 	return cmdBufferBeginInfo;
 }
 
-VkCommandBufferInheritanceInfo vkTools::initializers::commandBufferInheritanceInfo()
+VkCommandBufferInheritanceInfo vkTools::commandBufferInheritanceInfo()
 {
 	VkCommandBufferInheritanceInfo cmdBufferInheritanceInfo = {};
 	cmdBufferInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
 	return cmdBufferInheritanceInfo;
 }
 
-VkRenderPassBeginInfo vkTools::initializers::renderPassBeginInfo()
+VkRenderPassBeginInfo vkTools::renderPassBeginInfo()
 {
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -456,7 +456,7 @@ VkRenderPassBeginInfo vkTools::initializers::renderPassBeginInfo()
 	return renderPassBeginInfo;
 }
 
-VkRenderPassCreateInfo vkTools::initializers::renderPassCreateInfo()
+VkRenderPassCreateInfo vkTools::renderPassCreateInfo()
 {
 	VkRenderPassCreateInfo renderPassCreateInfo = {};
 	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -464,7 +464,7 @@ VkRenderPassCreateInfo vkTools::initializers::renderPassCreateInfo()
 	return renderPassCreateInfo;
 }
 
-VkImageMemoryBarrier vkTools::initializers::imageMemoryBarrier()
+VkImageMemoryBarrier vkTools::imageMemoryBarrier()
 {
 	VkImageMemoryBarrier imageMemoryBarrier = {};
 	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -475,7 +475,7 @@ VkImageMemoryBarrier vkTools::initializers::imageMemoryBarrier()
 	return imageMemoryBarrier;
 }
 
-VkBufferMemoryBarrier vkTools::initializers::bufferMemoryBarrier()
+VkBufferMemoryBarrier vkTools::bufferMemoryBarrier()
 {
 	VkBufferMemoryBarrier bufferMemoryBarrier = {};
 	bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -483,7 +483,7 @@ VkBufferMemoryBarrier vkTools::initializers::bufferMemoryBarrier()
 	return bufferMemoryBarrier;
 }
 
-VkMemoryBarrier vkTools::initializers::memoryBarrier()
+VkMemoryBarrier vkTools::memoryBarrier()
 {
 	VkMemoryBarrier memoryBarrier = {};
 	memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -491,7 +491,7 @@ VkMemoryBarrier vkTools::initializers::memoryBarrier()
 	return memoryBarrier;
 }
 
-VkImageCreateInfo vkTools::initializers::imageCreateInfo()
+VkImageCreateInfo vkTools::imageCreateInfo()
 {
 	VkImageCreateInfo imageCreateInfo = {};
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -499,7 +499,7 @@ VkImageCreateInfo vkTools::initializers::imageCreateInfo()
 	return imageCreateInfo;
 }
 
-VkSamplerCreateInfo vkTools::initializers::samplerCreateInfo()
+VkSamplerCreateInfo vkTools::samplerCreateInfo()
 {
 	VkSamplerCreateInfo samplerCreateInfo = {};
 	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -507,7 +507,7 @@ VkSamplerCreateInfo vkTools::initializers::samplerCreateInfo()
 	return samplerCreateInfo;
 }
 
-VkImageViewCreateInfo vkTools::initializers::imageViewCreateInfo()
+VkImageViewCreateInfo vkTools::imageViewCreateInfo()
 {
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -515,7 +515,7 @@ VkImageViewCreateInfo vkTools::initializers::imageViewCreateInfo()
 	return imageViewCreateInfo;
 }
 
-VkFramebufferCreateInfo vkTools::initializers::framebufferCreateInfo()
+VkFramebufferCreateInfo vkTools::framebufferCreateInfo()
 {
 	VkFramebufferCreateInfo framebufferCreateInfo = {};
 	framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -523,7 +523,7 @@ VkFramebufferCreateInfo vkTools::initializers::framebufferCreateInfo()
 	return framebufferCreateInfo;
 }
 
-VkSemaphoreCreateInfo vkTools::initializers::semaphoreCreateInfo()
+VkSemaphoreCreateInfo vkTools::semaphoreCreateInfo()
 {
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -532,7 +532,7 @@ VkSemaphoreCreateInfo vkTools::initializers::semaphoreCreateInfo()
 	return semaphoreCreateInfo;
 }
 
-VkFenceCreateInfo vkTools::initializers::fenceCreateInfo(VkFenceCreateFlags flags)
+VkFenceCreateInfo vkTools::fenceCreateInfo(VkFenceCreateFlags flags)
 {
 	VkFenceCreateInfo fenceCreateInfo = {};
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -540,14 +540,14 @@ VkFenceCreateInfo vkTools::initializers::fenceCreateInfo(VkFenceCreateFlags flag
 	return fenceCreateInfo;
 }
 
-VkEventCreateInfo vkTools::initializers::eventCreateInfo()
+VkEventCreateInfo vkTools::eventCreateInfo()
 {
 	VkEventCreateInfo eventCreateInfo = {};
 	eventCreateInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
 	return eventCreateInfo;
 }
 
-VkSubmitInfo vkTools::initializers::submitInfo()
+VkSubmitInfo vkTools::submitInfo()
 {
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -555,7 +555,7 @@ VkSubmitInfo vkTools::initializers::submitInfo()
 	return submitInfo;
 }
 
-VkViewport vkTools::initializers::viewport(
+VkViewport vkTools::viewport(
 	float width, 
 	float height, 
 	float minDepth, 
@@ -569,7 +569,7 @@ VkViewport vkTools::initializers::viewport(
 	return viewport;
 }
 
-VkRect2D vkTools::initializers::rect2D(
+VkRect2D vkTools::rect2D(
 	int32_t width, 
 	int32_t height, 
 	int32_t offsetX, 
@@ -583,14 +583,14 @@ VkRect2D vkTools::initializers::rect2D(
 	return rect2D;
 }
 
-VkBufferCreateInfo vkTools::initializers::bufferCreateInfo()
+VkBufferCreateInfo vkTools::bufferCreateInfo()
 {
 	VkBufferCreateInfo bufCreateInfo = {};
 	bufCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	return bufCreateInfo;
 }
 
-VkBufferCreateInfo vkTools::initializers::bufferCreateInfo(
+VkBufferCreateInfo vkTools::bufferCreateInfo(
 	VkBufferUsageFlags usage, 
 	VkDeviceSize size)
 {
@@ -603,7 +603,7 @@ VkBufferCreateInfo vkTools::initializers::bufferCreateInfo(
 	return bufCreateInfo;
 }
 
-VkDescriptorPoolCreateInfo vkTools::initializers::descriptorPoolCreateInfo(
+VkDescriptorPoolCreateInfo vkTools::descriptorPoolCreateInfo(
 	uint32_t poolSizeCount, 
 	VkDescriptorPoolSize* pPoolSizes, 
 	uint32_t maxSets)
@@ -617,7 +617,7 @@ VkDescriptorPoolCreateInfo vkTools::initializers::descriptorPoolCreateInfo(
 	return descriptorPoolInfo;
 }
 
-VkDescriptorPoolSize vkTools::initializers::descriptorPoolSize(
+VkDescriptorPoolSize vkTools::descriptorPoolSize(
 	VkDescriptorType type, 
 	uint32_t descriptorCount)
 {
@@ -627,7 +627,7 @@ VkDescriptorPoolSize vkTools::initializers::descriptorPoolSize(
 	return descriptorPoolSize;
 }
 
-VkDescriptorSetLayoutBinding vkTools::initializers::descriptorSetLayoutBinding(
+VkDescriptorSetLayoutBinding vkTools::descriptorSetLayoutBinding(
 	VkDescriptorType type, 
 	VkShaderStageFlags stageFlags, 
 	uint32_t binding,
@@ -641,7 +641,7 @@ VkDescriptorSetLayoutBinding vkTools::initializers::descriptorSetLayoutBinding(
 	return setLayoutBinding;
 }
 
-VkDescriptorSetLayoutCreateInfo vkTools::initializers::descriptorSetLayoutCreateInfo(
+VkDescriptorSetLayoutCreateInfo vkTools::descriptorSetLayoutCreateInfo(
 	const VkDescriptorSetLayoutBinding* pBindings,
 	uint32_t bindingCount)
 {
@@ -653,7 +653,7 @@ VkDescriptorSetLayoutCreateInfo vkTools::initializers::descriptorSetLayoutCreate
 	return descriptorSetLayoutCreateInfo;
 }
 
-VkPipelineLayoutCreateInfo vkTools::initializers::pipelineLayoutCreateInfo(
+VkPipelineLayoutCreateInfo vkTools::pipelineLayoutCreateInfo(
 	const VkDescriptorSetLayout* pSetLayouts,
 	uint32_t setLayoutCount)
 {
@@ -665,7 +665,7 @@ VkPipelineLayoutCreateInfo vkTools::initializers::pipelineLayoutCreateInfo(
 	return pipelineLayoutCreateInfo;
 }
 
-VkPipelineLayoutCreateInfo vkTools::initializers::pipelineLayoutCreateInfo(
+VkPipelineLayoutCreateInfo vkTools::pipelineLayoutCreateInfo(
 	uint32_t setLayoutCount)
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
@@ -674,7 +674,7 @@ VkPipelineLayoutCreateInfo vkTools::initializers::pipelineLayoutCreateInfo(
 	return pipelineLayoutCreateInfo;
 }
 
-VkDescriptorSetAllocateInfo vkTools::initializers::descriptorSetAllocateInfo(
+VkDescriptorSetAllocateInfo vkTools::descriptorSetAllocateInfo(
 	VkDescriptorPool descriptorPool,
 	const VkDescriptorSetLayout* pSetLayouts,
 	uint32_t descriptorSetCount)
@@ -688,7 +688,7 @@ VkDescriptorSetAllocateInfo vkTools::initializers::descriptorSetAllocateInfo(
 	return descriptorSetAllocateInfo;
 }
 
-VkDescriptorImageInfo vkTools::initializers::descriptorImageInfo(VkSampler sampler, VkImageView imageView, VkImageLayout imageLayout)
+VkDescriptorImageInfo vkTools::descriptorImageInfo(VkSampler sampler, VkImageView imageView, VkImageLayout imageLayout)
 {
 	VkDescriptorImageInfo descriptorImageInfo = {};
 	descriptorImageInfo.sampler = sampler;
@@ -697,7 +697,7 @@ VkDescriptorImageInfo vkTools::initializers::descriptorImageInfo(VkSampler sampl
 	return descriptorImageInfo;
 }
 
-VkWriteDescriptorSet vkTools::initializers::writeDescriptorSet(
+VkWriteDescriptorSet vkTools::writeDescriptorSet(
 	VkDescriptorSet dstSet, 
 	VkDescriptorType type, 
 	uint32_t binding, 
@@ -715,7 +715,7 @@ VkWriteDescriptorSet vkTools::initializers::writeDescriptorSet(
 	return writeDescriptorSet;
 }
 
-VkWriteDescriptorSet vkTools::initializers::writeDescriptorSet(
+VkWriteDescriptorSet vkTools::writeDescriptorSet(
 	VkDescriptorSet dstSet, 
 	VkDescriptorType type, 
 	uint32_t binding, 
@@ -733,7 +733,7 @@ VkWriteDescriptorSet vkTools::initializers::writeDescriptorSet(
 	return writeDescriptorSet;
 }
 
-VkVertexInputBindingDescription vkTools::initializers::vertexInputBindingDescription(
+VkVertexInputBindingDescription vkTools::vertexInputBindingDescription(
 	uint32_t binding, 
 	uint32_t stride, 
 	VkVertexInputRate inputRate)
@@ -745,7 +745,7 @@ VkVertexInputBindingDescription vkTools::initializers::vertexInputBindingDescrip
 	return vInputBindDescription;
 }
 
-VkVertexInputAttributeDescription vkTools::initializers::vertexInputAttributeDescription(
+VkVertexInputAttributeDescription vkTools::vertexInputAttributeDescription(
 	uint32_t binding, 
 	uint32_t location, 
 	VkFormat format, 
@@ -759,7 +759,7 @@ VkVertexInputAttributeDescription vkTools::initializers::vertexInputAttributeDes
 	return vInputAttribDescription;
 }
 
-VkPipelineVertexInputStateCreateInfo vkTools::initializers::pipelineVertexInputStateCreateInfo()
+VkPipelineVertexInputStateCreateInfo vkTools::pipelineVertexInputStateCreateInfo()
 {
 	VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
 	pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -767,7 +767,7 @@ VkPipelineVertexInputStateCreateInfo vkTools::initializers::pipelineVertexInputS
 	return pipelineVertexInputStateCreateInfo;
 }
 
-VkPipelineInputAssemblyStateCreateInfo vkTools::initializers::pipelineInputAssemblyStateCreateInfo(
+VkPipelineInputAssemblyStateCreateInfo vkTools::pipelineInputAssemblyStateCreateInfo(
 	VkPrimitiveTopology topology, 
 	VkPipelineInputAssemblyStateCreateFlags flags, 
 	VkBool32 primitiveRestartEnable)
@@ -780,7 +780,7 @@ VkPipelineInputAssemblyStateCreateInfo vkTools::initializers::pipelineInputAssem
 	return pipelineInputAssemblyStateCreateInfo;
 }
 
-VkPipelineRasterizationStateCreateInfo vkTools::initializers::pipelineRasterizationStateCreateInfo(
+VkPipelineRasterizationStateCreateInfo vkTools::pipelineRasterizationStateCreateInfo(
 	VkPolygonMode polygonMode, 
 	VkCullModeFlags cullMode, 
 	VkFrontFace frontFace, 
@@ -797,7 +797,7 @@ VkPipelineRasterizationStateCreateInfo vkTools::initializers::pipelineRasterizat
 	return pipelineRasterizationStateCreateInfo;
 }
 
-VkPipelineColorBlendAttachmentState vkTools::initializers::pipelineColorBlendAttachmentState(
+VkPipelineColorBlendAttachmentState vkTools::pipelineColorBlendAttachmentState(
 	VkColorComponentFlags colorWriteMask, 
 	VkBool32 blendEnable)
 {
@@ -807,7 +807,7 @@ VkPipelineColorBlendAttachmentState vkTools::initializers::pipelineColorBlendAtt
 	return pipelineColorBlendAttachmentState;
 }
 
-VkPipelineColorBlendStateCreateInfo vkTools::initializers::pipelineColorBlendStateCreateInfo(
+VkPipelineColorBlendStateCreateInfo vkTools::pipelineColorBlendStateCreateInfo(
 	uint32_t attachmentCount, 
 	const VkPipelineColorBlendAttachmentState * pAttachments)
 {
@@ -819,7 +819,7 @@ VkPipelineColorBlendStateCreateInfo vkTools::initializers::pipelineColorBlendSta
 	return pipelineColorBlendStateCreateInfo;
 }
 
-VkPipelineDepthStencilStateCreateInfo vkTools::initializers::pipelineDepthStencilStateCreateInfo(
+VkPipelineDepthStencilStateCreateInfo vkTools::pipelineDepthStencilStateCreateInfo(
 	VkBool32 depthTestEnable, 
 	VkBool32 depthWriteEnable, 
 	VkCompareOp depthCompareOp)
@@ -834,7 +834,7 @@ VkPipelineDepthStencilStateCreateInfo vkTools::initializers::pipelineDepthStenci
 	return pipelineDepthStencilStateCreateInfo;
 }
 
-VkPipelineViewportStateCreateInfo vkTools::initializers::pipelineViewportStateCreateInfo(
+VkPipelineViewportStateCreateInfo vkTools::pipelineViewportStateCreateInfo(
 	uint32_t viewportCount, 
 	uint32_t scissorCount, 
 	VkPipelineViewportStateCreateFlags flags)
@@ -847,7 +847,7 @@ VkPipelineViewportStateCreateInfo vkTools::initializers::pipelineViewportStateCr
 	return pipelineViewportStateCreateInfo;
 }
 
-VkPipelineMultisampleStateCreateInfo vkTools::initializers::pipelineMultisampleStateCreateInfo(
+VkPipelineMultisampleStateCreateInfo vkTools::pipelineMultisampleStateCreateInfo(
 	VkSampleCountFlagBits rasterizationSamples, 
 	VkPipelineMultisampleStateCreateFlags flags)
 {
@@ -857,7 +857,7 @@ VkPipelineMultisampleStateCreateInfo vkTools::initializers::pipelineMultisampleS
 	return pipelineMultisampleStateCreateInfo;
 }
 
-VkPipelineDynamicStateCreateInfo vkTools::initializers::pipelineDynamicStateCreateInfo(
+VkPipelineDynamicStateCreateInfo vkTools::pipelineDynamicStateCreateInfo(
 	const VkDynamicState * pDynamicStates, 
 	uint32_t dynamicStateCount, 
 	VkPipelineDynamicStateCreateFlags flags)
@@ -869,7 +869,7 @@ VkPipelineDynamicStateCreateInfo vkTools::initializers::pipelineDynamicStateCrea
 	return pipelineDynamicStateCreateInfo;
 }
 
-VkPipelineTessellationStateCreateInfo vkTools::initializers::pipelineTessellationStateCreateInfo(uint32_t patchControlPoints)
+VkPipelineTessellationStateCreateInfo vkTools::pipelineTessellationStateCreateInfo(uint32_t patchControlPoints)
 {
 	VkPipelineTessellationStateCreateInfo pipelineTessellationStateCreateInfo = {};
 	pipelineTessellationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
@@ -877,7 +877,7 @@ VkPipelineTessellationStateCreateInfo vkTools::initializers::pipelineTessellatio
 	return pipelineTessellationStateCreateInfo;
 }
 
-VkGraphicsPipelineCreateInfo vkTools::initializers::pipelineCreateInfo(
+VkGraphicsPipelineCreateInfo vkTools::pipelineCreateInfo(
 	VkPipelineLayout layout, 
 	VkRenderPass renderPass, 
 	VkPipelineCreateFlags flags)
@@ -891,7 +891,7 @@ VkGraphicsPipelineCreateInfo vkTools::initializers::pipelineCreateInfo(
 	return pipelineCreateInfo;
 }
 
-VkComputePipelineCreateInfo vkTools::initializers::computePipelineCreateInfo(VkPipelineLayout layout, VkPipelineCreateFlags flags)
+VkComputePipelineCreateInfo vkTools::computePipelineCreateInfo(VkPipelineLayout layout, VkPipelineCreateFlags flags)
 {
 	VkComputePipelineCreateInfo computePipelineCreateInfo = {};
 	computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -900,7 +900,7 @@ VkComputePipelineCreateInfo vkTools::initializers::computePipelineCreateInfo(VkP
 	return computePipelineCreateInfo;
 }
 
-VkPushConstantRange vkTools::initializers::pushConstantRange(
+VkPushConstantRange vkTools::pushConstantRange(
 	VkShaderStageFlags stageFlags,
 	uint32_t size,
 	uint32_t offset)
@@ -912,14 +912,14 @@ VkPushConstantRange vkTools::initializers::pushConstantRange(
 	return pushConstantRange;
 }
 
-VkBindSparseInfo vkTools::initializers::bindSparseInfo()
+VkBindSparseInfo vkTools::bindSparseInfo()
 {
 	VkBindSparseInfo bindSparseInfo{};
 	bindSparseInfo.sType = VK_STRUCTURE_TYPE_BIND_SPARSE_INFO;
 	return bindSparseInfo;
 }
 
-VkSpecializationMapEntry vkTools::initializers::specializationMapEntry(uint32_t constantID, uint32_t offset, size_t size)
+VkSpecializationMapEntry vkTools::specializationMapEntry(uint32_t constantID, uint32_t offset, size_t size)
 {
 	VkSpecializationMapEntry specializationEntry{};
 	specializationEntry.constantID = constantID;
@@ -928,7 +928,7 @@ VkSpecializationMapEntry vkTools::initializers::specializationMapEntry(uint32_t 
 	return specializationEntry;
 }
 
-VkSpecializationInfo vkTools::initializers::specializationInfo(uint32_t mapEntryCount, const VkSpecializationMapEntry* mapEntries, size_t dataSize, const void* data)
+VkSpecializationInfo vkTools::specializationInfo(uint32_t mapEntryCount, const VkSpecializationMapEntry* mapEntries, size_t dataSize, const void* data)
 {
 	VkSpecializationInfo specializationInfo{};
 	specializationInfo.mapEntryCount = mapEntryCount;
