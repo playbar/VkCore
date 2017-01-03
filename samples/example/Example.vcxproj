@@ -31,6 +31,7 @@
     <ClCompile Include="vkcore\vulkandebug.cpp" />
     <ClCompile Include="vkcore\vulkanswapchain.cpp" />
     <ClCompile Include="vkcore\vulkantextoverlay.cpp" />
+    <ClCompile Include="vkcore\vulkanTextureLoader.cpp" />
     <ClCompile Include="vkcore\vulkantools.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -103,7 +104,7 @@
     <ClInclude Include="vkcore\vulkanMeshLoader.hpp" />
     <ClInclude Include="vkcore\vulkanswapchain.hpp" />
     <ClInclude Include="vkcore\vulkantextoverlay.hpp" />
-    <ClInclude Include="vkcore\vulkanTextureLoader.hpp" />
+    <ClInclude Include="vkcore\vulkanTextureLoader.h" />
     <ClInclude Include="vkcore\vulkantools.h" />
   </ItemGroup>
   <ItemGroup>

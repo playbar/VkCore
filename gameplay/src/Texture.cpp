@@ -2,6 +2,8 @@
 #include "Image.h"
 #include "Texture.h"
 #include "FileSystem.h"
+#include "VkCoreDevice.hpp"
+#include <gli/gli.hpp>
 
 // PVRTC (GL_IMG_texture_compression_pvrtc) : Imagination based gpus
 #ifndef GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
@@ -51,18 +53,44 @@ static std::vector<Texture*> __textureCache;
 static TextureHandle __currentTextureId = 0;
 static Texture::Type __currentTextureType = Texture::TEXTURE_2D;
 
-Texture::Texture() : _handle(0), _format(UNKNOWN), _type((Texture::Type)0), _width(0), _height(0), _mipmapped(false), _cached(false), _compressed(false),
-    _wrapS(Texture::REPEAT), _wrapT(Texture::REPEAT), _wrapR(Texture::REPEAT), _minFilter(Texture::NEAREST_MIPMAP_LINEAR), _magFilter(Texture::LINEAR)
+
+// Computes the size of a PVRTC data chunk for a mipmap level of the given size.
+static unsigned int computePVRTCDataSize(int width, int height, int bpp)
+{
+	int blockSize;
+	int widthBlocks;
+	int heightBlocks;
+
+	if (bpp == 4)
+	{
+		blockSize = 4 * 4; // Pixel by pixel block size for 4bpp
+		widthBlocks = std::max(width >> 2, 2);
+		heightBlocks = std::max(height >> 2, 2);
+	}
+	else
+	{
+		blockSize = 8 * 4; // Pixel by pixel block size for 2bpp
+		widthBlocks = std::max(width >> 3, 2);
+		heightBlocks = std::max(height >> 2, 2);
+	}
+
+	return widthBlocks * heightBlocks * ((blockSize  * bpp) >> 3);
+}
+
+Texture::Texture() : _handle(0), _format(UNKNOWN), _type((Texture::Type)0),
+	_width(0), _height(0), _mipmapped(false), _cached(false), _compressed(false),
+    _wrapS(Texture::REPEAT), _wrapT(Texture::REPEAT), _wrapR(Texture::REPEAT),
+	_minFilter(Texture::NEAREST_MIPMAP_LINEAR), _magFilter(Texture::LINEAR)
 {
 }
 
 Texture::~Texture()
 {
-    if (_handle)
-    {
-        GL_ASSERT( glDeleteTextures(1, &_handle) );
-        _handle = 0;
-    }
+
+	vkDestroyImageView(gVulkanDevice->mLogicalDevice, imageView, nullptr);
+	vkDestroyImage(gVulkanDevice->mLogicalDevice, image, nullptr);
+	vkDestroySampler(gVulkanDevice->mLogicalDevice, sampler, nullptr);
+	vkFreeMemory(gVulkanDevice->mLogicalDevice, deviceMemory, nullptr);
 
     // Remove ourself from the texture cache.
     if (_cached)
@@ -385,27 +413,12 @@ void Texture::setData(const unsigned char* data)
     GL_ASSERT( glBindTexture((GLenum)__currentTextureType, __currentTextureId) );
 }
 
-// Computes the size of a PVRTC data chunk for a mipmap level of the given size.
-static unsigned int computePVRTCDataSize(int width, int height, int bpp)
+
+Texture* Texture::createKTX(const char* path)
 {
-    int blockSize;
-    int widthBlocks;
-    int heightBlocks;
+	gli::texture2D tex2D(gli::load(path));
+	return NULL;
 
-    if (bpp == 4)
-    {
-        blockSize = 4 * 4; // Pixel by pixel block size for 4bpp
-        widthBlocks = std::max(width >> 2, 2);
-        heightBlocks = std::max(height >> 2, 2);
-    }
-    else
-    {
-        blockSize = 8 * 4; // Pixel by pixel block size for 2bpp
-        widthBlocks = std::max(width >> 3, 2);
-        heightBlocks = std::max(height >> 2, 2);
-    }
-
-    return widthBlocks * heightBlocks * ((blockSize  * bpp) >> 3);
 }
 
 Texture* Texture::createCompressedPVRTC(const char* path)

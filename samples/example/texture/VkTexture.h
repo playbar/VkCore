@@ -320,8 +320,6 @@ public:
 	void handleEvent(const xcb_generic_event_t *event);
 #endif
 
-
-
 	virtual void windowResized();
 	// Pure virtual function to be overriden by the dervice class
 	// Called in case of an event where e.g. the framebuffer has to be rebuild and thus

@@ -62,6 +62,9 @@
     <ClCompile Include="texture\VkTexturecubemap.cpp">
       <Filter>texture</Filter>
     </ClCompile>
+    <ClCompile Include="vkcore\vulkanTextureLoader.cpp">
+      <Filter>vkcore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vkcore">
@@ -103,9 +106,6 @@
       <Filter>vkcore</Filter>
     </ClInclude>
     <ClInclude Include="vkcore\vulkantextoverlay.hpp">
-      <Filter>vkcore</Filter>
-    </ClInclude>
-    <ClInclude Include="vkcore\vulkanTextureLoader.hpp">
       <Filter>vkcore</Filter>
     </ClInclude>
     <ClInclude Include="vkcore\vulkantools.h">
@@ -290,6 +290,9 @@
     </ClInclude>
     <ClInclude Include="texture\VkTexturecubemap.h">
       <Filter>texture</Filter>
+    </ClInclude>
+    <ClInclude Include="vkcore\vulkanTextureLoader.h">
+      <Filter>vkcore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
